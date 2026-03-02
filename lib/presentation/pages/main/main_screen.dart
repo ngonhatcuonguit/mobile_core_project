@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
+import 'package:flutter_core_project/injection_container.dart';
+import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
 import 'package:flutter_core_project/presentation/pages/home/home_page.dart';
 import 'package:flutter_core_project/presentation/pages/news/daily_news.dart';
-import 'package:flutter_core_project/presentation/pages/favorites/favorites_page.dart';
+import 'package:flutter_core_project/presentation/pages/timesheet/timesheet_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
 
 class MainScreen extends StatefulWidget {
@@ -16,12 +19,21 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const DailyNews(),
-    const FavoritesPage(),
-    const ProfilePage(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      const HomePage(),
+      BlocProvider<RemoteTimesheetBloc>.value(
+        value: sl<RemoteTimesheetBloc>(),
+        child: const TimesheetPage(),
+      ),
+      const DailyNews(),
+      const ProfilePage(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +89,8 @@ class _MainScreenState extends State<MainScreen> {
                 isActive: _currentIndex == 1,
               ),
               _buildNavItem(
-                activeIcon: AppVectors.icHeartActive,
-                inactiveIcon: AppVectors.icHeart,
+                activeIcon: AppVectors.icDelivery,
+                inactiveIcon: AppVectors.icDelivery,
                 isActive: _currentIndex == 2,
               ),
               _buildNavItem(
