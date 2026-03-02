@@ -44,13 +44,13 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: isDark ? Colors.white : Colors.black,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
+        // leading: IconButton(
+        //   icon: Icon(
+        //     Icons.arrow_back_ios,
+        //     color: isDark ? Colors.white : Colors.black,
+        //   ),
+        //   onPressed: () => Navigator.pop(context),
+        // ),
         title: Text(
           'Profile',
           style: TextStyle(

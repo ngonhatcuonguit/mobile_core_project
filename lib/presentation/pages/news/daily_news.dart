@@ -86,10 +86,11 @@ class _DailyNewsState extends State<DailyNews> {
     return Scaffold(
       appBar: BasicAppBar(
         title: SvgPicture.asset(
-          AppVectors.logo,
+          AppVectors.thp_logo_horizontal,
           height: 30,
           width: 30,
         ),
+        hideLeading: true,
       ),
       body: _hasNoInternet ? _buildNoInternetUI() : _buildBody(),
       // Ensure body is not blocking interactions
