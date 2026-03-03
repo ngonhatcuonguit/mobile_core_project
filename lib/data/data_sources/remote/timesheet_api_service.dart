@@ -32,7 +32,7 @@ class TimesheetApiService {
     for (int day = 1; day <= daysInMonth; day++) {
       final date = DateTime(year, month, day);
       final dayOfWeek = date.weekday;
-      final isWeekend = dayOfWeek == 6 || dayOfWeek == 7;
+      final isWeekend = dayOfWeek == 7;
 
       timeSheetDataList.add({
         "DATE_WORKING": date.toIso8601String(),
