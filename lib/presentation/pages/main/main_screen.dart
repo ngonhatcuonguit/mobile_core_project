@@ -5,8 +5,6 @@ import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
 import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
 import 'package:flutter_core_project/presentation/pages/home/home_page.dart';
-// ignore: unused_import
-import 'package:flutter_core_project/presentation/pages/news/daily_news.dart';
 import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
 import 'package:flutter_core_project/presentation/pages/timesheet/timesheet_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
@@ -42,7 +40,10 @@ class _MainScreenState extends State<MainScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: isDarkMode ? const Color(0xFF1C1C1C) : Colors.white,
@@ -65,40 +66,54 @@ class _MainScreenState extends State<MainScreen> {
           ),
           child: BottomNavigationBar(
             currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
+            onTap: (index) => setState(() => _currentIndex = index),
             type: BottomNavigationBarType.fixed,
             backgroundColor:
                 isDarkMode ? const Color(0xFF1C1C1C) : Colors.white,
             selectedItemColor: const Color(0xFF42C83C),
             unselectedItemColor:
                 isDarkMode ? Colors.grey[600] : Colors.grey[400],
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            selectedLabelStyle: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Satoshi',
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              fontFamily: 'Satoshi',
+            ),
             elevation: 0,
             items: [
               _buildNavItem(
                 activeIcon: AppVectors.icHomeActive,
                 inactiveIcon: AppVectors.icHome,
+                label: 'Trang chủ',
                 isActive: _currentIndex == 0,
+                isDark: isDarkMode,
               ),
               _buildNavItem(
                 activeIcon: AppVectors.icDelivery,
                 inactiveIcon: AppVectors.icDelivery,
+                label: 'Bảng công',
                 isActive: _currentIndex == 1,
+                isDark: isDarkMode,
               ),
               _buildNavItem(
                 activeIcon: AppVectors.icHeartActive,
                 inactiveIcon: AppVectors.icHeart,
+                label: 'Đơn từ',
                 isActive: _currentIndex == 2,
+                isDark: isDarkMode,
               ),
               _buildNavItem(
                 activeIcon: AppVectors.icProfileActive,
                 inactiveIcon: AppVectors.icProfile,
+                label: 'Cá nhân',
                 isActive: _currentIndex == 3,
+                isDark: isDarkMode,
               ),
             ],
           ),
@@ -110,30 +125,21 @@ class _MainScreenState extends State<MainScreen> {
   BottomNavigationBarItem _buildNavItem({
     required String activeIcon,
     required String inactiveIcon,
+    required String label,
     required bool isActive,
+    required bool isDark,
   }) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return BottomNavigationBarItem(
-      icon: Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF42C83C) : Colors.transparent,
-          shape: BoxShape.circle,
-        ),
-        child: Center(
-          child: SvgPicture.asset(
-            isActive ? activeIcon : inactiveIcon,
-            width: 24,
-            height: 24,
-            color: isActive
-                ? Colors.white
-                : (isDarkMode ? Colors.grey[600]! : Colors.grey[400]!),
-          ),
-        ),
+      icon: SvgPicture.asset(
+        isActive ? activeIcon : inactiveIcon,
+        width: 26,
+        height: 26,
+        // ignore: deprecated_member_use
+        color: isActive
+            ? const Color(0xFF42C83C)
+            : (isDark ? Colors.grey[600]! : Colors.grey[400]!),
       ),
-      label: '',
+      label: label,
     );
   }
 }
