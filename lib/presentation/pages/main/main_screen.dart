@@ -5,7 +5,9 @@ import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
 import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
 import 'package:flutter_core_project/presentation/pages/home/home_page.dart';
+// ignore: unused_import
 import 'package:flutter_core_project/presentation/pages/news/daily_news.dart';
+import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
 import 'package:flutter_core_project/presentation/pages/timesheet/timesheet_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
 
@@ -30,7 +32,7 @@ class _MainScreenState extends State<MainScreen> {
         value: sl<RemoteTimesheetBloc>(),
         child: const TimesheetPage(),
       ),
-      const DailyNews(),
+      const LeaveRequestPage(),
       const ProfilePage(),
     ];
   }
@@ -89,8 +91,8 @@ class _MainScreenState extends State<MainScreen> {
                 isActive: _currentIndex == 1,
               ),
               _buildNavItem(
-                activeIcon: AppVectors.icDelivery,
-                inactiveIcon: AppVectors.icDelivery,
+                activeIcon: AppVectors.icHeartActive,
+                inactiveIcon: AppVectors.icHeart,
                 isActive: _currentIndex == 2,
               ),
               _buildNavItem(

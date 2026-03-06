@@ -23,7 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.example.flutter_core_project"
+    namespace "vn.com.thp.payroll"
     compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
@@ -42,7 +42,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.example.flutter_core_project"
+        applicationId "vn.com.thp.payroll"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
@@ -57,11 +57,11 @@ android {
             dimension "environment"
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
-            resValue "string", "app_name", "Flutter Core (DEV)"
+            resValue "string", "app_name", "THP Payroll (DEV)"
         }
         prod {
             dimension "environment"
-            resValue "string", "app_name", "Flutter Core"
+            resValue "string", "app_name", "THP Payroll"
         }
     }
 
