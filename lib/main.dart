@@ -8,6 +8,8 @@ import 'package:flutter_core_project/presentation/bloc/article/remote/remote_art
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
 import 'package:flutter_core_project/presentation/pages/splash/splash.dart';
 import 'package:flutter_core_project/presentation/widgets/network/network_status_banner.dart';
+import 'package:flutter_core_project/services/analytics_observer.dart';
+import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_core_project/services/network_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -19,6 +21,9 @@ import 'presentation/choose_mode/bloc/theme_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase (Core + FCM + Analytics + Crashlytics)
+  await FirebaseService.instance.initialize();
 
   // Initialize HydratedBloc storage
   HydratedBloc.storage = await HydratedStorage.build(
@@ -60,6 +65,13 @@ class MyApp extends StatelessWidget {
                 darkTheme: AppTheme.darkTheme,
                 themeMode: themeMode,
                 debugShowCheckedModeBanner: false,
+
+                // Auto screen tracking cho Firebase Analytics
+                navigatorObservers: [
+                  AppFirebaseAnalyticsObserver(
+                    analytics: FirebaseService.instance.analytics,
+                  ),
+                ],
 
                 // Localization delegates
                 localizationsDelegates: const [

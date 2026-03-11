@@ -6,6 +6,8 @@ import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:flutter_core_project/presentation/pages/splash/splash.dart';
+import 'package:flutter_core_project/services/analytics_observer.dart';
+import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -20,6 +22,9 @@ Future<void> main() async {
 
   // Load production environment variables
   await dotenv.load(fileName: ".env.prod");
+
+  // Initialize Firebase (Core + FCM + Analytics + Crashlytics)
+  await FirebaseService.instance.initialize();
 
   // Initialize HydratedBloc storage
   HydratedBloc.storage = await HydratedStorage.build(
@@ -57,6 +62,13 @@ class MyApp extends StatelessWidget {
                 darkTheme: AppTheme.darkTheme,
                 themeMode: themeMode,
                 debugShowCheckedModeBanner: false,
+
+                // Auto screen tracking cho Firebase Analytics
+                navigatorObservers: [
+                  AppFirebaseAnalyticsObserver(
+                    analytics: FirebaseService.instance.analytics,
+                  ),
+                ],
 
                 // Localization delegates
                 localizationsDelegates: const [
