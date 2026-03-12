@@ -1,13 +1,9 @@
 
-import 'dart:js';
-
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../base/responses/base_response.dart';
 import '../data/remote/datasources/client_api.dart';
-import '../data/sources/datastate.dart';
-import '../presentation/widgets/dialog/DialogService.dart';
 import '../utils/helpers/pref_manager.dart';
 
 
@@ -19,7 +15,6 @@ class DioUtil {
 
   final Dio _dio;
   final PrefManager _pref;
-  final DialogService _dialogService = DialogService(context: context as BuildContext);
 
   int _retryCount = 0;
   final List<Duration> _retryDelays = const [
@@ -100,7 +95,8 @@ class DioUtil {
       }
 
       if (isShowError) {
-        _handleErrorDialog(e, context as BuildContext);
+        // Error dialog is handled at UI layer
+        debugPrint('[THP_API] ❌ API Error: ${handleErrorTranslate(e)}');
       }
 
       throw DioException(
@@ -120,29 +116,30 @@ class DioUtil {
   }
 
   void _handleErrorDialog(DioException e, BuildContext context) {
+    String message;
     switch (e.response?.statusCode) {
       case 401:
-        _dialogService.showDialogFailure(
-            context: context,
-            content: 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại',
-            textConfirm: 'Đóng',
-            confirm: () => {});
+        message = 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại';
         break;
       case 403:
-        _dialogService.showDialogFailure(
-            context: context,
-            content: 'Bạn không có quyền truy cập',
-            textConfirm: 'Đóng',
-            confirm: () => {});
+        message = 'Bạn không có quyền truy cập';
         break;
       default:
-        _dialogService.showDialogFailure(
-            context: context,
-            content:
-                handleErrorTranslate(e) ?? 'Đã có lỗi xảy ra, vui lòng thử lại',
-            textConfirm: 'Đóng',
-            confirm: () => {});
+        message = handleErrorTranslate(e) ?? 'Đã có lỗi xảy ra, vui lòng thử lại';
     }
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Lỗi'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<Response<dynamic>> _retryableRequest(

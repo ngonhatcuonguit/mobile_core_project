@@ -11,7 +11,10 @@ import 'package:flutter_core_project/firebase_options.dart';
 /// Background message handler — phải là top-level function (không được là method)
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Guard: chỉ khởi tạo nếu Firebase chưa được init (tránh duplicate-app error)
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
   debugPrint('[FCM Background] message: ${message.messageId}');
 }
 
@@ -23,6 +26,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 class FirebaseService {
   FirebaseService._();
   static final FirebaseService instance = FirebaseService._();
+
+  // Guard: tránh gọi initialize() nhiều lần
+  bool _initialized = false;
 
   // ─── Public accessors ───────────────────────────────────────────────────────
   // Khai báo late để tránh truy cập Firebase trước khi initializeApp() được gọi
@@ -47,10 +53,18 @@ class FirebaseService {
 
   /// Gọi hàm này trong main() sau WidgetsFlutterBinding.ensureInitialized()
   Future<void> initialize() async {
-    // 1. Khởi tạo Firebase Core — phải gọi trước khi dùng bất kỳ Firebase service nào
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    // Guard: nếu đã init rồi thì bỏ qua, tránh lỗi duplicate-app
+    if (_initialized) {
+      debugPrint('[Firebase] Already initialized — skipping.');
+      return;
+    }
+
+    // 1. Khởi tạo Firebase Core — chỉ gọi khi chưa có app nào
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
 
     // Gán các instance SAU khi Firebase đã được khởi tạo
     analytics = FirebaseAnalytics.instance;
@@ -65,6 +79,9 @@ class FirebaseService {
 
     // 4. FCM
     await _initFCM();
+
+    _initialized = true;
+    debugPrint('[Firebase] Initialized successfully.');
   }
 
   // ─── Crashlytics ─────────────────────────────────────────────────────────────

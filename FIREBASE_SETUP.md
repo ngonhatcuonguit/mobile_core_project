@@ -5,6 +5,22 @@
 > **Android package:** `com.digital.thp.my_thp` (prod) / `com.digital.thp.my_thp.dev` (dev)  
 > **iOS Bundle ID:** `com.digital.thp.mythpapp`
 
+
+Kiến trúc chuẩn push notification
+Mobile App
+↓
+Get FCM Token
+↓
+Send token to Server
+↓
+Server lưu token
+↓
+Server gọi Firebase FCM API
+↓
+Firebase
+↓
+Push notification → Mobile
+
 ---
 
 ## 📋 Mục lục

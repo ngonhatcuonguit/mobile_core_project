@@ -5,6 +5,7 @@ import 'package:flutter_core_project/core/configs/theme/app_theme.dart';
 import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_event.dart';
+import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
 import 'package:flutter_core_project/presentation/pages/splash/splash.dart';
 import 'package:flutter_core_project/services/analytics_observer.dart';
 import 'package:flutter_core_project/services/firebase_service.dart';
@@ -50,7 +51,8 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => LocaleCubit()),
         BlocProvider(
             create: (context) =>
-                sl<RemoteArticlesBloc>()..add(const GetArticles()))
+                sl<RemoteArticlesBloc>()..add(const GetArticles())),
+        BlocProvider(create: (_) => sl<RemoteTimesheetBloc>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {

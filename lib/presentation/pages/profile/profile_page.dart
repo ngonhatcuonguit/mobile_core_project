@@ -28,8 +28,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _loadUserInfo() async {
     final name = await AuthService.getUserName();
     final email = await AuthService.getUserEmail();
+    final displayName = await AuthService.getDisplayName();
     setState(() {
-      _userName = name;
+      _userName = displayName ?? name; // Ưu tiên hiển thị displayname từ API
       _userEmail = email;
     });
   }
