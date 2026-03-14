@@ -22,3 +22,7 @@ class SelectDay extends TimesheetEvent {
   const SelectDay({required this.selectedDate});
 }
 
+/// Khôi phục state từ cache khi quay lại màn hình (không reload API)
+class RestoreTimesheetFromCache extends TimesheetEvent {
+  const RestoreTimesheetFromCache();
+}

@@ -6,6 +6,7 @@ import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_t
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_event.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_state.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TimesheetPage extends StatefulWidget {
   const TimesheetPage({super.key});
@@ -21,31 +22,38 @@ class _TimesheetPageState extends State<TimesheetPage> {
   void initState() {
     super.initState();
     _currentDate = DateTime.now();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _loadTimesheet();
+    _restoreAndLoad();
+  }
+
+  Future<void> _restoreAndLoad() async {
+    // Đọc tháng/năm đã lưu từ lần trước
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedYear  = prefs.getInt('ts_selected_year');
+      final savedMonth = prefs.getInt('ts_selected_month');
+      if (savedYear != null && savedMonth != null && mounted) {
+        setState(() {
+          _currentDate = DateTime(savedYear, savedMonth);
+        });
       }
-    });
+    } catch (_) {}
+
+    if (!mounted) return;
+    // Gửi event: nếu Bloc đang có data thì giữ nguyên, không reload
+    context.read<RemoteTimesheetBloc>().add(const RestoreTimesheetFromCache());
   }
 
   void _loadTimesheet() {
     context.read<RemoteTimesheetBloc>().add(
-          GetTimesheet(
-            year: _currentDate.year,
-            month: _currentDate.month,
-          ),
+          GetTimesheet(year: _currentDate.year, month: _currentDate.month),
         );
   }
 
   void _changeMonth(int delta) {
-    setState(() {
-      _currentDate = DateTime(_currentDate.year, _currentDate.month + delta);
-    });
+    final next = DateTime(_currentDate.year, _currentDate.month + delta);
+    setState(() => _currentDate = next);
     context.read<RemoteTimesheetBloc>().add(
-          ChangeMonth(
-            year: _currentDate.year,
-            month: _currentDate.month,
-          ),
+          ChangeMonth(year: _currentDate.year, month: _currentDate.month),
         );
   }
 
@@ -54,62 +62,77 @@ class _TimesheetPageState extends State<TimesheetPage> {
     final isDark = context.isDarkMode;
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF1C1C1C) : const Color(0xFFF5F5F5),
-      body: BlocBuilder<RemoteTimesheetBloc, TimesheetState>(
-        builder: (context, state) {
-          if (state is TimesheetLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is TimesheetError) {
-            final err = state.error;
-            final errMsg = err?.message?.isNotEmpty == true
-                ? err!.message!
-                : err?.error?.toString() ?? 'Unknown error';
-            final statusCode = err?.response?.statusCode;
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
+      body: SafeArea(
+        child: BlocConsumer<RemoteTimesheetBloc, TimesheetState>(
+          // Sync _currentDate khi Bloc load xong (trường hợp restore từ cache)
+          listener: (context, state) {
+            if (state is TimesheetLoaded && state.timesheet != null) {
+              final ts = state.timesheet!;
+              if (ts.year > 0 && ts.month > 0) {
+                final loaded = DateTime(ts.year, ts.month);
+                if (loaded != DateTime(_currentDate.year, _currentDate.month)) {
+                  setState(() => _currentDate = loaded);
+                }
+              }
+            }
+          },
+          builder: (context, state) {
+            if (state is TimesheetLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is TimesheetError) {
+              final err = state.error;
+              final errMsg = err?.message?.isNotEmpty == true
+                  ? err!.message!
+                  : err?.error?.toString() ?? 'Unknown error';
+              final statusCode = err?.response?.statusCode;
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Không tải được bảng công',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        statusCode != null ? 'HTTP $statusCode – $errMsg' : errMsg,
+                        style: const TextStyle(fontSize: 13, color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: _loadTimesheet,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            } else if (state is TimesheetLoaded) {
+              return SingleChildScrollView(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Không tải được bảng công',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                      textAlign: TextAlign.center,
-                    ),
+                    const SizedBox(height: 12),
+                    _buildSummaryCards(state),
                     const SizedBox(height: 8),
-                    Text(
-                      statusCode != null ? 'HTTP $statusCode – $errMsg' : errMsg,
-                      style: const TextStyle(fontSize: 13, color: Colors.grey),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
-                      onPressed: _loadTimesheet,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Thử lại'),
-                    ),
+                    _buildMonthSelector(),
+                    _buildCalendar(state),
+                    if (state.selectedDate != null) _buildDayDetails(state),
+                    _buildActionButtons(),
+                    const SizedBox(height: 16),
                   ],
                 ),
-              ),
-            );
-          } else if (state is TimesheetLoaded) {
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 8),
-                  _buildSummaryCards(state),   // Tổng quan lên đầu
-                  _buildMonthSelector(),        // Tháng/năm xuống dưới
-                  _buildCalendar(state),
-                  if (state.selectedDate != null) _buildDayDetails(state),
-                  _buildActionButtons(),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            );
-          }
-          return const Center(child: Text('No data'));
-        },
+              );
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
       ),
     );
   }
@@ -118,45 +141,100 @@ class _TimesheetPageState extends State<TimesheetPage> {
     final year = _currentDate.year;
     final month = _currentDate.month;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isFuture = DateTime(year, month)
+        .isAfter(DateTime(DateTime.now().year, DateTime.now().month));
+
+    final bgColor = isDarkMode ? const Color(0xFF2A2A2A) : Colors.white;
+    final textColor = isDarkMode ? Colors.white : const Color(0xFF1A1A1A);
+    final iconColor = isDarkMode ? Colors.grey[400]! : const Color(0xFF42C83C);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
+          // ← prev month button
+          _monthNavBtn(
+            icon: Icons.chevron_left,
+            color: iconColor,
+            bg: bgColor,
             onTap: () => _changeMonth(-1),
-            child: Icon(Icons.chevron_left,
-                size: 22,
-                color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
           ),
-          GestureDetector(
-            onTap: _showMonthYearPicker,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Tháng $month / $year',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isDarkMode ? Colors.white : Colors.black87,
-                  ),
+          const SizedBox(width: 8),
+          // Center pill — clickable, clearly styled
+          Expanded(
+            child: GestureDetector(
+              onTap: _showMonthYearPicker,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 4),
-                Icon(Icons.arrow_drop_down,
-                    size: 18,
-                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
-              ],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.calendar_month_outlined,
+                        size: 15, color: const Color(0xFF42C83C)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Tháng $month / $year',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: isFuture ? Colors.grey : textColor,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(Icons.expand_more_rounded,
+                        size: 16, color: const Color(0xFF42C83C)),
+                  ],
+                ),
+              ),
             ),
           ),
-          GestureDetector(
+          const SizedBox(width: 8),
+          // → next month button
+          _monthNavBtn(
+            icon: Icons.chevron_right,
+            color: iconColor,
+            bg: bgColor,
             onTap: () => _changeMonth(1),
-            child: Icon(Icons.chevron_right,
-                size: 22,
-                color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _monthNavBtn({
+    required IconData icon,
+    required Color color,
+    required Color bg,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Icon(icon, size: 22, color: color),
       ),
     );
   }
@@ -280,7 +358,6 @@ class _TimesheetPageState extends State<TimesheetPage> {
   }
 
   Widget _buildSummaryCards(TimesheetLoaded state) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final workingDays = state.timesheet?.timeSheetData
             .where((day) => day.wd > 0)
             .length ?? 0;
