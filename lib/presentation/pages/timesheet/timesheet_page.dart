@@ -25,6 +25,12 @@ class _TimesheetPageState extends State<TimesheetPage> {
     _restoreAndLoad();
   }
 
+  @override
+  void dispose() {
+    _removeTooltip();
+    super.dispose();
+  }
+
   Future<void> _restoreAndLoad() async {
     // Đọc tháng/năm đã lưu từ lần trước
     try {
@@ -536,57 +542,6 @@ class _TimesheetPageState extends State<TimesheetPage> {
     );
   }
 
-  // ─── Helper: build composite label for a cell ───────────────────────────────
-  // Format: wd*8 , leaveCode , (NgG) , (NgG_2)
-  // Only non-null and non-zero values are shown.
-  String _buildCellLabel(TimeSheetDataEntity d) {
-    final parts = <String>[];
-
-    // 1) Working hours (wd*8)
-    if (d.wd > 0) {
-      final h = d.wd * 8.0;
-      parts.add(h.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), ''));
-    }
-
-    // 2) Leave codes (non-null, non-zero)
-    // Nếu value == 1.0 → chỉ hiện ký hiệu (vd "O", "NL", "Ro")
-    // Nếu value khác 1.0 (nửa ngày, v.v.) → hiện số + ký hiệu (vd "0.5Ro")
-    void addLeave(double? v, String code) {
-      if (v == null || v <= 0) return;
-      if (v == 1.0) {
-        parts.add(code);
-      } else {
-        final s = v.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
-        parts.add('$s$code');
-      }
-    }
-    addLeave(d.p,        'P');
-    addLeave(d.nL,       'NL');
-    addLeave(d.bL,       'BL');
-    addLeave(d.b,        'B');
-    addLeave(d.ro,       'Ro');
-    addLeave(d.o,        'O');
-    addLeave(d.pr,       'Pr');
-    addLeave(d.n,        'N');
-    addLeave(d.tN,       'TN');
-    addLeave(d.ca3,      'Ca3');
-    addLeave(d.tS,       'TS');
-    addLeave(d.sickLeave,'SK');
-
-    // 3) Overtime in parentheses — only if != 0.0
-    if (d.ngG != null && d.ngG! > 0) {
-      final s = d.ngG!.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
-      parts.add('($s)');
-    }
-    if (d.ngG2 != null && d.ngG2! > 0) {
-      final s = d.ngG2!.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
-      parts.add('($s)');
-    }
-
-    if (d.hT != null && d.hT! > 0 && parts.isEmpty) parts.add('HT');
-
-    return parts.join(',');
-  }
 
   // ─── Helper: safe CheckingPoint ──────────────────────────────────────────
   // Tránh .reduce() gây lỗi type mismatch (CheckingPointEntity vs CheckingPointModel)
@@ -614,148 +569,267 @@ class _TimesheetPageState extends State<TimesheetPage> {
   String _fmt(DateTime? t) =>
       (t != null) ? DateFormat('HH:mm').format(t) : '--:--';
 
-  // ─── tooltip content for a cell ──────────────────────────────────────────
-  String _buildTooltip(TimeSheetDataEntity d) {
-    final cp = _bestCheckingPoint(d);
-    final timeIn  = _isRealTime(cp?.timeIn)  ? _fmt(cp!.timeIn)  : '--:--';
-    final timeOut = cp?.timeOut != null       ? _fmt(cp!.timeOut) : '--:--';
-    final label   = _buildCellLabel(d);
-    return '$timeIn → $timeOut\n$label';
+  // ─── Overlay tooltip state ────────────────────────────────────────────────
+  OverlayEntry? _tooltipOverlay;
+
+  void _removeTooltip() {
+    _tooltipOverlay?.remove();
+    _tooltipOverlay = null;
   }
 
-  Widget _buildDayCell(DateTime date, TimeSheetDataEntity? dayData, DateTime? selectedDate) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isToday = date.year == DateTime.now().year &&
-        date.month == DateTime.now().month &&
-        date.day == DateTime.now().day;
-    final isSelected = selectedDate != null &&
-        date.year == selectedDate.year &&
-        date.month == selectedDate.month &&
-        date.day == selectedDate.day;
+  // ─── Show floating tooltip anchored to the tapped cell ───────────────────
+  void _showCellTooltip(
+    BuildContext cellContext,
+    DateTime date,
+    TimeSheetDataEntity d,
+  ) {
+    _removeTooltip();
 
-    Color? backgroundColor;
-    Color dayNumberColor = isDarkMode ? const Color(0xFFBEBEBE) : const Color(0xFF111827);
-    Color statusTextColor = Colors.black87;
-    String cellLabel = '';
-    bool isWorking = false;
+    // ── Suppress tooltip for HT / NL days and truly empty days ──────
+    final bool isHT = d.hT != null && d.hT! > 0;
+    final bool isNL = d.nL != null && d.nL! > 0 && d.wd == 0;
+    if (isHT || isNL) return;
 
-    if (dayData != null) {
-      final bool isNoData = dayData.hT == null &&
-          dayData.nL == null && dayData.bL == null &&
-          dayData.b  == null && dayData.p  == null &&
-          dayData.pr == null && dayData.ro == null &&
-          dayData.o  == null && dayData.n  == null &&
-          dayData.wd == 0.0  && dayData.numHour == null;
+    final cp      = _bestCheckingPoint(d);
+    final hasIn   = _isRealTime(cp?.timeIn);
+    final hasOut  = cp?.timeOut != null;
 
-      if (!isNoData) {
-        cellLabel = _buildCellLabel(dayData);
-
-        if (dayData.hT != null && dayData.hT! > 0 && dayData.wd == 0.0) {
-          backgroundColor = Colors.red.withOpacity(0.08);
-          statusTextColor = Colors.red;
-        } else if (dayData.nL != null && dayData.nL! > 0) {
-          backgroundColor = Colors.red.withOpacity(0.08);
-          statusTextColor = Colors.red;
-        } else if (dayData.bL != null && dayData.bL! > 0) {
-          backgroundColor = Colors.blue.withOpacity(0.08);
-          statusTextColor = const Color(0xFF2196F3);
-        } else if (dayData.b != null && dayData.b! > 0 && dayData.wd == 0.0) {
-          backgroundColor = Colors.purple.withOpacity(0.08);
-          statusTextColor = Colors.purple;
-        } else if (dayData.o != null && dayData.o! > 0 && dayData.wd == 0.0) {
-          backgroundColor = Colors.orange.withOpacity(0.08);
-          statusTextColor = Colors.orange[800]!;
-        } else if (dayData.p != null && dayData.p! > 0 && dayData.wd == 0.0) {
-          backgroundColor = Colors.amber.withOpacity(0.1);
-          statusTextColor = Colors.orange[700]!;
-        } else if (dayData.ro != null && dayData.ro! > 0 && dayData.wd == 0.0) {
-          backgroundColor = Colors.grey.withOpacity(0.1);
-          statusTextColor = Colors.grey[700]!;
-        } else if (dayData.wd > 0) {
-          final displayHours = dayData.wd * 8.0;
-          backgroundColor = displayHours >= 8
-              ? const Color(0xFF42C83C).withOpacity(0.1)
-              : Colors.orange.withOpacity(0.1);
-          statusTextColor = displayHours >= 8
-              ? const Color(0xFF42C83C)
-              : const Color(0xFFFF9800);
-          isWorking = true;
-        }
-      }
+    // Build chips first so we can decide whether to show tooltip
+    final List<_TipChip> chips = [];
+    void addChip(double? v, String label, Color color) {
+      if (v == null || v <= 0) return;
+      final s = v == 1.0
+          ? label
+          : '${v.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}$label';
+      chips.add(_TipChip(text: s, color: color));
     }
-
-    if (isSelected) {
-      backgroundColor = const Color(0xFF42C83C);
-      dayNumberColor  = Colors.white;
-      statusTextColor = Colors.white;
+    if (d.wd > 0) {
+      final h = d.wd * 8.0;
+      final s = h.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
+      chips.add(_TipChip(text: '${s}h', color: const Color(0xFF42C83C)));
     }
+    addChip(d.p,   'P',    const Color(0xFF2196F3));
+    addChip(d.bL,  'BL',   const Color(0xFF1976D2));
+    addChip(d.b,   'B',    Colors.purple);
+    addChip(d.ro,  'Ro',   Colors.grey);
+    addChip(d.o,   'K',    Colors.orange);
+    addChip(d.pr,  'Pr',   Colors.teal);
+    addChip(d.n,   'N',    const Color(0xFF795548));
+    addChip(d.tN,  'TN',   Colors.red[700]!);
+    addChip(d.ca3, 'Ca3',  Colors.indigo);
+    addChip(d.tS,  'TS',   Colors.pink);
+    addChip(d.ngG,  'NgG',  const Color(0xFFFF9800));
+    addChip(d.ngG2, 'NgG2', const Color(0xFFFF5722));
 
-    // Tooltip: show when selected
-    final tooltipMsg = (isSelected && dayData != null)
-        ? _buildTooltip(dayData)
-        : null;
+    // Suppress if no check-in/out AND no meaningful chips
+    if (!hasIn && !hasOut && chips.isEmpty) return;
 
-    Widget cell = Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(6),
-        border: isToday
-            ? Border.all(color: const Color(0xFF42C83C), width: 2)
-            : null,
-      ),
-      padding: const EdgeInsets.all(1),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    final RenderBox? box = cellContext.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final overlay    = Overlay.of(cellContext);
+    final screenSize = MediaQuery.of(cellContext).size;
+    final isDark     = Theme.of(cellContext).brightness == Brightness.dark;
+
+    // Cell position
+    final cellOffset  = box.localToGlobal(Offset.zero);
+    final cellSize    = box.size;
+    final cellCenterX = cellOffset.dx + cellSize.width / 2;
+
+    final timeIn  = hasIn   ? _fmt(cp!.timeIn)  : '--:--';
+    final timeOut = hasOut  ? _fmt(cp!.timeOut) : '--:--';
+
+    // ── Colours ──────────────────────────────────────────────────────
+    final bgColor     = isDark ? const Color(0xFF2C2C2C) : Colors.white;
+    final borderColor = const Color(0xFF42C83C).withOpacity(isDark ? 0.45 : 0.55);
+    final textPrimary = isDark ? Colors.white : const Color(0xFF111827);
+
+    // ── Sizing ─────────────────────────────────────────────────────
+    const double caretH    = 7.0;
+    // Max width caps the bubble so it never goes edge-to-edge
+    final double maxWidth  = (screenSize.width * 0.6).clamp(150.0, 220.0);
+
+    // Position: above cell if enough space (> 140 from top), else below
+    final showAbove = cellOffset.dy > 140;
+
+    // Centre over cell; clamp so it never overflows screen edges
+    // We use maxWidth as the anchor width for clamping, actual bubble may be smaller
+    double tipLeft = cellCenterX - maxWidth / 2;
+    tipLeft = tipLeft.clamp(8.0, screenSize.width - maxWidth - 8);
+
+    final double tipTop = cellOffset.dy + cellSize.height + caretH;
+
+    // Caret X relative to tipLeft
+    final double arrowOffsetX =
+        (cellCenterX - tipLeft).clamp(14.0, maxWidth - 14.0);
+
+    // ── Build chip widgets ──────────────────────────────────────────
+    List<Widget> chipWidgets(bool dark) => chips
+        .map((c) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                color: c.color.withOpacity(dark ? 0.22 : 0.10),
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(color: c.color.withOpacity(0.45), width: 0.8),
+              ),
+              child: Text(
+                c.text,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: dark ? c.color.withOpacity(0.92) : c.color,
+                ),
+              ),
+            ))
+        .toList();
+
+    _tooltipOverlay = OverlayEntry(
+      builder: (_) => Stack(
         children: [
-          Text(
-            date.day.toString(),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.normal,
-              color: dayNumberColor,
+          // ── Dismiss on tap outside ───────────────────────────
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: _removeTooltip,
             ),
           ),
-          if (cellLabel.isNotEmpty) ...[
-            const SizedBox(height: 1),
-            Flexible(
-              child: Text(
-                cellLabel,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: isWorking ? 11 : 9,
-                  color: isSelected ? Colors.white : statusTextColor,
-                  fontWeight: FontWeight.bold,
-                  height: 1.1,
+          // ── Bubble ──────────────────────────────────────────
+          Positioned(
+            left: tipLeft,
+            // NO width: — let the Row inside shrink to content
+            top:    showAbove ? null : tipTop,
+            bottom: showAbove
+                ? screenSize.height - cellOffset.dy + caretH
+                : null,
+            child: Material(
+              color: Colors.transparent,
+              child: ConstrainedBox(
+                // Hard cap so it never goes full-screen
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  // stretch = caret spans same width as card
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // ── Caret DOWN (bubble above cell) ─────────
+                    if (showAbove)
+                      _buildCaret(
+                        arrowOffsetX: arrowOffsetX,
+                        caretH: caretH,
+                        color: bgColor,
+                        borderColor: borderColor,
+                        pointUp: false,
+                      ),
+                    // ── Card — intrinsic width from Row child ──
+                    IntrinsicWidth(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: bgColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: borderColor, width: 1.2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black
+                                  .withOpacity(isDark ? 0.45 : 0.13),
+                              blurRadius: 14,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.fromLTRB(11, 8, 11, 8),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ── Check-in / out ─────────────────
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.access_time_rounded,
+                                    size: 13, color: Color(0xFF42C83C)),
+                                const SizedBox(width: 5),
+                                Text(
+                                  '$timeIn  →  $timeOut',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: (!hasIn && !hasOut)
+                                        ? Colors.grey
+                                        : textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // ── Chips ──────────────────────────
+                            if (chips.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Wrap(
+                                spacing: 4,
+                                runSpacing: 4,
+                                children: chipWidgets(isDark),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    // ── Caret UP (bubble below cell) ────────────
+                    if (!showAbove)
+                      _buildCaret(
+                        arrowOffsetX: arrowOffsetX,
+                        caretH: caretH,
+                        color: bgColor,
+                        borderColor: borderColor,
+                        pointUp: true,
+                      ),
+                  ],
                 ),
               ),
             ),
-          ],
+          ),
         ],
       ),
     );
 
-    // Wrap with tooltip when selected
-    if (tooltipMsg != null) {
-      cell = Tooltip(
-        message: tooltipMsg,
-        preferBelow: true,
-        showDuration: const Duration(seconds: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFF333333),
-          borderRadius: BorderRadius.circular(8),
+    overlay.insert(_tooltipOverlay!);
+  }
+  /// Builds the triangle caret pointing toward the tapped cell.
+  Widget _buildCaret({
+    required double arrowOffsetX,
+    required double caretH,
+    required Color color,
+    required Color borderColor,
+    required bool pointUp,
+  }) {
+    return SizedBox(
+      height: caretH,
+      // Width stretches to match Column's crossAxisAlignment.stretch
+      child: LayoutBuilder(
+        builder: (_, box) => CustomPaint(
+          size: Size(box.maxWidth, caretH),
+          painter: _CaretPainter(
+            offsetX: arrowOffsetX.clamp(10.0, box.maxWidth - 10.0),
+            color: color,
+            borderColor: borderColor,
+            pointUp: pointUp,
+          ),
         ),
-        textStyle: const TextStyle(color: Colors.white, fontSize: 12),
-        child: cell,
-      );
-    }
+      ),
+    );
+  }
 
-    return GestureDetector(
-      onTap: () {
+  Widget _buildDayCell(DateTime date, TimeSheetDataEntity? dayData, DateTime? selectedDate) {
+    return _DayCell(
+      date: date,
+      dayData: dayData,
+      selectedDate: selectedDate,
+      onTap: (ctx, d) {
+        _removeTooltip();
         context.read<RemoteTimesheetBloc>().add(SelectDay(selectedDate: date));
+        if (d != null) {
+          // ctx is the cell's own BuildContext — RenderBox is always valid here
+          _showCellTooltip(ctx, date, d);
+        }
       },
-      child: cell,
     );
   }
 
@@ -883,7 +957,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
                     children: [
                       Icon(Icons.info_outline, size: 14, color: Colors.grey[400]),
                       const SizedBox(width: 6),
-                      Text('Chưa có dữ liệu quét thẻ',
+                      Text('Chưa có dữ liệu quét vân tay',
                           style: TextStyle(fontSize: 12, color: Colors.grey[500],
                               fontStyle: FontStyle.italic)),
                     ],
@@ -1076,3 +1150,246 @@ class _TimesheetPageState extends State<TimesheetPage> {
   }
 }
 
+// ─── Standalone cell widget — owns stable key so RenderBox is always valid ───
+class _DayCell extends StatefulWidget {
+  final DateTime date;
+  final TimeSheetDataEntity? dayData;
+  final DateTime? selectedDate;
+  final void Function(BuildContext ctx, TimeSheetDataEntity? d) onTap;
+
+  const _DayCell({
+    required this.date,
+    required this.dayData,
+    required this.selectedDate,
+    required this.onTap,
+  });
+
+  @override
+  State<_DayCell> createState() => _DayCellState();
+}
+
+class _DayCellState extends State<_DayCell> {
+  // stable key lives in State — survives parent rebuilds
+  final _containerKey = GlobalKey();
+
+  // ── cell label helper (copy of _buildCellLabel) ──────────────────────────
+  String _label(TimeSheetDataEntity d) {
+    final parts = <String>[];
+    if (d.wd > 0) {
+      final h = d.wd * 8.0;
+      parts.add(h.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), ''));
+    }
+    void addLeave(double? v, String code) {
+      if (v == null || v <= 0) return;
+      if (v == 1.0) {
+        parts.add(code);
+      } else {
+        parts.add('${v.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}$code');
+      }
+    }
+    addLeave(d.p,        'P');
+    addLeave(d.nL,       'NL');
+    addLeave(d.bL,       'BL');
+    addLeave(d.b,        'B');
+    addLeave(d.ro,       'Ro');
+    addLeave(d.o,        'O');
+    addLeave(d.pr,       'Pr');
+    addLeave(d.n,        'N');
+    addLeave(d.tN,       'TN');
+    addLeave(d.ca3,      'Ca3');
+    addLeave(d.tS,       'TS');
+    addLeave(d.sickLeave,'SK');
+    if (d.ngG != null && d.ngG! > 0) {
+      parts.add('(${d.ngG!.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')})');
+    }
+    if (d.ngG2 != null && d.ngG2! > 0) {
+      parts.add('(${d.ngG2!.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')})');
+    }
+    if (d.hT != null && d.hT! > 0 && parts.isEmpty) parts.add('HT');
+    return parts.join(',');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dayData    = widget.dayData;
+    final date       = widget.date;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final isToday = date.year == DateTime.now().year &&
+        date.month == DateTime.now().month &&
+        date.day   == DateTime.now().day;
+
+    final isSelected = widget.selectedDate != null &&
+        date.year  == widget.selectedDate!.year &&
+        date.month == widget.selectedDate!.month &&
+        date.day   == widget.selectedDate!.day;
+
+    Color? backgroundColor;
+    Color dayNumberColor  = isDarkMode ? const Color(0xFFBEBEBE) : const Color(0xFF111827);
+    Color statusTextColor = Colors.black87;
+    String cellLabel = '';
+    bool isWorking = false;
+
+    if (dayData != null) {
+      final bool isNoData = dayData.hT == null &&
+          dayData.nL == null && dayData.bL == null &&
+          dayData.b  == null && dayData.p  == null &&
+          dayData.pr == null && dayData.ro == null &&
+          dayData.o  == null && dayData.n  == null &&
+          dayData.wd == 0.0  && dayData.numHour == null;
+
+      if (!isNoData) {
+        cellLabel = _label(dayData);
+
+        if (dayData.hT != null && dayData.hT! > 0 && dayData.wd == 0.0) {
+          backgroundColor = Colors.red.withOpacity(0.08);
+          statusTextColor = Colors.red;
+        } else if (dayData.nL != null && dayData.nL! > 0) {
+          backgroundColor = Colors.red.withOpacity(0.08);
+          statusTextColor = Colors.red;
+        } else if (dayData.bL != null && dayData.bL! > 0) {
+          backgroundColor = Colors.blue.withOpacity(0.08);
+          statusTextColor = const Color(0xFF2196F3);
+        } else if (dayData.b != null && dayData.b! > 0 && dayData.wd == 0.0) {
+          backgroundColor = Colors.purple.withOpacity(0.08);
+          statusTextColor = Colors.purple;
+        } else if (dayData.o != null && dayData.o! > 0 && dayData.wd == 0.0) {
+          backgroundColor = Colors.orange.withOpacity(0.08);
+          statusTextColor = Colors.orange[800]!;
+        } else if (dayData.p != null && dayData.p! > 0 && dayData.wd == 0.0) {
+          backgroundColor = Colors.amber.withOpacity(0.1);
+          statusTextColor = Colors.orange[700]!;
+        } else if (dayData.ro != null && dayData.ro! > 0 && dayData.wd == 0.0) {
+          backgroundColor = Colors.grey.withOpacity(0.1);
+          statusTextColor = Colors.grey[700]!;
+        } else if (dayData.wd > 0) {
+          final displayHours = dayData.wd * 8.0;
+          backgroundColor = displayHours >= 8
+              ? const Color(0xFF42C83C).withOpacity(0.1)
+              : Colors.orange.withOpacity(0.1);
+          statusTextColor = displayHours >= 8
+              ? const Color(0xFF42C83C)
+              : const Color(0xFFFF9800);
+          isWorking = true;
+        }
+      }
+    }
+
+    if (isSelected) {
+      backgroundColor = const Color(0xFF42C83C);
+      dayNumberColor  = Colors.white;
+      statusTextColor = Colors.white;
+    }
+
+    return GestureDetector(
+      onTap: () {
+        // Pass the container's own BuildContext — RenderBox is always available
+        // because _containerKey lives in State and is never recreated.
+        final ctx = _containerKey.currentContext;
+        widget.onTap(ctx ?? context, dayData);
+      },
+      child: Container(
+        key: _containerKey,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(6),
+          border: isToday
+              ? Border.all(color: const Color(0xFF42C83C), width: 2)
+              : null,
+        ),
+        padding: const EdgeInsets.all(1),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              date.day.toString(),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.normal,
+                color: dayNumberColor,
+              ),
+            ),
+            if (cellLabel.isNotEmpty) ...[
+              const SizedBox(height: 1),
+              Flexible(
+                child: Text(
+                  cellLabel,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isWorking ? 11 : 9,
+                    color: isSelected ? Colors.white : statusTextColor,
+                    fontWeight: FontWeight.bold,
+                    height: 1.1,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Chip model for tooltip ──────────────────────────────────────────────────
+class _TipChip {
+  final String text;
+  final Color color;
+  const _TipChip({required this.text, required this.color});
+}
+
+// ─── Triangle caret painter ──────────────────────────────────────────────────
+class _CaretPainter extends CustomPainter {
+  final double offsetX; // horizontal center of triangle
+  final Color color;
+  final Color borderColor;
+  final bool pointUp; // true = triangle tip points up (below bubble), false = down (above bubble)
+
+  const _CaretPainter({
+    required this.offsetX,
+    required this.color,
+    required this.borderColor,
+    required this.pointUp,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final h = size.height;
+    final half = 8.0;
+
+    final path = Path();
+    if (pointUp) {
+      // Triangle pointing up → arrow below bubble pointing toward cell above
+      path.moveTo(offsetX, 0);
+      path.lineTo(offsetX - half, h);
+      path.lineTo(offsetX + half, h);
+    } else {
+      // Triangle pointing down → arrow above bubble pointing toward cell below
+      path.moveTo(offsetX - half, 0);
+      path.lineTo(offsetX + half, 0);
+      path.lineTo(offsetX, h);
+    }
+    path.close();
+
+    // Border (slightly larger)
+    final borderPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(path, borderPaint);
+
+    // Fill
+    final fillPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    // Inset slightly for border effect
+    canvas.drawPath(path, fillPaint);
+  }
+
+  @override
+  bool shouldRepaint(_CaretPainter old) =>
+      old.offsetX != offsetX ||
+      old.color != color ||
+      old.pointUp != pointUp;
+}
