@@ -1,118 +1,85 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_core_project/data/models/timesheet/timesheet_model.dart';
+import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:retrofit/dio.dart';
+
+const String _kTag = '[THP_API]';
 
 class TimesheetApiService {
   final Dio dio;
 
   TimesheetApiService(this.dio);
 
+  /// POST /api/employee/timeesheet?employeeid=43950&year=2025&month=1
+  /// Authorization: Bearer <token>  ← inject tự động bởi Dio interceptor
   Future<HttpResponse<TimesheetModel>> getTimesheet({
     required int year,
     required int month,
   }) async {
-    // Mock data - simulating API response
-    final mockData = _getMockTimesheetData(year, month);
+    final employeeId = await AuthService.getEmployeeId();
 
-    return HttpResponse(
-      mockData,
-      Response(
+    final token = await AuthService.getToken();
+    if (token == null || token.isEmpty) {
+      throw DioException(
         requestOptions: RequestOptions(path: ''),
-        statusCode: 200,
-        data: mockData,
-      ),
-    );
-  }
-
-  TimesheetModel _getMockTimesheetData(int year, int month) {
-    // Generate mock data for the requested month
-    final daysInMonth = DateTime(year, month + 1, 0).day;
-    final List<Map<String, dynamic>> timeSheetDataList = [];
-
-    for (int day = 1; day <= daysInMonth; day++) {
-      final date = DateTime(year, month, day);
-      final dayOfWeek = date.weekday;
-      final isWeekend = dayOfWeek == 7;
-
-      timeSheetDataList.add({
-        "DATE_WORKING": date.toIso8601String(),
-        "NgG": 0.0,
-        "NgG_DC": null,
-        "NL": (day == 16 || day == 17 || day == 18 || day == 19 || day == 20) ? 1.0 : null,
-        "NL_DC": null,
-        "BL": null,
-        "B": null,
-        "P": (day == 13) ? 1.0 : null,
-        "Pr": null,
-        "Ro": (day == 14 || day == 21) ? 1.0 : null,
-        "SickLeave": null,
-        "N": null,
-        "TN": null,
-        "HT": isWeekend ? 1.0 : null,
-        "Ca3": 0.0,
-        "Ca3_DC": null,
-        "CDC": null,
-        "O": null,
-        "NUM_HOUR": (!isWeekend && day != 13 && day != 14 && day != 21 && !(day >= 16 && day <= 20)) ? 9.0 : null,
-        "NUM_HOUR_EXTRA": null,
-        "NOTE": "System chấm công tự động",
-        "Wd": (!isWeekend && day != 13 && day != 14 && day != 21 && !(day >= 16 && day <= 20)) ? 1.0 : 0.0,
-        "FML_GROUP_ID": "8",
-        "IS_CALCULATED": "0",
-        "Wd_OLD": null,
-        "NgG_OLD": null,
-        "NL_OLD": null,
-        "Ca3_OLD": null,
-        "IS_DEFAULT": true,
-        "NgG_2": null,
-        "NgG_2_OLD": null,
-        "TS": null,
-        "CheckingPoint": (!isWeekend && day != 13 && day != 14 && day != 21 && !(day >= 16 && day <= 20))
-            ? [
-                {
-                  "ID": 2880000 + day,
-                  "WORKING_DATE": date.toIso8601String(),
-                  "EMPLOYEE_ID": "43950",
-                  "TIME_IN": DateTime(year, month, day, 7, 50 + (day % 10)).toIso8601String(),
-                  "TIME_OUT": DateTime(year, month, day, 17, 5 + (day % 10)).toIso8601String(),
-                  "FML_GROUP_ID": "BD_VP_08H_HC_08-17",
-                  "WD": 9.0,
-                  "OT": 0.0,
-                  "CA3": 0.0,
-                  "CONG_WD": null,
-                  "CONG_OT": null,
-                  "CONG_CA3": null
-                }
-              ]
-            : [
-                {
-                  "ID": 2880000 + day,
-                  "WORKING_DATE": date.toIso8601String(),
-                  "EMPLOYEE_ID": "43950",
-                  "TIME_IN": date.toIso8601String(),
-                  "TIME_OUT": null,
-                  "FML_GROUP_ID": "",
-                  "WD": 0.0,
-                  "OT": 0.0,
-                  "CA3": 0.0,
-                  "CONG_WD": null,
-                  "CONG_OT": null,
-                  "CONG_CA3": null
-                }
-              ],
-      });
+        message: 'Chưa đăng nhập hoặc token hết hạn',
+      );
     }
 
-    final mockJson = {
-      "YEAR": year,
-      "MONTH": month,
-      "EMPLOYEE_ID": "43950",
-      "DAY_OF_WEEK": 7,
-      "SUM_DAY_OF_MONTH": daysInMonth,
-      "TIME_SHEET_DATA": timeSheetDataList,
-    };
+    const path = '/api/employee/timeesheet';
 
-    return TimesheetModel.fromJson(mockJson);
+    debugPrint('$_kTag ▶ POST ${_buildUrl(path, employeeId, year, month)}');
+
+    final response = await dio.post<dynamic>(
+      path,
+      queryParameters: {
+        'employeeid': employeeId,
+        'year': year,
+        'month': month,
+      },
+      options: Options(
+        validateStatus: (status) => status != null && status < 500,
+      ),
+    );
+
+    debugPrint('$_kTag ◀ HTTP ${response.statusCode} $path');
+    // Log toàn bộ raw response body — giới hạn 4000 ký tự để không tràn Logcat
+    final rawBody = response.data?.toString() ?? 'null';
+    final preview = rawBody.length > 4000 ? '${rawBody.substring(0, 4000)}...[truncated]' : rawBody;
+    debugPrint('$_kTag   Response body: $preview');
+
+    if (response.data == null) {
+      throw DioException(
+        requestOptions: response.requestOptions,
+        message: 'Không nhận được dữ liệu từ server',
+      );
+    }
+
+    final raw = response.data is Map<String, dynamic>
+        ? response.data as Map<String, dynamic>
+        : Map<String, dynamic>.from(response.data as Map);
+
+    // Kiểm tra status envelope ngoài
+    final outerStatus = raw['status'] as String?;
+    if (outerStatus != 'success') {
+      final msg = raw['message'] as String? ?? 'API trả về lỗi (status=$outerStatus)';
+      debugPrint('$_kTag ✗ API error: $msg');
+      throw DioException(
+        requestOptions: response.requestOptions,
+        message: msg,
+      );
+    }
+
+    final model = TimesheetModel.fromApiResponse(raw);
+
+    debugPrint('$_kTag ✅ GetTimeSheet success – '
+        '${model.timeSheetData.length} days for $month/$year (emp=$employeeId)');
+
+    return HttpResponse(model, response);
   }
-}
 
+  String _buildUrl(String path, String? empId, int year, int month) =>
+      'https://mythp-api.thp.com.vn$path'
+      '?employeeid=$empId&year=$year&month=$month';
+}

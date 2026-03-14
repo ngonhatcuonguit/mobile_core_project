@@ -9,6 +9,7 @@ import 'package:flutter_core_project/domain/repository/timesheet/timesheet_repos
 import 'package:flutter_core_project/domain/usecases/get_timesheet.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
+import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:get_it/get_it.dart';
 
 import 'data/repositories/news/article_repository_impl.dart';
@@ -23,28 +24,40 @@ Dio _buildThpDio() {
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 30),
+      // Chỉ đặt Accept ở base — Content-Type chỉ thêm khi có body (POST/PUT)
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
     ),
   );
-  if (kDebugMode) {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (o, h) {
-        debugPrint('[THP_DIO] → ${o.method} ${o.uri}');
-        h.next(o);
+
+  // Interceptor tự động gắn Bearer token vào MỌI request
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = await AuthService.getToken();
+        if (token != null && token.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        if (kDebugMode) {
+          debugPrint('[THP_DIO] → ${options.method} ${options.uri}');
+          debugPrint('[THP_DIO]   headers: ${options.headers.keys.toList()}');
+        }
+        handler.next(options);
       },
-      onResponse: (r, h) {
-        debugPrint('[THP_DIO] ← ${r.statusCode} type=${r.data?.runtimeType}');
-        h.next(r);
+      onResponse: (response, handler) {
+        if (kDebugMode) {
+          debugPrint('[THP_DIO] ← ${response.statusCode} ${response.requestOptions.path}');
+        }
+        handler.next(response);
       },
-      onError: (e, h) {
-        debugPrint('[THP_DIO] ✗ ${e.message}');
-        h.next(e);
+      onError: (error, handler) {
+        debugPrint('[THP_DIO] ✗ ${error.requestOptions.path} → ${error.message}');
+        handler.next(error);
       },
-    ));
-  }
+    ),
+  );
+
   return dio;
 }
 

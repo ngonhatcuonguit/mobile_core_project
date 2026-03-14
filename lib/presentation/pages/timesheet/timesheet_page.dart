@@ -5,7 +5,6 @@ import 'package:flutter_core_project/domain/entities/timesheet/timesheet_entity.
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_event.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_state.dart';
-import 'package:flutter_core_project/presentation/widgets/appbar/app_bar.dart';
 import 'package:intl/intl.dart';
 
 class TimesheetPage extends StatefulWidget {
@@ -54,42 +53,53 @@ class _TimesheetPageState extends State<TimesheetPage> {
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1C1C1C) : Colors.white,
-      appBar: const BasicAppBar(
-        title: Text(
-          'Bảng Công',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      backgroundColor: isDark ? const Color(0xFF1C1C1C) : const Color(0xFFF5F5F5),
       body: BlocBuilder<RemoteTimesheetBloc, TimesheetState>(
         builder: (context, state) {
           if (state is TimesheetLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is TimesheetError) {
+            final err = state.error;
+            final errMsg = err?.message?.isNotEmpty == true
+                ? err!.message!
+                : err?.error?.toString() ?? 'Unknown error';
+            final statusCode = err?.response?.statusCode;
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text('Có lỗi xảy ra: ${state.error?.message ?? "Unknown error"}'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadTimesheet,
-                    child: const Text('Thử lại'),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Không tải được bảng công',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      statusCode != null ? 'HTTP $statusCode – $errMsg' : errMsg,
+                      style: const TextStyle(fontSize: 13, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
+                      onPressed: _loadTimesheet,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Thử lại'),
+                    ),
+                  ],
+                ),
               ),
             );
           } else if (state is TimesheetLoaded) {
             return SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildMonthSelector(),
-                  _buildSummaryCards(state),
+                  const SizedBox(height: 8),
+                  _buildSummaryCards(state),   // Tổng quan lên đầu
+                  _buildMonthSelector(),        // Tháng/năm xuống dưới
                   _buildCalendar(state),
                   if (state.selectedDate != null) _buildDayDetails(state),
                   _buildActionButtons(),
@@ -109,60 +119,42 @@ class _TimesheetPageState extends State<TimesheetPage> {
     final month = _currentDate.month;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Left arrow - Previous month
-          IconButton(
-            onPressed: () => _changeMonth(-1),
-            icon: const Icon(Icons.chevron_left),
-            color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+          GestureDetector(
+            onTap: () => _changeMonth(-1),
+            child: Icon(Icons.chevron_left,
+                size: 22,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
           ),
-          // Center - Month & Year with date picker
-          Expanded(
-            child: GestureDetector(
-              onTap: _showMonthYearPicker,
-              child: Column(
-                children: [
-                  Text(
-                    'Tháng $month',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
+          GestureDetector(
+            onTap: _showMonthYearPicker,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Tháng $month / $year',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDarkMode ? Colors.white : Colors.black87,
                   ),
-                  Text(
-                    year.toString(),
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 4),
+                Icon(Icons.arrow_drop_down,
+                    size: 18,
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+              ],
             ),
           ),
-          // Right arrow - Next month
-          IconButton(
-            onPressed: () => _changeMonth(1),
-            icon: const Icon(Icons.chevron_right),
-            color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+          GestureDetector(
+            onTap: () => _changeMonth(1),
+            child: Icon(Icons.chevron_right,
+                size: 22,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
           ),
         ],
       ),
@@ -291,76 +283,25 @@ class _TimesheetPageState extends State<TimesheetPage> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final workingDays = state.timesheet?.timeSheetData
             .where((day) => day.wd > 0)
-            .length
-            .toDouble() ??
-        0.0;
+            .length ?? 0;
     final leaveDays = state.timesheet?.timeSheetData
             .where((day) => (day.p ?? 0) > 0)
-            .length
-            .toDouble() ??
-        0.0;
-    final totalHours = state.timesheet?.timeSheetData
-            .where((day) => day.numHour != null)
-            .fold(0.0, (sum, day) => sum + (day.numHour ?? 0.0)) ??
-        0.0;
+            .length ?? 0;
+    final overtimeHours = state.timesheet?.timeSheetData
+            .fold(0.0, (sum, day) => sum + (day.numHourExtra ?? 0.0)) ?? 0.0;
+    final overtimeStr = overtimeHours == 0
+        ? '0h'
+        : '${overtimeHours.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}h';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Tổng quan tháng',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isDarkMode ? Colors.white : Colors.black87,
-                ),
-              ),
-              TextButton(
-                onPressed: () {},
-                child: const Text(
-                  'Chi tiết',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF42C83C),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryCard(
-                  'Ngày công',
-                  workingDays.toString(),
-                  const Color(0xFF42C83C),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildSummaryCard(
-                  'Phép năm',
-                  leaveDays.toString(),
-                  const Color(0xFF2196F3),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildSummaryCard(
-                  'Tăng ca',
-                  '${totalHours}h',
-                  const Color(0xFFFF9800),
-                ),
-              ),
-            ],
-          ),
+          Expanded(child: _buildSummaryCard('Ngày công', workingDays.toString(), const Color(0xFF42C83C))),
+          const SizedBox(width: 8),
+          Expanded(child: _buildSummaryCard('Phép năm', leaveDays.toString(), const Color(0xFF2196F3))),
+          const SizedBox(width: 8),
+          Expanded(child: _buildSummaryCard('Tăng ca', overtimeStr, const Color(0xFFFF9800))),
         ],
       ),
     );
@@ -370,15 +311,15 @@ class _TimesheetPageState extends State<TimesheetPage> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -388,11 +329,11 @@ class _TimesheetPageState extends State<TimesheetPage> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             value,
             style: TextStyle(
@@ -401,10 +342,10 @@ class _TimesheetPageState extends State<TimesheetPage> {
               color: color,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
           Container(
             height: 2,
-            width: 30,
+            width: 24,
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(1),
@@ -423,8 +364,8 @@ class _TimesheetPageState extends State<TimesheetPage> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -493,8 +434,12 @@ class _TimesheetPageState extends State<TimesheetPage> {
       final date = DateTime(timesheet.year, timesheet.month, day);
       TimeSheetDataEntity? dayData;
       try {
+        // Match by year + month + day to avoid cross-month mismatch
         dayData = timesheet.timeSheetData.firstWhere(
-          (d) => d.dateWorking.day == day,
+          (d) =>
+              d.dateWorking.year == timesheet.year &&
+              d.dateWorking.month == timesheet.month &&
+              d.dateWorking.day == day,
         );
       } catch (e) {
         dayData = null;
@@ -507,8 +452,8 @@ class _TimesheetPageState extends State<TimesheetPage> {
       crossAxisCount: 7,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 6,
-      crossAxisSpacing: 6,
+      mainAxisSpacing: 4,
+      crossAxisSpacing: 4,
       childAspectRatio: 1,
       children: dayWidgets,
     );
@@ -531,32 +476,66 @@ class _TimesheetPageState extends State<TimesheetPage> {
     bool isLargeStatus = false;
 
     if (dayData != null) {
-      // Check if it's a holiday (HT field indicates holiday)
-      if (dayData.hT != null && dayData.hT! > 0) {
-        backgroundColor = Colors.red.withOpacity(0.1);
-        statusTextColor = Colors.red;
-        statusText = 'HT';
-      } else if (dayData.wd > 0) {
-        // Working day
-        backgroundColor = const Color(0xFF42C83C).withOpacity(0.1);
-        final hours = dayData.numHour?.toInt() ?? 0;
-        statusText = '$hours';
-        // Color based on hours >= 8
-        statusTextColor = hours >= 8 ? const Color(0xFF2563EB) : const Color(0xFF42C83C);
-        isLargeStatus = true;
-      } else if (dayData.p != null && dayData.p! > 0) {
-        // Leave day
-        backgroundColor = Colors.yellow[100];
-        statusTextColor = Colors.orange[700]!;
-        statusText = 'P';
-      } else if (dayData.nL != null && dayData.nL! > 0) {
-        // National holiday
-        statusTextColor = Colors.red;
-        statusText = 'NL';
-      } else if (dayData.ro != null && dayData.ro! > 0) {
-        // Unpaid leave
-        statusTextColor = Colors.red;
-        statusText = 'Ro';
+      // Ngày tương lai chưa có data: tất cả field đều null (ngày chưa chấm công)
+      final bool isNoData = dayData.hT == null &&
+          dayData.nL == null && dayData.bL == null &&
+          dayData.b == null && dayData.p == null &&
+          dayData.pr == null && dayData.ro == null &&
+          dayData.o == null && dayData.n == null &&
+          dayData.wd == 0.0 && dayData.numHour == null;
+
+      if (!isNoData) {
+        if (dayData.hT != null && dayData.hT! > 0) {
+          // Cuối tuần (HT)
+          backgroundColor = Colors.red.withOpacity(0.08);
+          statusTextColor = Colors.red;
+          statusText = 'HT';
+        } else if (dayData.nL != null && dayData.nL! > 0) {
+          // Nghỉ lễ
+          backgroundColor = Colors.red.withOpacity(0.08);
+          statusTextColor = Colors.red;
+          statusText = 'NL';
+        } else if (dayData.bL != null && dayData.bL! > 0) {
+          // Bù lễ
+          backgroundColor = Colors.blue.withOpacity(0.08);
+          statusTextColor = const Color(0xFF2196F3);
+          statusText = 'BL';
+        } else if (dayData.b != null && dayData.b! > 0) {
+          // Nghỉ bệnh
+          backgroundColor = Colors.purple.withOpacity(0.08);
+          statusTextColor = Colors.purple;
+          statusText = 'B';
+        } else if (dayData.o != null && dayData.o! > 0) {
+          // Nghỉ ốm / nghỉ khác (O)
+          backgroundColor = Colors.orange.withOpacity(0.08);
+          statusTextColor = Colors.orange[800]!;
+          statusText = 'O';
+        } else if (dayData.p != null && dayData.p! > 0 && dayData.wd == 0.0) {
+          // Phép cả ngày
+          backgroundColor = Colors.amber.withOpacity(0.1);
+          statusTextColor = Colors.orange[700]!;
+          statusText = 'P';
+        } else if (dayData.ro != null && dayData.ro! > 0 && dayData.wd == 0.0) {
+          // Nghỉ không lương cả ngày
+          backgroundColor = Colors.grey.withOpacity(0.1);
+          statusTextColor = Colors.grey[700]!;
+          statusText = 'Ro';
+        } else if (dayData.wd > 0) {
+          // Ngày làm việc (có thể kết hợp nửa ngày nghỉ)
+          final displayHours = dayData.wd * 8.0;
+          // Bỏ ký tự "h", chỉ hiện số — bỏ trailing zeros
+          final formatted = displayHours
+              .toStringAsFixed(2)
+              .replaceAll(RegExp(r'\.?0+$'), '');
+          statusText = formatted;   // e.g. "8", "4", "7.5"
+          backgroundColor = displayHours >= 8
+              ? const Color(0xFF42C83C).withOpacity(0.1)
+              : Colors.orange.withOpacity(0.1);
+          statusTextColor = displayHours >= 8
+              ? const Color(0xFF42C83C)
+              : const Color(0xFFFF9800);
+          isLargeStatus = true;
+        }
       }
     }
 
@@ -584,19 +563,19 @@ class _TimesheetPageState extends State<TimesheetPage> {
             Text(
               date.day.toString(),
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.normal,
                 color: dayNumberColor,
               ),
             ),
             if (statusText != null) ...[
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 statusText,
                 style: TextStyle(
-                  fontSize: isLargeStatus ? 12 : 9,
+                  fontSize: isLargeStatus ? 13 : 10,
                   color: isSelected ? Colors.white : statusTextColor,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -623,15 +602,39 @@ class _TimesheetPageState extends State<TimesheetPage> {
 
     if (dayData == null) return const SizedBox();
 
-    final hasCheckIn = dayData.checkingPoints.isNotEmpty &&
-        dayData.checkingPoints.first.timeIn != null;
-    final checkInTime = hasCheckIn
-        ? DateFormat('HH:mm').format(dayData.checkingPoints.first.timeIn!)
+    // Lấy CheckingPoint có WD cao nhất (theo LOGIC DOC)
+    CheckingPointEntity? bestCP;
+    if (dayData.checkingPoints.isNotEmpty) {
+      bestCP = dayData.checkingPoints.reduce(
+        (a, b) => a.wd >= b.wd ? a : b,
+      );
+    }
+
+    // Chỉ hiển thị TIME_IN nếu không phải midnight placeholder (00:00:00)
+    final bool hasRealTimeIn = bestCP?.timeIn != null &&
+        !(bestCP!.timeIn!.hour == 0 &&
+          bestCP.timeIn!.minute == 0 &&
+          bestCP.timeIn!.second == 0);
+    final checkInTime = hasRealTimeIn
+        ? DateFormat('HH:mm').format(bestCP!.timeIn!)
         : '--:--';
-    final checkOutTime = hasCheckIn &&
-            dayData.checkingPoints.first.timeOut != null
-        ? DateFormat('HH:mm').format(dayData.checkingPoints.first.timeOut!)
+    final checkOutTime = bestCP?.timeOut != null
+        ? DateFormat('HH:mm').format(bestCP!.timeOut!)
         : '--:--';
+
+    // Status badge
+    String statusLabel;
+    Color statusColor;
+    if (dayData.wd >= 1.0) {
+      statusLabel = 'Đủ công';
+      statusColor = const Color(0xFF42C83C);
+    } else if (dayData.wd > 0) {
+      statusLabel = 'Nửa ngày';
+      statusColor = const Color(0xFFFF9800);
+    } else {
+      statusLabel = 'Nghỉ';
+      statusColor = Colors.grey;
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -677,19 +680,15 @@ class _TimesheetPageState extends State<TimesheetPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: dayData.wd > 0
-                      ? const Color(0xFF42C83C).withOpacity(0.1)
-                      : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
+                  color: statusColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  dayData.wd > 0 ? 'Đủ công' : 'Vắng',
+                  statusLabel,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: dayData.wd > 0
-                        ? const Color(0xFF42C83C)
-                        : (isDarkMode ? Colors.grey[400] : Colors.grey[700]),
+                    color: statusColor,
                   ),
                 ),
               ),
@@ -723,11 +722,11 @@ class _TimesheetPageState extends State<TimesheetPage> {
           Row(
             children: [
               Expanded(
-                child: _buildDetailItem('TỔng ca (NgG_2)', '${dayData.ngG ?? 0}'),
+                child: _buildDetailItem('Tổng ca (NgG_2)', '${dayData.ngG2 ?? 0}'),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildDetailItem('Ngày làm việc (Wd)', '${dayData.wd}'),
+                child: _buildDetailItem('Giờ công (Wd×8)', '${(dayData.wd * 8).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}h'),
               ),
             ],
           ),
