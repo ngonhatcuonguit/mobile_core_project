@@ -536,6 +536,93 @@ class _TimesheetPageState extends State<TimesheetPage> {
     );
   }
 
+  // ─── Helper: build composite label for a cell ───────────────────────────────
+  // Format: wd*8 , leaveCode , (NgG) , (NgG_2)
+  // Only non-null and non-zero values are shown.
+  String _buildCellLabel(TimeSheetDataEntity d) {
+    final parts = <String>[];
+
+    // 1) Working hours (wd*8)
+    if (d.wd > 0) {
+      final h = d.wd * 8.0;
+      parts.add(h.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), ''));
+    }
+
+    // 2) Leave codes (non-null, non-zero)
+    // Nếu value == 1.0 → chỉ hiện ký hiệu (vd "O", "NL", "Ro")
+    // Nếu value khác 1.0 (nửa ngày, v.v.) → hiện số + ký hiệu (vd "0.5Ro")
+    void addLeave(double? v, String code) {
+      if (v == null || v <= 0) return;
+      if (v == 1.0) {
+        parts.add(code);
+      } else {
+        final s = v.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
+        parts.add('$s$code');
+      }
+    }
+    addLeave(d.p,        'P');
+    addLeave(d.nL,       'NL');
+    addLeave(d.bL,       'BL');
+    addLeave(d.b,        'B');
+    addLeave(d.ro,       'Ro');
+    addLeave(d.o,        'O');
+    addLeave(d.pr,       'Pr');
+    addLeave(d.n,        'N');
+    addLeave(d.tN,       'TN');
+    addLeave(d.ca3,      'Ca3');
+    addLeave(d.tS,       'TS');
+    addLeave(d.sickLeave,'SK');
+
+    // 3) Overtime in parentheses — only if != 0.0
+    if (d.ngG != null && d.ngG! > 0) {
+      final s = d.ngG!.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
+      parts.add('($s)');
+    }
+    if (d.ngG2 != null && d.ngG2! > 0) {
+      final s = d.ngG2!.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
+      parts.add('($s)');
+    }
+
+    if (d.hT != null && d.hT! > 0 && parts.isEmpty) parts.add('HT');
+
+    return parts.join(',');
+  }
+
+  // ─── Helper: safe CheckingPoint ──────────────────────────────────────────
+  // Tránh .reduce() gây lỗi type mismatch (CheckingPointEntity vs CheckingPointModel)
+  CheckingPointEntity? _bestCheckingPoint(TimeSheetDataEntity d) {
+    if (d.checkingPoints.isEmpty) return null;
+    // Ưu tiên: CP có TIME_IN thực (không phải midnight)
+    // Nếu nhiều CP có TIME_IN thực → lấy cái có WD cao nhất
+    CheckingPointEntity? best;
+    for (final cp in d.checkingPoints) {
+      if (best == null) {
+        best = cp;
+      } else if (_isRealTime(cp.timeIn) && !_isRealTime(best.timeIn)) {
+        // cp có giờ thực, best chưa có → chọn cp
+        best = cp;
+      } else if (_isRealTime(cp.timeIn) && cp.wd >= best.wd) {
+        best = cp;
+      }
+    }
+    return best;
+  }
+
+  bool _isRealTime(DateTime? t) =>
+      t != null && !(t.hour == 0 && t.minute == 0 && t.second == 0);
+
+  String _fmt(DateTime? t) =>
+      (t != null) ? DateFormat('HH:mm').format(t) : '--:--';
+
+  // ─── tooltip content for a cell ──────────────────────────────────────────
+  String _buildTooltip(TimeSheetDataEntity d) {
+    final cp = _bestCheckingPoint(d);
+    final timeIn  = _isRealTime(cp?.timeIn)  ? _fmt(cp!.timeIn)  : '--:--';
+    final timeOut = cp?.timeOut != null       ? _fmt(cp!.timeOut) : '--:--';
+    final label   = _buildCellLabel(d);
+    return '$timeIn → $timeOut\n$label';
+  }
+
   Widget _buildDayCell(DateTime date, TimeSheetDataEntity? dayData, DateTime? selectedDate) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isToday = date.year == DateTime.now().year &&
@@ -549,264 +636,307 @@ class _TimesheetPageState extends State<TimesheetPage> {
     Color? backgroundColor;
     Color dayNumberColor = isDarkMode ? const Color(0xFFBEBEBE) : const Color(0xFF111827);
     Color statusTextColor = Colors.black87;
-    String? statusText;
-    bool isLargeStatus = false;
+    String cellLabel = '';
+    bool isWorking = false;
 
     if (dayData != null) {
-      // Ngày tương lai chưa có data: tất cả field đều null (ngày chưa chấm công)
       final bool isNoData = dayData.hT == null &&
           dayData.nL == null && dayData.bL == null &&
-          dayData.b == null && dayData.p == null &&
+          dayData.b  == null && dayData.p  == null &&
           dayData.pr == null && dayData.ro == null &&
-          dayData.o == null && dayData.n == null &&
-          dayData.wd == 0.0 && dayData.numHour == null;
+          dayData.o  == null && dayData.n  == null &&
+          dayData.wd == 0.0  && dayData.numHour == null;
 
       if (!isNoData) {
-        if (dayData.hT != null && dayData.hT! > 0) {
-          // Cuối tuần (HT)
+        cellLabel = _buildCellLabel(dayData);
+
+        if (dayData.hT != null && dayData.hT! > 0 && dayData.wd == 0.0) {
           backgroundColor = Colors.red.withOpacity(0.08);
           statusTextColor = Colors.red;
-          statusText = 'HT';
         } else if (dayData.nL != null && dayData.nL! > 0) {
-          // Nghỉ lễ
           backgroundColor = Colors.red.withOpacity(0.08);
           statusTextColor = Colors.red;
-          statusText = 'NL';
         } else if (dayData.bL != null && dayData.bL! > 0) {
-          // Bù lễ
           backgroundColor = Colors.blue.withOpacity(0.08);
           statusTextColor = const Color(0xFF2196F3);
-          statusText = 'BL';
-        } else if (dayData.b != null && dayData.b! > 0) {
-          // Nghỉ bệnh
+        } else if (dayData.b != null && dayData.b! > 0 && dayData.wd == 0.0) {
           backgroundColor = Colors.purple.withOpacity(0.08);
           statusTextColor = Colors.purple;
-          statusText = 'B';
-        } else if (dayData.o != null && dayData.o! > 0) {
-          // Nghỉ ốm / nghỉ khác (O)
+        } else if (dayData.o != null && dayData.o! > 0 && dayData.wd == 0.0) {
           backgroundColor = Colors.orange.withOpacity(0.08);
           statusTextColor = Colors.orange[800]!;
-          statusText = 'O';
         } else if (dayData.p != null && dayData.p! > 0 && dayData.wd == 0.0) {
-          // Phép cả ngày
           backgroundColor = Colors.amber.withOpacity(0.1);
           statusTextColor = Colors.orange[700]!;
-          statusText = 'P';
         } else if (dayData.ro != null && dayData.ro! > 0 && dayData.wd == 0.0) {
-          // Nghỉ không lương cả ngày
           backgroundColor = Colors.grey.withOpacity(0.1);
           statusTextColor = Colors.grey[700]!;
-          statusText = 'Ro';
         } else if (dayData.wd > 0) {
-          // Ngày làm việc (có thể kết hợp nửa ngày nghỉ)
           final displayHours = dayData.wd * 8.0;
-          // Bỏ ký tự "h", chỉ hiện số — bỏ trailing zeros
-          final formatted = displayHours
-              .toStringAsFixed(2)
-              .replaceAll(RegExp(r'\.?0+$'), '');
-          statusText = formatted;   // e.g. "8", "4", "7.5"
           backgroundColor = displayHours >= 8
               ? const Color(0xFF42C83C).withOpacity(0.1)
               : Colors.orange.withOpacity(0.1);
           statusTextColor = displayHours >= 8
               ? const Color(0xFF42C83C)
               : const Color(0xFFFF9800);
-          isLargeStatus = true;
+          isWorking = true;
         }
       }
     }
 
     if (isSelected) {
       backgroundColor = const Color(0xFF42C83C);
-      dayNumberColor = Colors.white;
+      dayNumberColor  = Colors.white;
       statusTextColor = Colors.white;
+    }
+
+    // Tooltip: show when selected
+    final tooltipMsg = (isSelected && dayData != null)
+        ? _buildTooltip(dayData)
+        : null;
+
+    Widget cell = Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(6),
+        border: isToday
+            ? Border.all(color: const Color(0xFF42C83C), width: 2)
+            : null,
+      ),
+      padding: const EdgeInsets.all(1),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            date.day.toString(),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.normal,
+              color: dayNumberColor,
+            ),
+          ),
+          if (cellLabel.isNotEmpty) ...[
+            const SizedBox(height: 1),
+            Flexible(
+              child: Text(
+                cellLabel,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: isWorking ? 11 : 9,
+                  color: isSelected ? Colors.white : statusTextColor,
+                  fontWeight: FontWeight.bold,
+                  height: 1.1,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    // Wrap with tooltip when selected
+    if (tooltipMsg != null) {
+      cell = Tooltip(
+        message: tooltipMsg,
+        preferBelow: true,
+        showDuration: const Duration(seconds: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF333333),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: const TextStyle(color: Colors.white, fontSize: 12),
+        child: cell,
+      );
     }
 
     return GestureDetector(
       onTap: () {
         context.read<RemoteTimesheetBloc>().add(SelectDay(selectedDate: date));
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(6),
-          border: isToday
-              ? Border.all(color: const Color(0xFF42C83C), width: 2)
-              : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              date.day.toString(),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.normal,
-                color: dayNumberColor,
-              ),
-            ),
-            if (statusText != null) ...[
-              const SizedBox(height: 1),
-              Text(
-                statusText,
-                style: TextStyle(
-                  fontSize: isLargeStatus ? 13 : 10,
-                  color: isSelected ? Colors.white : statusTextColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
+      child: cell,
     );
   }
 
   Widget _buildDayDetails(TimesheetLoaded state) {
     final selectedDate = state.selectedDate!;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    // Safe find
     TimeSheetDataEntity? dayData;
     try {
       dayData = state.timesheet?.timeSheetData.firstWhere(
         (d) =>
-            d.dateWorking.year == selectedDate.year &&
+            d.dateWorking.year  == selectedDate.year  &&
             d.dateWorking.month == selectedDate.month &&
-            d.dateWorking.day == selectedDate.day,
+            d.dateWorking.day   == selectedDate.day,
       );
-    } catch (e) {
+    } catch (_) {
       dayData = null;
     }
 
     if (dayData == null) return const SizedBox();
 
-    // Lấy CheckingPoint có WD cao nhất (theo LOGIC DOC)
-    CheckingPointEntity? bestCP;
-    if (dayData.checkingPoints.isNotEmpty) {
-      bestCP = dayData.checkingPoints.reduce(
-        (a, b) => a.wd >= b.wd ? a : b,
-      );
-    }
-
-    // Chỉ hiển thị TIME_IN nếu không phải midnight placeholder (00:00:00)
-    final bool hasRealTimeIn = bestCP?.timeIn != null &&
-        !(bestCP!.timeIn!.hour == 0 &&
-          bestCP.timeIn!.minute == 0 &&
-          bestCP.timeIn!.second == 0);
-    final checkInTime = hasRealTimeIn
-        ? DateFormat('HH:mm').format(bestCP!.timeIn!)
-        : '--:--';
-    final checkOutTime = bestCP?.timeOut != null
-        ? DateFormat('HH:mm').format(bestCP!.timeOut!)
-        : '--:--';
+    // Safe CheckingPoint — pick best, skip midnight placeholders
+    final cp = _bestCheckingPoint(dayData);
+    final hasCP = cp != null;
+    final checkInTime  = hasCP && _isRealTime(cp.timeIn)   ? _fmt(cp.timeIn)  : '--:--';
+    final checkOutTime = hasCP && cp.timeOut != null        ? _fmt(cp.timeOut) : '--:--';
 
     // Status badge
-    String statusLabel;
-    Color statusColor;
+    String statusLabel; Color statusColor;
     if (dayData.wd >= 1.0) {
-      statusLabel = 'Đủ công';
-      statusColor = const Color(0xFF42C83C);
+      statusLabel = 'Đủ công';   statusColor = const Color(0xFF42C83C);
     } else if (dayData.wd > 0) {
-      statusLabel = 'Nửa ngày';
-      statusColor = const Color(0xFFFF9800);
+      statusLabel = 'Nửa ngày';  statusColor = const Color(0xFFFF9800);
     } else {
-      statusLabel = 'Nghỉ';
-      statusColor = Colors.grey;
+      statusLabel = 'Nghỉ';      statusColor = Colors.grey;
     }
+
+    // Helper: format value (skip 0.0)
+    String fmtVal(double? v) {
+      if (v == null) return '0';
+      return v.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
+    }
+
+    final cardBg   = isDarkMode ? const Color(0xFF2A2A2A) : Colors.white;
+    final labelClr = isDarkMode ? Colors.grey[400]!       : Colors.grey[600]!;
+    final valClr   = isDarkMode ? Colors.white            : Colors.black;
+
+    Widget row2(String l1, String v1, String l2, String v2) => Row(
+      children: [
+        Expanded(child: _buildDetailItem(l1, v1)),
+        const SizedBox(width: 10),
+        Expanded(child: _buildDetailItem(l2, v2)),
+      ],
+    );
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── header ──────────────────────────────────────────────────────
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF42C83C).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Icon(
-                  Icons.check_circle,
-                  color: Color(0xFF42C83C),
-                  size: 16,
-                ),
+                child: const Icon(Icons.calendar_today, color: Color(0xFF42C83C), size: 14),
               ),
               const SizedBox(width: 8),
               Text(
                 'Chi tiết: ${DateFormat('dd-MM-yyyy').format(selectedDate)}',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: valClr),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  color: statusColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  statusLabel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
+                child: Text(statusLabel,
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: statusColor)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // ── giờ vào / ra ────────────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDarkMode ? const Color(0xFF333333) : const Color(0xFFF8F8F8),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: hasCP
+                ? Row(
+                    children: [
+                      const Icon(Icons.login, size: 14, color: Color(0xFF42C83C)),
+                      const SizedBox(width: 6),
+                      Text('Vào: ', style: TextStyle(fontSize: 11, color: labelClr)),
+                      Text(checkInTime,
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                              color: checkInTime == '--:--' ? Colors.orange : valClr)),
+                      const Spacer(),
+                      const Icon(Icons.logout, size: 14, color: Colors.redAccent),
+                      const SizedBox(width: 6),
+                      Text('Ra: ', style: TextStyle(fontSize: 11, color: labelClr)),
+                      Text(checkOutTime,
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                              color: checkOutTime == '--:--' ? Colors.orange : valClr)),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 14, color: Colors.grey[400]),
+                      const SizedBox(width: 6),
+                      Text('Chưa có dữ liệu quét thẻ',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[500],
+                              fontStyle: FontStyle.italic)),
+                    ],
                   ),
+          ),
+          const SizedBox(height: 8),
+          // ── CheckingPoint list (nếu nhiều hơn 1) ──────────────────────
+          if (dayData.checkingPoints.length > 1) ...[
+            Text('Tất cả lần quét (${dayData.checkingPoints.length}):',
+                style: TextStyle(fontSize: 10, color: labelClr, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            ...dayData.checkingPoints.map((cp2) {
+              final tin  = _isRealTime(cp2.timeIn)  ? _fmt(cp2.timeIn)  : '--:--';
+              final tout = cp2.timeOut != null        ? _fmt(cp2.timeOut) : '--:--';
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Row(
+                  children: [
+                    const Icon(Icons.radio_button_checked, size: 8, color: Color(0xFF42C83C)),
+                    const SizedBox(width: 4),
+                    Text('$tin → $tout',
+                        style: TextStyle(fontSize: 11, color: valClr)),
+                    const SizedBox(width: 8),
+                    Text('WD:${fmtVal(cp2.wd)}',
+                        style: TextStyle(fontSize: 10, color: labelClr)),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildDetailItem('Giờ vào (In)', checkInTime),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildDetailItem('Giờ ra (Out)', checkOutTime),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _buildDetailItem('Phép năm (P)', '${dayData.p ?? 0}'),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildDetailItem('Nghỉ lễ (NL)', '${dayData.nL ?? 0}'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _buildDetailItem('Tổng ca (NgG_2)', '${dayData.ngG2 ?? 0}'),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildDetailItem('Giờ công (Wd×8)', '${(dayData.wd * 8).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}h'),
-              ),
-            ],
-          ),
+              );
+            }),
+            const SizedBox(height: 6),
+          ],
+          const Divider(height: 14, thickness: 0.5),
+          // ── all data fields – aligned with web version ──────────────────
+          row2('Ngày làm việc (Wd)', fmtVal(dayData.wd),
+               'Phép năm (P)', fmtVal(dayData.p)),
+          const SizedBox(height: 6),
+          row2('Nghỉ việc riêng có hưởng lương\n(Tang/Hôn...) (Pr)', fmtVal(dayData.pr),
+               'Ngoài giờ (NgG)', fmtVal(dayData.ngG)),
+          const SizedBox(height: 6),
+          row2('Nghỉ lễ (NL)', fmtVal(dayData.nL),
+               'Tăng giờ (Phiếu báo tăng giờ) (NgG_2)', fmtVal(dayData.ngG2)),
+          const SizedBox(height: 6),
+          row2('Tai nạn (TN)', fmtVal(dayData.tN),
+               'Nghỉ bù (B)', fmtVal(dayData.b)),
+          const SizedBox(height: 6),
+          row2('Nghỉ phép không lương (Ro)', fmtVal(dayData.ro),
+               'Nghỉ ngưng việc (N)', fmtVal(dayData.n)),
+          const SizedBox(height: 6),
+          row2('Khác (Nghỉ không phép...) (K)', fmtVal(dayData.o),
+               'Ca3 (Ca3)', fmtVal(dayData.ca3)),
+          const SizedBox(height: 6),
+          row2('Bù lễ (BL)', fmtVal(dayData.bL),
+               'Thai sản (TS)', fmtVal(dayData.tS)),
         ],
       ),
     );

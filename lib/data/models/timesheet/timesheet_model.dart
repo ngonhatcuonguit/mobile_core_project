@@ -96,6 +96,21 @@ class TimeSheetDataModel extends TimeSheetDataEntity {
           .toList();
     }
 
+    // IS_DEFAULT có thể là bool (true/false) hoặc String ("0"/"1") hoặc null
+    bool parseIsDefault(dynamic v) {
+      if (v == null) return false;
+      if (v is bool) return v;
+      if (v is String) return v == '1' || v.toLowerCase() == 'true';
+      if (v is num) return v != 0;
+      return false;
+    }
+
+    // Safe parse DateTime — trả null nếu lỗi
+    DateTime? safeParseDate(dynamic v) {
+      if (v == null) return null;
+      try { return DateTime.parse(v as String); } catch (_) { return null; }
+    }
+
     return TimeSheetDataModel(
       dateWorking: DateTime.parse(json['DATE_WORKING'] as String),
       ngG:       _d('NgG'),
@@ -118,7 +133,7 @@ class TimeSheetDataModel extends TimeSheetDataEntity {
       numHour:      _d('NUM_HOUR'),
       numHourExtra: _d('NUM_HOUR_EXTRA'),
       note:      json['NOTE'] as String?,
-      isDefault: json['IS_DEFAULT'] as bool? ?? false,
+      isDefault: parseIsDefault(json['IS_DEFAULT']),
       checkingPoints: _parseCheckingPoints(),
     );
   }
@@ -136,12 +151,30 @@ class CheckingPointModel extends CheckingPointEntity {
   });
 
   factory CheckingPointModel.fromJson(Map<String, dynamic> json) {
+    // Safe DateTime parse helper
+    DateTime safeDate(dynamic v, DateTime fallback) {
+      if (v == null) return fallback;
+      try { return DateTime.parse(v as String); } catch (_) { return fallback; }
+    }
+    DateTime? safeDateOpt(dynamic v) {
+      if (v == null) return null;
+      try { return DateTime.parse(v as String); } catch (_) { return null; }
+    }
+
+    final workingDate = safeDate(json['WORKING_DATE'], DateTime(2000));
+    final timeIn  = safeDateOpt(json['TIME_IN']);
+    final timeOut = safeDateOpt(json['TIME_OUT']);
+
+    debugPrint('[CP] id=${json['ID']} '
+        'timeIn=${timeIn?.toIso8601String()} '
+        'timeOut=${timeOut?.toIso8601String()}');
+
     return CheckingPointModel(
       id:          (json['ID'] as num?)?.toInt() ?? 0,
-      workingDate: DateTime.parse(json['WORKING_DATE'] as String),
+      workingDate: workingDate,
       employeeId:  json['EMPLOYEE_ID'] as String? ?? '',
-      timeIn:  json['TIME_IN']  != null ? DateTime.parse(json['TIME_IN']  as String) : null,
-      timeOut: json['TIME_OUT'] != null ? DateTime.parse(json['TIME_OUT'] as String) : null,
+      timeIn:      timeIn,
+      timeOut:     timeOut,
       wd: (json['WD'] as num?)?.toDouble() ?? 0.0,
       ot: (json['OT'] as num?)?.toDouble() ?? 0.0,
     );
