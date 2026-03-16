@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_core_project/core/configs/app_config.dart';
 import 'package:flutter_core_project/data/data_sources/remote/login_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/news_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/timesheet_api_service.dart';
@@ -18,18 +19,19 @@ import 'domain/usecases/get_article.dart';
 final sl = GetIt.instance;
 
 Dio _buildThpDio() {
+  final timeout = Duration(milliseconds: AppConfig.timeoutMs);
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://mythp-api.thp.com.vn',
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      sendTimeout: const Duration(seconds: 30),
-      // Chỉ đặt Accept ở base — Content-Type chỉ thêm khi có body (POST/PUT)
+      baseUrl: AppConfig.baseUrl,
+      connectTimeout: timeout,
+      receiveTimeout: timeout,
+      sendTimeout: timeout,
       headers: {
         'Accept': 'application/json',
       },
     ),
   );
+  debugPrint('[THP_API] 🌐 Base URL = ${AppConfig.baseUrl} | env=${AppConfig.environment}');
 
   // Interceptor tự động gắn Bearer token vào MỌI request
   dio.interceptors.add(
