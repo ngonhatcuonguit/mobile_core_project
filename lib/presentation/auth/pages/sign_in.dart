@@ -122,25 +122,25 @@ class _SigninPageState extends State<SigninPage> {
       ),
       bottomNavigationBar: _signupText(context),
       body: Padding(
-        padding: const EdgeInsets.all(50),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _registerText(context),
-            const SizedBox(height: 20),
-            _usernameField(context),
-            const SizedBox(height: 20),
-            _passwordField(context),
-            const SizedBox(height: 20),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : BasicAppButton(
-                    title: 'Đăng nhập',
-                    onPressed: _handleLogin,
-                  ),
-          ],
+          padding: const EdgeInsets.all(50),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _registerText(context),
+              const SizedBox(height: 20),
+              _usernameField(context),
+              const SizedBox(height: 20),
+              _passwordField(context),
+              const SizedBox(height: 20),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : BasicAppButton(
+                      title: 'Đăng nhập',
+                      onPressed: _handleLogin,
+                    ),
+            ],
+          ),
         ),
-      ),
     );
   }
 

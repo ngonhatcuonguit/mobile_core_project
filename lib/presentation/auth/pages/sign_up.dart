@@ -41,53 +41,49 @@ class _SignUpPageState extends State<SignUpPage> {
       ),
       bottomNavigationBar: _signinText(context),
       body: Padding(
-        padding: const EdgeInsets.all(50),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _registerText(context),
-            const SizedBox(height: 20),
-            _fullNameField(context),
-            const SizedBox(height: 20),
-            _emailField(context),
-            const SizedBox(height: 20),
-            _passwordField(context),
-            const SizedBox(height: 20),
-            BasicAppButton(
-              title: 'Create Account',
-              onPressed: () async {
-                // Mock signup - accept any data for testing
-                final name = _nameController.text.trim();
-                final email = _emailController.text.trim();
+          padding: const EdgeInsets.all(50),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _registerText(context),
+              const SizedBox(height: 20),
+              _fullNameField(context),
+              const SizedBox(height: 20),
+              _emailField(context),
+              const SizedBox(height: 20),
+              _passwordField(context),
+              const SizedBox(height: 20),
+              BasicAppButton(
+                title: 'Create Account',
+                onPressed: () async {
+                  final name = _nameController.text.trim();
+                  final email = _emailController.text.trim();
 
-                if (name.isEmpty || email.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please fill all fields'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                  return;
-                }
+                  if (name.isEmpty || email.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please fill all fields'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
 
-                // Save login state
-                await AuthService.setLoggedIn(
-                  email: email,
-                  name: name,
-                );
+                  await AuthService.setLoggedIn(email: email, name: name);
 
-                if (!mounted) return;
+                  if (!mounted) return;
 
-                // Navigate to home
-                Navigator.pushReplacement(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                        builder: (BuildContext context) => const MainScreen()));
-              },
-            ),
-          ],
+                      builder: (BuildContext context) => const MainScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
-      ),
     );
   }
 

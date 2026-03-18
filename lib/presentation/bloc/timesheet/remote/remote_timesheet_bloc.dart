@@ -163,25 +163,20 @@ class RemoteTimesheetBloc extends Bloc<TimesheetEvent, TimesheetState> {
 
   /// Khi user quay lại màn hình: nếu đang có state loaded thì giữ nguyên,
   /// không reload API.
+  ///
+  /// Khi app vừa bật lại (Bloc khởi tạo lại, state = Initial, in-memory cache rỗng):
+  ///   → Luôn call API để lấy data tháng hiện tại (vì data có thể thay đổi trong ngày).
   Future<void> _onRestoreFromCache(
     RestoreTimesheetFromCache event,
     Emitter<TimesheetState> emit,
   ) async {
-    if (state is TimesheetLoaded) return; // đã có data, không làm gì
+    // Navigate qua màn hình khác rồi quay lại → Bloc vẫn sống, giữ nguyên
+    if (state is TimesheetLoaded) return;
 
-    // Đọc month/year đã lưu
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedYear  = prefs.getInt(_kPrefYear);
-      final savedMonth = prefs.getInt(_kPrefMonth);
-      if (savedYear != null && savedMonth != null) {
-        add(GetTimesheet(year: savedYear, month: savedMonth));
-        return;
-      }
-    } catch (_) {}
-
-    // Fallback: tháng hiện tại
+    // App restart → Bloc khởi tạo lại, in-memory cache rỗng
+    // → Luôn call API tháng hiện tại để đảm bảo data mới nhất
     final now = DateTime.now();
+    debugPrint('[TimesheetBloc] app start → force reload ${now.year}-${now.month}');
     add(GetTimesheet(year: now.year, month: now.month));
   }
 }

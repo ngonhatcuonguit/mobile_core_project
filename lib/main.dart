@@ -60,36 +60,45 @@ class MyApp extends StatelessWidget {
           return BlocBuilder<LocaleCubit, Locale>(
             builder: (context, locale) {
               return MaterialApp(
-                title: 'Flutter Core Project',
-                theme: AppTheme.lightTheme,
-                darkTheme: AppTheme.darkTheme,
-                themeMode: themeMode,
-                debugShowCheckedModeBanner: false,
+                  title: 'Flutter Core Project',
+                  theme: AppTheme.lightTheme,
+                  darkTheme: AppTheme.darkTheme,
+                  themeMode: themeMode,
+                  debugShowCheckedModeBanner: false,
 
-                // Auto screen tracking cho Firebase Analytics
-                navigatorObservers: [
-                  AppFirebaseAnalyticsObserver(
-                    analytics: FirebaseService.instance.analytics,
+                  // Dismiss keyboard toàn app: tap bất kỳ vùng nào → ẩn keyboard
+                  builder: (context, child) {
+                    return GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () => FocusScope.of(context).unfocus(),
+                      child: child!,
+                    );
+                  },
+
+                  // Auto screen tracking cho Firebase Analytics
+                  navigatorObservers: [
+                    AppFirebaseAnalyticsObserver(
+                      analytics: FirebaseService.instance.analytics,
+                    ),
+                  ],
+
+                  // Localization delegates
+                  localizationsDelegates: const [
+                    AppLocalizations.delegate,
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  supportedLocales: const [
+                    Locale('en', ''), // English
+                    Locale('vi', ''), // Vietnamese
+                  ],
+                  locale: locale,
+
+                  home: NetworkStatusBanner(
+                    child: const SplashPage(),
                   ),
-                ],
-
-                // Localization delegates
-                localizationsDelegates: const [
-                  AppLocalizations.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: const [
-                  Locale('en', ''), // English
-                  Locale('vi', ''), // Vietnamese
-                ],
-                locale: locale,
-
-                home: NetworkStatusBanner(
-                  child: const SplashPage(),
-                ),
-              );
+                );
             },
           );
         },

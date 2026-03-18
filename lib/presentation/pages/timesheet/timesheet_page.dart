@@ -5,8 +5,8 @@ import 'package:flutter_core_project/domain/entities/timesheet/timesheet_entity.
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_event.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_state.dart';
+import 'package:flutter_core_project/presentation/pages/timesheet/adjustment_report_page.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class TimesheetPage extends StatefulWidget {
   const TimesheetPage({super.key});
@@ -32,21 +32,20 @@ class _TimesheetPageState extends State<TimesheetPage> {
   }
 
   Future<void> _restoreAndLoad() async {
-    // Đọc tháng/năm đã lưu từ lần trước
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedYear  = prefs.getInt('ts_selected_year');
-      final savedMonth = prefs.getInt('ts_selected_month');
-      if (savedYear != null && savedMonth != null && mounted) {
-        setState(() {
-          _currentDate = DateTime(savedYear, savedMonth);
-        });
+    final bloc = context.read<RemoteTimesheetBloc>();
+
+    // Nếu Bloc đang có data (navigate đi rồi quay lại) → giữ nguyên _currentDate
+    // theo state hiện tại, không làm gì thêm.
+    // Nếu Bloc chưa có data (app restart) → reset UI về tháng hiện tại.
+    if (bloc.state is! TimesheetLoaded) {
+      // App restart: luôn hiển thị tháng hiện tại
+      if (mounted) {
+        setState(() => _currentDate = DateTime.now());
       }
-    } catch (_) {}
+    }
 
     if (!mounted) return;
-    // Gửi event: nếu Bloc đang có data thì giữ nguyên, không reload
-    context.read<RemoteTimesheetBloc>().add(const RestoreTimesheetFromCache());
+    bloc.add(const RestoreTimesheetFromCache());
   }
 
   void _loadTimesheet() {
@@ -130,7 +129,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
                     _buildMonthSelector(),
                     _buildCalendar(state),
                     if (state.selectedDate != null) _buildDayDetails(state),
-                    _buildActionButtons(),
+                    _buildActionButtons(selectedDate: state.selectedDate),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -1052,55 +1051,25 @@ class _TimesheetPageState extends State<TimesheetPage> {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons({DateTime? selectedDate}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  'Xin Phép Trễ/Sớm',
-                  const Color(0xFF00BCD4),
-                  Icons.settings,
-                  () {},
+      child: SizedBox(
+        width: double.infinity,
+        child: _buildActionButton(
+          'Báo cáo điều chỉnh',
+          const Color(0xFF2196F3),
+          Icons.edit_document,
+          () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => AdjustmentReportPage(
+                  initialDate: selectedDate ?? DateTime.now(),
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildActionButton(
-                  'Báo cáo điều chỉnh',
-                  const Color(0xFF2196F3),
-                  Icons.edit_document,
-                  () {},
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  'Xin Phép Dự Kiến',
-                  const Color(0xFFF44336),
-                  Icons.access_time,
-                  () {},
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildActionButton(
-                  'Điểm Chỉnh Quét Nhầm',
-                  const Color(0xFFFF9800),
-                  Icons.fingerprint,
-                  () {},
-                ),
-              ),
-            ],
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
