@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +14,7 @@ import 'package:flutter_core_project/services/analytics_observer.dart';
 import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,23 +23,22 @@ import 'presentation/choose_mode/bloc/locale_cubit.dart';
 import 'presentation/choose_mode/bloc/theme_cubit.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
 
-  // Load production environment variables
   await dotenv.load(fileName: ".env.prod");
 
-  // Initialize Firebase (Core + FCM + Analytics + Crashlytics)
-  await FirebaseService.instance.initialize();
+  final results = await Future.wait([
+    FirebaseService.instance.initialize(),
+    getApplicationDocumentsDirectory(),
+    initializeDependencies(),
+  ]);
 
-  // Initialize HydratedBloc storage
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
         ? HydratedStorage.webStorageDirectory
-        : await getApplicationDocumentsDirectory(),
+        : results[1] as Directory,
   );
-
-  // Initialize the dependency injection
-  await initializeDependencies();
 
   runApp(const MyApp());
 }
@@ -65,6 +67,15 @@ class MyApp extends StatelessWidget {
                 darkTheme: AppTheme.darkTheme,
                 themeMode: themeMode,
                 debugShowCheckedModeBanner: false,
+
+                // Dismiss keyboard toàn app khi tap ra ngoài
+                builder: (context, child) {
+                  return GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                    child: child!,
+                  );
+                },
 
                 // Auto screen tracking cho Firebase Analytics
                 navigatorObservers: [

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,6 +15,7 @@ import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_core_project/services/network_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -20,23 +23,22 @@ import 'presentation/choose_mode/bloc/locale_cubit.dart';
 import 'presentation/choose_mode/bloc/theme_cubit.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  // Giữ native splash hiển thị trong suốt quá trình init — không màn hình trắng
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
 
-  // Initialize Firebase (Core + FCM + Analytics + Crashlytics)
-  await FirebaseService.instance.initialize();
+  final results = await Future.wait([
+    FirebaseService.instance.initialize(),
+    getApplicationDocumentsDirectory(),
+    initializeDependencies(),
+    NetworkService().init(),
+  ]);
 
-  // Initialize HydratedBloc storage
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
         ? HydratedStorage.webStorageDirectory
-        : await getApplicationDocumentsDirectory(),
+        : results[1] as Directory,
   );
-
-  // Initialize the dependency injection
-  await initializeDependencies();
-
-  // Initialize network service
-  await NetworkService().init();
 
   runApp(const MyApp());
 }
@@ -60,45 +62,45 @@ class MyApp extends StatelessWidget {
           return BlocBuilder<LocaleCubit, Locale>(
             builder: (context, locale) {
               return MaterialApp(
-                  title: 'Flutter Core Project',
-                  theme: AppTheme.lightTheme,
-                  darkTheme: AppTheme.darkTheme,
-                  themeMode: themeMode,
-                  debugShowCheckedModeBanner: false,
+                title: 'Flutter Core Project',
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                themeMode: themeMode,
+                debugShowCheckedModeBanner: false,
 
-                  // Dismiss keyboard toàn app: tap bất kỳ vùng nào → ẩn keyboard
-                  builder: (context, child) {
-                    return GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: () => FocusScope.of(context).unfocus(),
-                      child: child!,
-                    );
-                  },
+                // Dismiss keyboard toàn app: tap bất kỳ vùng nào → ẩn keyboard
+                builder: (context, child) {
+                  return GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                    child: child!,
+                  );
+                },
 
-                  // Auto screen tracking cho Firebase Analytics
-                  navigatorObservers: [
-                    AppFirebaseAnalyticsObserver(
-                      analytics: FirebaseService.instance.analytics,
-                    ),
-                  ],
-
-                  // Localization delegates
-                  localizationsDelegates: const [
-                    AppLocalizations.delegate,
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                  ],
-                  supportedLocales: const [
-                    Locale('en', ''), // English
-                    Locale('vi', ''), // Vietnamese
-                  ],
-                  locale: locale,
-
-                  home: NetworkStatusBanner(
-                    child: const SplashPage(),
+                // Auto screen tracking cho Firebase Analytics
+                navigatorObservers: [
+                  AppFirebaseAnalyticsObserver(
+                    analytics: FirebaseService.instance.analytics,
                   ),
-                );
+                ],
+
+                // Localization delegates
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: const [
+                  Locale('en', ''), // English
+                  Locale('vi', ''), // Vietnamese
+                ],
+                locale: locale,
+
+                home: NetworkStatusBanner(
+                  child: const SplashPage(),
+                ),
+              );
             },
           );
         },

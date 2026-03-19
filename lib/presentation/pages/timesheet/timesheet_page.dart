@@ -645,7 +645,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
     // ── Sizing ─────────────────────────────────────────────────────
     const double caretH    = 7.0;
     // Max width caps the bubble so it never goes edge-to-edge
-    final double maxWidth  = (screenSize.width * 0.6).clamp(150.0, 220.0);
+    final double maxWidth  = (screenSize.width * 0.3).clamp(150.0, 220.0);
 
     // Position: above cell if enough space (> 140 from top), else below
     final showAbove = cellOffset.dy > 140;

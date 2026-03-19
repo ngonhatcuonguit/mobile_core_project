@@ -4,6 +4,7 @@ import 'package:flutter_core_project/presentation/intro/pages/get_started.dart';
 import 'package:flutter_core_project/presentation/pages/main/main_screen.dart';
 import 'package:flutter_core_project/services/onboarding_service.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SplashPage extends StatefulWidget {
@@ -17,12 +18,18 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    redirect();
+    // Dismiss native splash ngay khi Flutter đã vẽ frame đầu tiên
+    // Transition từ native splash → Flutter splash hoàn toàn liền mạch
+    FlutterNativeSplash.remove();
+    _redirect();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Nền trắng + logo THP ở giữa — khớp hoàn toàn với native splash
+    // → không có flash hay chuyển đổi màu khi Flutter vẽ frame đầu tiên
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: SvgPicture.asset(
           AppVectors.thp_logo,
@@ -33,37 +40,36 @@ class _SplashPageState extends State<SplashPage> {
     );
   }
 
-  Future<void> redirect() async {
-    await Future.delayed(const Duration(seconds: 2));
+  Future<void> _redirect() async {
+    // Check auth và onboarding song song — không delay nhân tạo
+    final results = await Future.wait([
+      AuthService.isLoggedIn(),
+      OnboardingService.hasSeenIntro(),
+    ]);
 
-    // Check authentication and onboarding status
-    final hasSeenIntro = await OnboardingService.hasSeenIntro();
-    final isLoggedIn = await AuthService.isLoggedIn();
+    final isLoggedIn = results[0];
 
     if (!mounted) return;
 
-    // Flow logic:
-    // 1. If user is logged in -> go to MainScreen (home)
-    // 2. If user has seen intro but not logged in -> go to GetStartedPage
-    // 3. If first time user -> go to GetStartedPage
-
     if (isLoggedIn) {
-      // User is logged in, go directly to home
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MainScreen()),
-      );
-    } else if (hasSeenIntro) {
-      // User has seen intro but not logged in, show get started
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const GetStartedPage()),
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const MainScreen(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
       );
     } else {
-      // First time user, show intro
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const GetStartedPage()),
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const GetStartedPage(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
       );
     }
   }

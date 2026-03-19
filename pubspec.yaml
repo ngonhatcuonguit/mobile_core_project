@@ -53,6 +53,7 @@ dependencies:
   firebase_analytics: ^10.10.7
   firebase_crashlytics: ^3.5.7
   flutter_local_notifications: ^16.3.3
+  flutter_native_splash: ^2.4.0
 
 dev_dependencies:
   flutter_test:
@@ -87,3 +88,28 @@ flutter:
           weight: 400
         - asset: assets/fonts/Satoshi-Light.ttf
           weight: 300
+
+# ─── Native Splash Screen ───────────────────────────────────────────────────
+# Sau khi thêm config này, chạy: dart run flutter_native_splash:create
+flutter_native_splash:
+  # Màu nền trắng — khớp với SplashPage Flutter
+  color: "#FFFFFF"
+  color_dark: "#FFFFFF"
+
+  # Logo THP được generate từ mk_splash.py
+  image: assets/images/splash_logo.png
+  image_dark: assets/images/splash_logo.png
+
+  # Tắt fullscreen (giữ status bar bình thường)
+  fullscreen: false
+
+  # Android 12+ Splash API
+  android_12:
+    color: "#FFFFFF"
+    color_dark: "#FFFFFF"
+    image: assets/images/splash_logo.png
+    image_dark: assets/images/splash_logo.png
+    # icon_background_color trong vòng tròn icon của Android 12+
+    icon_background_color: "#FFFFFF"
+    icon_background_color_dark: "#FFFFFF"
+
