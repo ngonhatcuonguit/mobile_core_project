@@ -7,10 +7,21 @@
   "light_mode": "Chế độ sáng",
   "continue": "Tiếp tục",
   "enjoy_listening": "Tận hưởng âm nhạc",
-  "intro_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sagittis enim purus sed phasellus. Cursus ornare id scelerisque aliquam.",
+  "intro_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
   "language": "Ngôn ngữ",
   "settings": "Cài đặt",
   "theme": "Giao diện",
   "english": "Tiếng Anh",
-  "vietnamese": "Tiếng Việt"
+  "vietnamese": "Tiếng Việt",
+  "login_title": "Đăng nhập",
+  "login_welcome": "Chào mừng trở lại với My THP",
+  "login_welcome_sub": "",
+  "login_msnv": "Mã nhân viên",
+  "login_password": "Mật khẩu",
+  "login_forgot_password": "Quên mật khẩu?",
+  "login_sign_in": "Đăng nhập",
+  "login_error_empty_username": "Vui lòng nhập mã nhân viên",
+  "login_error_empty_password": "Vui lòng nhập mật khẩu",
+  "login_failed": "Đăng nhập thất bại",
+  "login_close": "Đóng"
 }

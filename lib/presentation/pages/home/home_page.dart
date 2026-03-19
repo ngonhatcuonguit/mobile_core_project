@@ -65,15 +65,10 @@ class _HomePageState extends State<HomePage> {
           // Logo area
           Row(
             children: [
-              SvgPicture.asset(
-                AppVectors.thp_logo,
-                width: 40,
-                height: 40,
-              ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               SvgPicture.asset(
                 AppVectors.thp_logo_horizontal,
-                height: 28,
+                height: 42,
                 // ignore: deprecated_member_use
                 color: isDark ? Colors.white : null,
               ),

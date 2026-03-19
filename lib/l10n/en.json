@@ -7,10 +7,21 @@
   "light_mode": "Light Mode",
   "continue": "Continue",
   "enjoy_listening": "Enjoy listening to music",
-  "intro_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sagittis enim purus sed phasellus. Cursus ornare id scelerisque aliquam.",
+  "intro_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
   "language": "Language",
   "settings": "Settings",
   "theme": "Theme",
   "english": "English",
-  "vietnamese": "Vietnamese"
+  "vietnamese": "Vietnamese",
+  "login_title": "Login",
+  "login_welcome": "Welcome back,",
+  "login_welcome_sub": "you've been missed!",
+  "login_msnv": "Employee ID",
+  "login_password": "Password",
+  "login_forgot_password": "Forgot your password?",
+  "login_sign_in": "Sign in",
+  "login_error_empty_username": "Please enter your employee ID",
+  "login_error_empty_password": "Please enter your password",
+  "login_failed": "Login failed",
+  "login_close": "Close"
 }
