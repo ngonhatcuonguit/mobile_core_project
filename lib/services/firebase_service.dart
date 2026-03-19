@@ -6,6 +6,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_core_project/domain/usecases/register_device_usecase.dart';
 import 'package:flutter_core_project/firebase_options.dart';
 
 /// Background message handler — phải là top-level function (không được là method)
@@ -29,6 +30,11 @@ class FirebaseService {
 
   // Guard: tránh gọi initialize() nhiều lần
   bool _initialized = false;
+
+  // ─── UseCase injection (set sau khi DI sẵn sàng) ────────────────────────────
+  /// Gán sau khi initializeDependencies() hoàn tất, trước khi gọi initialize()
+  /// hoặc ngay sau đó (token refresh listener sẽ dùng use case này).
+  RegisterDeviceUseCase? registerDeviceUseCase;
 
   // ─── Public accessors ───────────────────────────────────────────────────────
   // Khai báo late để tránh truy cập Firebase trước khi initializeApp() được gọi
@@ -168,12 +174,31 @@ class FirebaseService {
     // Lấy FCM token
     final token = await getFCMToken();
     debugPrint('[FCM] Token: $token');
+    if (token != null && token.isNotEmpty) {
+      await _sendTokenToServer(token);
+    }
 
     // Lắng nghe token refresh
-    messaging.onTokenRefresh.listen((newToken) {
+    messaging.onTokenRefresh.listen((newToken) async {
       debugPrint('[FCM] Token refreshed: $newToken');
-      // TODO: Gửi newToken lên backend của bạn
+      await _sendTokenToServer(newToken);
     });
+  }
+
+  /// Gửi FCM token lên backend thông qua RegisterDeviceUseCase.
+  /// Silent — không throw exception ra ngoài để không làm crash app.
+  Future<void> _sendTokenToServer(String token) async {
+    final useCase = registerDeviceUseCase;
+    if (useCase == null) {
+      debugPrint('[FCM] ⚠️ registerDeviceUseCase chưa được inject — bỏ qua gửi token.');
+      return;
+    }
+    final success = await useCase(deviceRegistrationId: token);
+    if (success) {
+      debugPrint('[FCM] ✅ Device token đã được gửi lên server thành công.');
+    } else {
+      debugPrint('[FCM] ⚠️ Gửi device token lên server thất bại — sẽ thử lại khi token refresh.');
+    }
   }
 
   Future<void> _setupLocalNotifications() async {

@@ -11,6 +11,7 @@ import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_t
 import 'package:flutter_core_project/presentation/pages/splash/splash.dart';
 import 'package:flutter_core_project/presentation/widgets/network/network_status_banner.dart';
 import 'package:flutter_core_project/services/analytics_observer.dart';
+import 'package:flutter_core_project/domain/usecases/register_device_usecase.dart';
 import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_core_project/services/network_service.dart';
@@ -33,6 +34,10 @@ Future<void> main() async {
     initializeDependencies(),
     NetworkService().init(),
   ]);
+
+  // Inject RegisterDeviceUseCase vào FirebaseService sau khi DI sẵn sàng.
+  // FirebaseService sẽ dùng use case này để gửi FCM token lên server.
+  FirebaseService.instance.registerDeviceUseCase = sl<RegisterDeviceUseCase>();
 
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
