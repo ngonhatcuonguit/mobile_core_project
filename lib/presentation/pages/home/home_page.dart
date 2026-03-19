@@ -5,10 +5,30 @@ import 'package:flutter_core_project/presentation/pages/home/widgets/home_banner
 import 'package:flutter_core_project/presentation/pages/home/widgets/home_department_widget.dart';
 import 'package:flutter_core_project/presentation/pages/home/widgets/home_factory_widget.dart';
 import 'package:flutter_core_project/presentation/pages/home/widgets/home_quick_menu_widget.dart';
+import 'package:flutter_core_project/presentation/pages/notification/notification_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // Đồng bộ unread count từ mock data — sẽ replace bằng API sau
+  int _unreadCount = _mockUnreadCount();
+
+  static int _mockUnreadCount() =>
+      mockNotifications.where((e) => !e.isRead).length;
+
+  void _openNotifications() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const NotificationPage()),
+    );
+    // Sau khi quay lại, refresh unread count
+    if (mounted) setState(() => _unreadCount = _mockUnreadCount());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,55 +80,60 @@ class HomePage extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          // Notification bell
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF2A2A2A)
-                      : Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.notifications_outlined,
-                  color: isDark ? Colors.white70 : const Color(0xFF374151),
-                  size: 22,
-                ),
-              ),
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEF4444),
+          // Notification bell — tappable
+          GestureDetector(
+            onTap: _openNotifications,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black
+                            .withOpacity(isDark ? 0.3 : 0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: const Center(
-                    child: Text(
-                      '1',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
+                  child: Icon(
+                    Icons.notifications_outlined,
+                    color: isDark
+                        ? Colors.white70
+                        : const Color(0xFF374151),
+                    size: 22,
+                  ),
+                ),
+                if (_unreadCount > 0)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          _unreadCount > 9 ? '9+' : '$_unreadCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
