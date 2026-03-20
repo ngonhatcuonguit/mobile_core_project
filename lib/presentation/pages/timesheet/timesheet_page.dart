@@ -7,6 +7,7 @@ import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_t
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_state.dart';
 import 'package:flutter_core_project/presentation/pages/timesheet/adjustment_report_page.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 class TimesheetPage extends StatefulWidget {
   const TimesheetPage({super.key});
@@ -62,6 +63,54 @@ class _TimesheetPageState extends State<TimesheetPage> {
         );
   }
 
+  // ── Shimmer skeleton khi đang loading ────────────────────────────────────
+  Widget _buildShimmerSkeleton(bool isDark) {
+    final baseColor = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE0E0E0);
+    final highlight = isDark ? const Color(0xFF3A3A3A) : const Color(0xFFF5F5F5);
+    final cardColor = isDark ? const Color(0xFF2A2A2A) : Colors.white;
+
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlight,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            // Summary cards row
+            Row(children: [
+              Expanded(child: _skCard(cardColor, h: 64)),
+              const SizedBox(width: 8),
+              Expanded(child: _skCard(cardColor, h: 64)),
+              const SizedBox(width: 8),
+              Expanded(child: _skCard(cardColor, h: 64)),
+            ]),
+            const SizedBox(height: 12),
+            // Month selector
+            _skCard(cardColor, h: 40),
+            const SizedBox(height: 12),
+            // Calendar grid placeholder
+            _skCard(cardColor, h: 260, r: 12),
+            const SizedBox(height: 12),
+            // Action button
+            _skCard(cardColor, h: 48, r: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _skCard(Color color, {double h = 80, double r = 10}) => Container(
+        height: h,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(r),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
@@ -82,9 +131,80 @@ class _TimesheetPageState extends State<TimesheetPage> {
             }
           },
           builder: (context, state) {
+            // ── Lần đầu chưa có data → shimmer toàn màn hình ──────────────
             if (state is TimesheetLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is TimesheetError) {
+              return _buildShimmerSkeleton(isDark);
+            }
+
+            // ── Đang refresh nhưng vẫn có data cũ → giữ UI + overlay ──────
+            if (state is TimesheetRefreshing) {
+              return Stack(
+                children: [
+                  // Nội dung cũ vẫn hiển thị
+                  _buildTimesheetContent(
+                    TimesheetLoaded(
+                      timesheet: state.timesheet!,
+                      selectedDate: state.selectedDate,
+                    ),
+                  ),
+                  // Overlay trong suốt khoá tương tác (trừ bottom nav bên ngoài)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      ignoring: false,
+                      child: Container(
+                        color: Colors.black.withOpacity(0.18),
+                      ),
+                    ),
+                  ),
+                  // Popup loading nhỏ gọn ở giữa
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 28, vertical: 22),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF2A2A2A)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.18),
+                            blurRadius: 24,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 36,
+                            height: 36,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: Color(0xFF42C83C),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            'Đang tải bảng công...',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1A1A1A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            if (state is TimesheetError) {
               final err = state.error;
               final errMsg = err?.message?.isNotEmpty == true
                   ? err!.message!
@@ -120,24 +240,29 @@ class _TimesheetPageState extends State<TimesheetPage> {
                 ),
               );
             } else if (state is TimesheetLoaded) {
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 12),
-                    _buildSummaryCards(state),
-                    const SizedBox(height: 8),
-                    _buildMonthSelector(),
-                    _buildCalendar(state),
-                    if (state.selectedDate != null) _buildDayDetails(state),
-                    _buildActionButtons(selectedDate: state.selectedDate),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              );
+              return _buildTimesheetContent(state);
             }
-            return const Center(child: CircularProgressIndicator());
+            return _buildShimmerSkeleton(isDark);
           },
         ),
+      ),
+    );
+  }
+
+  /// Nội dung chính của màn hình timesheet — dùng cho cả Loaded và Refreshing
+  Widget _buildTimesheetContent(TimesheetLoaded state) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          _buildSummaryCards(state),
+          const SizedBox(height: 8),
+          _buildMonthSelector(),
+          _buildCalendar(state),
+          if (state.selectedDate != null) _buildDayDetails(state),
+          _buildActionButtons(selectedDate: state.selectedDate),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }
@@ -877,13 +1002,6 @@ class _TimesheetPageState extends State<TimesheetPage> {
     final labelClr = isDarkMode ? Colors.grey[400]!       : Colors.grey[600]!;
     final valClr   = isDarkMode ? Colors.white            : Colors.black;
 
-    Widget row2(String l1, String v1, String l2, String v2) => Row(
-      children: [
-        Expanded(child: _buildDetailItem(l1, v1)),
-        const SizedBox(width: 10),
-        Expanded(child: _buildDetailItem(l2, v2)),
-      ],
-    );
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -989,30 +1107,76 @@ class _TimesheetPageState extends State<TimesheetPage> {
             const SizedBox(height: 6),
           ],
           const Divider(height: 14, thickness: 0.5),
-          // ── all data fields – aligned with web version ──────────────────
-          row2('Ngày làm việc (Wd)', fmtVal(dayData.wd),
-               'Phép năm (P)', fmtVal(dayData.p)),
-          const SizedBox(height: 6),
-          row2('Nghỉ việc riêng có hưởng lương\n(Tang/Hôn...) (Pr)', fmtVal(dayData.pr),
-               'Ngoài giờ (NgG)', fmtVal(dayData.ngG)),
-          const SizedBox(height: 6),
-          row2('Nghỉ lễ (NL)', fmtVal(dayData.nL),
-               'Tăng giờ (Phiếu báo tăng giờ) (NgG_2)', fmtVal(dayData.ngG2)),
-          const SizedBox(height: 6),
-          row2('Tai nạn (TN)', fmtVal(dayData.tN),
-               'Nghỉ bù (B)', fmtVal(dayData.b)),
-          const SizedBox(height: 6),
-          row2('Nghỉ phép không lương (Ro)', fmtVal(dayData.ro),
-               'Nghỉ ngưng việc (N)', fmtVal(dayData.n)),
-          const SizedBox(height: 6),
-          row2('Khác (Nghỉ không phép...) (K)', fmtVal(dayData.o),
-               'Ca3 (Ca3)', fmtVal(dayData.ca3)),
-          const SizedBox(height: 6),
-          row2('Bù lễ (BL)', fmtVal(dayData.bL),
-               'Thai sản (TS)', fmtVal(dayData.tS)),
+          // ── Chỉ hiển thị các trường có giá trị > 0 ──────────────────────
+          ..._buildVisibleDetailRows(dayData, fmtVal),
         ],
       ),
     );
+  }
+
+  /// Trả về list widget chỉ gồm những item có giá trị > 0
+  List<Widget> _buildVisibleDetailRows(
+      TimeSheetDataEntity dayData, String Function(double?) fmtVal) {
+    // Map: label → value (chỉ lấy những cái > 0)
+    final fields = <MapEntry<String, String>>[];
+    void add(String label, double? v) {
+      if (v != null && v > 0) fields.add(MapEntry(label, fmtVal(v)));
+    }
+
+    add('Ngày làm việc (Wd)', dayData.wd);
+    add('Phép năm (P)', dayData.p);
+    add('Nghỉ việc riêng có hưởng lương (Pr)', dayData.pr);
+    add('Ngoài giờ (NgG)', dayData.ngG);
+    add('Nghỉ lễ (NL)', dayData.nL);
+    add('Tăng giờ (NgG_2)', dayData.ngG2);
+    add('Tai nạn (TN)', dayData.tN);
+    add('Nghỉ bù (B)', dayData.b);
+    add('Nghỉ phép không lương (Ro)', dayData.ro);
+    add('Nghỉ ngưng việc (N)', dayData.n);
+    add('Khác / Không phép (K)', dayData.o);
+    add('Ca3', dayData.ca3);
+    add('Bù lễ (BL)', dayData.bL);
+    add('Thai sản (TS)', dayData.tS);
+
+    if (fields.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, size: 14, color: Colors.grey[400]),
+              const SizedBox(width: 6),
+              Text('Không có dữ liệu công cho ngày này',
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                      fontStyle: FontStyle.italic)),
+            ],
+          ),
+        ),
+      ];
+    }
+
+    // Ghép thành từng cặp để dùng row2
+    final rows = <Widget>[];
+    for (int i = 0; i < fields.length; i += 2) {
+      if (i + 1 < fields.length) {
+        rows.add(Row(children: [
+          Expanded(child: _buildDetailItem(fields[i].key, fields[i].value)),
+          const SizedBox(width: 10),
+          Expanded(child: _buildDetailItem(fields[i + 1].key, fields[i + 1].value)),
+        ]));
+      } else {
+        // Item lẻ cuối
+        rows.add(Row(children: [
+          Expanded(child: _buildDetailItem(fields[i].key, fields[i].value)),
+          const SizedBox(width: 10),
+          const Expanded(child: SizedBox()),
+        ]));
+      }
+      if (i + 2 < fields.length) rows.add(const SizedBox(height: 6));
+    }
+    return rows;
   }
 
   Widget _buildDetailItem(String label, String value) {

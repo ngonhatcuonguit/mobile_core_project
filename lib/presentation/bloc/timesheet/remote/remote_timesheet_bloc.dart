@@ -88,7 +88,21 @@ class RemoteTimesheetBloc extends Bloc<TimesheetEvent, TimesheetState> {
       return;
     }
 
-    emit(const TimesheetLoading());
+    // Không có cache → call API
+    // Nếu đang có data cũ (state là Loaded/Refreshing) → emit Refreshing để giữ UI
+    // Nếu chưa có data nào (lần đầu) → emit Loading để hiện shimmer
+    final prevLoaded = (state is TimesheetLoaded || state is TimesheetRefreshing)
+        ? state.timesheet
+        : null;
+
+    if (prevLoaded != null) {
+      emit(TimesheetRefreshing(
+        timesheet: prevLoaded,
+        selectedDate: state.selectedDate,
+      ));
+    } else {
+      emit(const TimesheetLoading());
+    }
 
     final dataState = await _getTimesheetUseCase(
       params: GetTimesheetParams(year: event.year, month: event.month),
@@ -131,7 +145,19 @@ class RemoteTimesheetBloc extends Bloc<TimesheetEvent, TimesheetState> {
       return;
     }
 
-    emit(const TimesheetLoading());
+    // Không có cache → call API, giữ UI cũ nếu có
+    final prevLoaded2 = (state is TimesheetLoaded || state is TimesheetRefreshing)
+        ? state.timesheet
+        : null;
+
+    if (prevLoaded2 != null) {
+      emit(TimesheetRefreshing(
+        timesheet: prevLoaded2,
+        selectedDate: state.selectedDate,
+      ));
+    } else {
+      emit(const TimesheetLoading());
+    }
 
     final dataState = await _getTimesheetUseCase(
       params: GetTimesheetParams(year: event.year, month: event.month),

@@ -28,6 +28,15 @@ class TimesheetLoaded extends TimesheetState {
   }) : super(timesheet: timesheet, selectedDate: selectedDate);
 }
 
+/// Đang call API nhưng vẫn giữ data cũ để UI không bị xóa trắng.
+/// UI sẽ hiển thị overlay loading trong suốt đè lên content hiện tại.
+class TimesheetRefreshing extends TimesheetState {
+  const TimesheetRefreshing({
+    required TimesheetEntity timesheet,
+    DateTime? selectedDate,
+  }) : super(timesheet: timesheet, selectedDate: selectedDate);
+}
+
 class TimesheetError extends TimesheetState {
   const TimesheetError(DioException error) : super(error: error);
 }

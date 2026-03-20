@@ -574,18 +574,15 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
             items: AdjustmentType.values.map((type) {
               return DropdownMenuItem<AdjustmentType>(
                 value: type,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(type.label,
-                        style: TextStyle(
-                          fontSize: 13, color: _textColor,
-                          fontWeight: _selectedType == type ? FontWeight.w700 : FontWeight.normal,
-                        )),
-                    Text('[${type.code}]',
-                        style: TextStyle(fontSize: 10, color: _labelColor)),
-                  ],
+                child: Text(
+                  type.label,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: _textColor,
+                    fontWeight: _selectedType == type
+                        ? FontWeight.w700
+                        : FontWeight.normal,
+                  ),
                 ),
               );
             }).toList(),
@@ -595,9 +592,15 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
                 alignment: Alignment.centerLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 2),
-                  child: Text(type.label,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _primary)),
+                  child: Text(
+                    type.label,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: _primary,
+                    ),
+                  ),
                 ),
               );
             }).toList(),
