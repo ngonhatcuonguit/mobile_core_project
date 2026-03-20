@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_core_project/core/configs/app_config.dart';
+import 'package:flutter_core_project/data/data_sources/remote/adjustment_report_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/login_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/news_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/notification_api_service.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_core_project/data/repositories/timesheet/timesheet_repos
 import 'package:flutter_core_project/domain/repository/news/article_repository.dart';
 import 'package:flutter_core_project/domain/repository/notification/notification_repository.dart';
 import 'package:flutter_core_project/domain/repository/timesheet/timesheet_repository.dart';
+import 'package:flutter_core_project/domain/usecases/submit_adjustment_report_usecase.dart';
 import 'package:flutter_core_project/domain/usecases/get_timesheet.dart';
 import 'package:flutter_core_project/domain/usecases/register_device_usecase.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_bloc.dart';
@@ -74,11 +76,13 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<NewsApiService>(NewsApiService(sl()));
   sl.registerSingleton<TimesheetApiService>(TimesheetApiService(thpDio));
   sl.registerSingleton<NotificationApiService>(NotificationApiService(thpDio));
+  sl.registerSingleton<AdjustmentReportApiService>(AdjustmentReportApiService(thpDio));
   sl.registerSingleton<ArticleRepository>(ArticleRepositoryImpl(sl()));
   sl.registerSingleton<TimesheetRepository>(TimesheetRepositoryImpl(sl()));
   sl.registerSingleton<NotificationRepository>(NotificationRepositoryImpl(sl()));
   sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
   sl.registerSingleton<GetTimesheetUseCase>(GetTimesheetUseCase(sl()));
+  sl.registerSingleton<SubmitAdjustmentReportUseCase>(SubmitAdjustmentReportUseCase(sl()));
   sl.registerSingleton<RegisterDeviceUseCase>(RegisterDeviceUseCase(sl()));
   sl.registerSingleton<RemoteArticlesBloc>(RemoteArticlesBloc(sl()));
   sl.registerSingleton<RemoteTimesheetBloc>(RemoteTimesheetBloc(sl()));
