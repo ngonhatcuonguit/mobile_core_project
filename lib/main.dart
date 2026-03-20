@@ -8,7 +8,9 @@ import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
-import 'package:flutter_core_project/presentation/pages/splash/splash.dart';
+import 'package:flutter_core_project/presentation/auth/pages/sign_in.dart';
+import 'package:flutter_core_project/presentation/pages/main/main_screen.dart';
+import 'package:flutter_core_project/services/auth_service.dart';;
 import 'package:flutter_core_project/presentation/widgets/network/network_status_banner.dart';
 import 'package:flutter_core_project/services/analytics_observer.dart';
 import 'package:flutter_core_project/domain/usecases/register_device_usecase.dart';
@@ -39,17 +41,24 @@ Future<void> main() async {
   // FirebaseService sẽ dùng use case này để gửi FCM token lên server.
   FirebaseService.instance.registerDeviceUseCase = sl<RegisterDeviceUseCase>();
 
+  // Xác định màn hình đầu tiên ngay tại đây — không cần SplashPage
+  final isLoggedIn = await AuthService.isLoggedIn();
+
+  // Dismiss native splash ngay trước runApp
+  FlutterNativeSplash.remove();
+
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
         ? HydratedStorage.webStorageDirectory
         : results[1] as Directory,
   );
 
-  runApp(const MyApp());
+  runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +112,7 @@ class MyApp extends StatelessWidget {
                 locale: locale,
 
                 home: NetworkStatusBanner(
-                  child: const SplashPage(),
+                  child: isLoggedIn ? const MainScreen() : const SigninPage(),
                 ),
               );
             },

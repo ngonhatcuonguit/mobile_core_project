@@ -9,7 +9,9 @@ import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
-import 'package:flutter_core_project/presentation/pages/splash/splash.dart';
+import 'package:flutter_core_project/presentation/auth/pages/sign_in.dart';
+import 'package:flutter_core_project/presentation/pages/main/main_screen.dart';
+import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/analytics_observer.dart';
 import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
@@ -41,11 +43,15 @@ Future<void> main() async {
         : results[1] as Directory,
   );
 
-  runApp(const MyApp());
+  final isLoggedIn = await AuthService.isLoggedIn();
+  FlutterNativeSplash.remove();
+
+  runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +105,7 @@ class MyApp extends StatelessWidget {
                 ],
                 locale: locale,
 
-                home: const SplashPage(),
+                home: isLoggedIn ? const MainScreen() : const SigninPage(),
               );
             },
           );

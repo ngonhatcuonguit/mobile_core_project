@@ -3,15 +3,16 @@
     <!-- Android 12+ SplashScreen API -->
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
+        <!-- Nền trắng toàn màn hình -->
+        <!-- Dùng splash (logo đầy đủ) thay vì android12splash (bị crop tròn) -->
+        <!-- KHÔNG đặt windowSplashScreenIconBackgroundColor → tránh vòng tròn trắng -->
         <item name="android:forceDarkAllowed">false</item>
         <item name="android:windowFullscreen">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">false</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
-        <!-- Nền trắng toàn màn hình -->
         <item name="android:windowSplashScreenBackground">#FFFFFF</item>
-        <!-- Dùng splash (logo đầy đủ) thay vì android12splash (bị crop tròn) -->
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash</item>
-        <!-- KHÔNG đặt windowSplashScreenIconBackgroundColor → tránh vòng tròn trắng -->
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/android12splash</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#FFFFFF</item>
     </style>
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">@android:color/white</item>

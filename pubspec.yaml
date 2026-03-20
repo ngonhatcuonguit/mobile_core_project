@@ -100,6 +100,7 @@ flutter_native_splash:
   image: assets/images/splash_logo.png
   image_dark: assets/images/splash_logo.png
 
+
   # Tắt fullscreen (giữ status bar bình thường)
   fullscreen: false
 
