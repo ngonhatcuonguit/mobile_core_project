@@ -68,22 +68,18 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
   Color get _textColor => _isDark ? Colors.white : const Color(0xFF1A1A1A);
   Color get _borderColor => _isDark ? const Color(0xFF3A3A3A) : Colors.grey[300]!;
 
-  // ── Khi đổi ngày → cập nhật ngày trong TimeIn/TimeOut nếu đã có ─────────
+  // ── Khi đổi ngày → reset TimeIn/TimeOut để user chọn lại ──────────────
   void _onDateChanged(DateTime newDate) {
+    // Chỉ reset khi ngày thực sự thay đổi
+    if (newDate.year == _selectedDate.year &&
+        newDate.month == _selectedDate.month &&
+        newDate.day == _selectedDate.day) return;
+
     setState(() {
       _selectedDate = newDate;
-      if (_timeIn != null) {
-        _timeIn = DateTime(
-          newDate.year, newDate.month, newDate.day,
-          _timeIn!.hour, _timeIn!.minute,
-        );
-      }
-      if (_timeOut != null) {
-        _timeOut = DateTime(
-          newDate.year, newDate.month, newDate.day,
-          _timeOut!.hour, _timeOut!.minute,
-        );
-      }
+      // Reset giờ vào/ra để user chọn lại theo ngày mới
+      _timeIn = null;
+      _timeOut = null;
     });
   }
 

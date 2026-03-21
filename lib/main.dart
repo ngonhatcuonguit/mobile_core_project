@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,7 +9,7 @@ import 'package:flutter_core_project/presentation/bloc/article/remote/remote_art
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
 import 'package:flutter_core_project/presentation/auth/pages/sign_in.dart';
 import 'package:flutter_core_project/presentation/pages/main/main_screen.dart';
-import 'package:flutter_core_project/services/auth_service.dart';;
+import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/presentation/widgets/network/network_status_banner.dart';
 import 'package:flutter_core_project/services/analytics_observer.dart';
 import 'package:flutter_core_project/domain/usecases/register_device_usecase.dart';
@@ -21,7 +20,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
-
 import 'presentation/choose_mode/bloc/locale_cubit.dart';
 import 'presentation/choose_mode/bloc/theme_cubit.dart';
 
