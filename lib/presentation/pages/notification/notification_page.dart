@@ -1,19 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_core_project/data/models/notification/notification_model.dart';
+import 'package:flutter_core_project/domain/repository/notification/notification_repository.dart';
+import 'package:flutter_core_project/injection_container.dart';
 import 'package:intl/intl.dart';
 
-// ─── Model ────────────────────────────────────────────────────────────────────
+// ─── Notification Type từ MessageType string ──────────────────────────────────
 enum NotificationType {
-  timesheet,    // Bảng công
-  leaveRequest, // Đơn nghỉ phép
-  payroll,      // Lương
-  announcement, // Thông báo chung
-  warning,      // Cảnh báo
-  system,       // Hệ thống
-  birthday,     // Sinh nhật
+  timesheet,    // TIMESHEET
+  leaveRequest, // LEAVE
+  payroll,      // PAYROLL
+  announcement, // ANNOUNCEMENT
+  warning,      // WARNING
+  system,       // SYSTEM
+  birthday,     // BIRTHDAY
 }
 
+NotificationType _typeFromString(String raw) {
+  switch (raw.toUpperCase()) {
+    case 'TIMESHEET':    return NotificationType.timesheet;
+    case 'LEAVE':        return NotificationType.leaveRequest;
+    case 'PAYROLL':      return NotificationType.payroll;
+    case 'ANNOUNCEMENT': return NotificationType.announcement;
+    case 'WARNING':      return NotificationType.warning;
+    case 'SYSTEM':       return NotificationType.system;
+    case 'BIRTHDAY':     return NotificationType.birthday;
+    default:             return NotificationType.system;
+  }
+}
+
+// ─── View-model dùng trong UI, map từ NotificationModel ──────────────────────
 class NotificationItem {
-  final String id;
+  final int id;        // API Id
   final NotificationType type;
   final String title;
   final String content;
@@ -29,6 +46,15 @@ class NotificationItem {
     required this.isRead,
   });
 
+  factory NotificationItem.fromModel(NotificationModel m) => NotificationItem(
+        id: m.id,
+        type: _typeFromString(m.messageType),
+        title: m.messageTitle,
+        content: m.message,
+        time: m.created,
+        isRead: m.isRead,
+      );
+
   NotificationItem copyWith({bool? isRead}) => NotificationItem(
         id: id,
         type: type,
@@ -39,132 +65,6 @@ class NotificationItem {
       );
 }
 
-// ─── Mock Data (public — dùng chung với HomePage badge count) ────────────────
-final DateTime _now = DateTime.now();
-
-final List<NotificationItem> mockNotifications = [
-  NotificationItem(
-    id: '1',
-    type: NotificationType.timesheet,
-    title: 'Bảng công tháng 3/2026 đã được duyệt',
-    content: 'Bảng công tháng 3 năm 2026 của bạn đã được HR xác nhận và duyệt thành công. Vui lòng kiểm tra lại thông tin.',
-    time: _now.subtract(const Duration(minutes: 5)),
-    isRead: false,
-  ),
-  NotificationItem(
-    id: '2',
-    type: NotificationType.leaveRequest,
-    title: 'Đơn xin nghỉ phép đã được phê duyệt',
-    content: 'Đơn xin nghỉ phép từ ngày 20/03/2026 đến 22/03/2026 của bạn đã được quản lý phê duyệt.',
-    time: _now.subtract(const Duration(hours: 1)),
-    isRead: false,
-  ),
-  NotificationItem(
-    id: '3',
-    type: NotificationType.payroll,
-    title: 'Phiếu lương tháng 2/2026 đã sẵn sàng',
-    content: 'Phiếu lương tháng 2 năm 2026 đã được tải lên hệ thống. Bạn có thể xem chi tiết trong mục tài chính.',
-    time: _now.subtract(const Duration(hours: 3)),
-    isRead: false,
-  ),
-  NotificationItem(
-    id: '4',
-    type: NotificationType.warning,
-    title: 'Cảnh báo: Quét vân tay không thành công ngày 17/03',
-    content: 'Hệ thống ghi nhận bạn chưa quét vân tay vào ngày 17/03/2026. Vui lòng liên hệ HR để điều chỉnh.',
-    time: _now.subtract(const Duration(hours: 6)),
-    isRead: false,
-  ),
-  NotificationItem(
-    id: '5',
-    type: NotificationType.announcement,
-    title: 'Thông báo nghỉ lễ Giỗ Tổ Hùng Vương 2026',
-    content: 'Công ty thông báo nghỉ lễ Giỗ Tổ Hùng Vương vào ngày 18/04/2026 (âm lịch 10/3). Toàn thể nhân viên được nghỉ.',
-    time: _now.subtract(const Duration(days: 1)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '6',
-    type: NotificationType.birthday,
-    title: 'Chúc mừng sinh nhật đồng nghiệp!',
-    content: 'Hôm nay là sinh nhật của Trần Thị Mai - Phòng Kế toán. Hãy gửi lời chúc đến đồng nghiệp nhé!',
-    time: _now.subtract(const Duration(days: 1, hours: 2)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '7',
-    type: NotificationType.leaveRequest,
-    title: 'Đơn xin nghỉ phép yêu cầu bổ sung thông tin',
-    content: 'Đơn xin nghỉ phép ngày 25/03/2026 của bạn cần bổ sung lý do cụ thể hơn. Vui lòng cập nhật và gửi lại.',
-    time: _now.subtract(const Duration(days: 2)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '8',
-    type: NotificationType.system,
-    title: 'Hệ thống bảo trì định kỳ',
-    content: 'Hệ thống sẽ bảo trì từ 22:00 đến 24:00 ngày 20/03/2026. Trong thời gian này một số chức năng có thể bị gián đoạn.',
-    time: _now.subtract(const Duration(days: 3)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '9',
-    type: NotificationType.timesheet,
-    title: 'Nhắc nhở: Xác nhận bảng công tháng 2/2026',
-    content: 'Bạn chưa xác nhận bảng công tháng 2 năm 2026. Hạn chót xác nhận là ngày 05/03/2026.',
-    time: _now.subtract(const Duration(days: 5)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '10',
-    type: NotificationType.payroll,
-    title: 'Thưởng Tết Nguyên Đán 2026 đã được chuyển',
-    content: 'Thưởng Tết Nguyên Đán 2026 đã được chuyển vào tài khoản của bạn. Vui lòng kiểm tra tài khoản ngân hàng.',
-    time: _now.subtract(const Duration(days: 7)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '11',
-    type: NotificationType.announcement,
-    title: 'Cập nhật chính sách phúc lợi nhân viên năm 2026',
-    content: 'Công ty đã cập nhật chính sách phúc lợi cho năm 2026 bao gồm tăng mức phép năm và bổ sung bảo hiểm sức khỏe.',
-    time: _now.subtract(const Duration(days: 10)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '12',
-    type: NotificationType.warning,
-    title: 'Cảnh báo: Số ngày phép còn lại sắp hết',
-    content: 'Bạn chỉ còn 1.14 ngày phép cho năm 2026. Vui lòng cân nhắc khi đăng ký nghỉ phép trong thời gian tới.',
-    time: _now.subtract(const Duration(days: 12)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '13',
-    type: NotificationType.system,
-    title: 'Tính năng mới: Báo cáo điều chỉnh bảng công',
-    content: 'Ứng dụng đã cập nhật tính năng báo cáo điều chỉnh bảng công. Bạn có thể gửi yêu cầu điều chỉnh trực tiếp từ ứng dụng.',
-    time: _now.subtract(const Duration(days: 14)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '14',
-    type: NotificationType.birthday,
-    title: 'Chúc mừng sinh nhật Nguyễn Văn An!',
-    content: 'Hôm nay là sinh nhật của Nguyễn Văn An - Trưởng phòng IT. Hãy gửi lời chúc tốt đẹp nhé!',
-    time: _now.subtract(const Duration(days: 15)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '15',
-    type: NotificationType.leaveRequest,
-    title: 'Đơn xin nghỉ phép tháng 1 đã bị từ chối',
-    content: 'Đơn xin nghỉ phép từ ngày 15/01/2026 đến 16/01/2026 đã bị từ chối do trùng với thời gian cao điểm công việc.',
-    time: _now.subtract(const Duration(days: 18)),
-    isRead: true,
-  ),
-];
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
@@ -174,22 +74,36 @@ class NotificationPage extends StatefulWidget {
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  static const int _pageSize = 6;
+  static const int _pageSize = 10;
 
-  late List<NotificationItem> _allItems;
-  final List<NotificationItem> _displayedItems = [];
+  final NotificationRepository _repo = sl<NotificationRepository>();
+
+  final List<NotificationItem> _items = [];
+
   bool _isLoadingMore = false;
+  bool _isFirstLoad = true;
   bool _hasMore = true;
+  int _currentPage = 1;
+  int _totalFromApi = 0;
+
+  // Số lượng unread thật từ API /UnreadCount
+  int _unreadCountFromApi = 0;
+
   final ScrollController _scrollController = ScrollController();
 
-  // Filter: null = all, true = unread, false = read
+  // Filter: null = ALL, false = UNREAD, true = READ
   bool? _filterRead;
+
+  String get _apiMode {
+    if (_filterRead == null) return 'ALL';
+    return _filterRead! ? 'READ' : 'UNREAD';
+  }
 
   @override
   void initState() {
     super.initState();
-    _allItems = List.from(mockNotifications);
-    _loadMore();
+    _fetchPage(reset: true);
+    _fetchUnreadCount();
     _scrollController.addListener(_onScroll);
   }
 
@@ -199,84 +113,157 @@ class _NotificationPageState extends State<NotificationPage> {
     super.dispose();
   }
 
-  // ── Filtered source ───────────────────────────────────────────────────────
-  List<NotificationItem> get _filtered {
-    if (_filterRead == null) return _allItems;
-    return _allItems.where((e) => e.isRead == _filterRead).toList();
+  // ── Fetch unread count from dedicated API ────────────────────────────────
+  Future<void> _fetchUnreadCount() async {
+    final count = await _repo.getUnreadCount();
+    if (!mounted) return;
+    setState(() => _unreadCountFromApi = count);
   }
 
-  // ── Load more ─────────────────────────────────────────────────────────────
-  void _loadMore() async {
-    if (_isLoadingMore || !_hasMore) return;
+  // ── Fetch from API ────────────────────────────────────────────────────────
+  Future<void> _fetchPage({bool reset = false}) async {
+    if (_isLoadingMore) return;
+    if (!reset && !_hasMore) {
+      _showNoMoreToast();
+      return;
+    }
+
     setState(() => _isLoadingMore = true);
 
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 600));
+    final page = reset ? 1 : _currentPage;
+
+    final result = await _repo.getMessages(
+      mode: _apiMode,
+      page: page,
+      pageSize: _pageSize,
+    );
+
     if (!mounted) return;
 
-    final source = _filtered;
-    final start = _displayedItems.length;
-    final end = (start + _pageSize).clamp(0, source.length);
+    final newItems = result.items.map(NotificationItem.fromModel).toList();
 
     setState(() {
-      _displayedItems.addAll(source.sublist(start, end));
-      _hasMore = end < source.length;
+      if (reset) {
+        _items
+          ..clear()
+          ..addAll(newItems);
+        _currentPage = 2;
+      } else {
+        _items.addAll(newItems);
+        _currentPage = page + 1;
+      }
+      _totalFromApi = result.total;
+      // Dừng load more khi số item trả về < pageSize (trang cuối)
+      _hasMore = newItems.length >= _pageSize;
       _isLoadingMore = false;
+      _isFirstLoad = false;
     });
+  }
+
+  void _showNoMoreToast() {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.notifications_none_rounded,
+                color: Colors.white, size: 18),
+            SizedBox(width: 8),
+            Text(
+              'Bạn đã xem hết thông báo',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF374151),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 120) {
-      _loadMore();
+      if (!_hasMore && !_isFirstLoad && !_isLoadingMore && _items.isNotEmpty) {
+        _showNoMoreToast();
+      } else {
+        _fetchPage();
+      }
     }
   }
 
   // ── Apply filter ──────────────────────────────────────────────────────────
   void _applyFilter(bool? value) {
+    if (_filterRead == value) return;
     setState(() {
       _filterRead = value;
-      _displayedItems.clear();
-      _hasMore = true;
+      _isFirstLoad = true;
     });
-    _loadMore();
+    _fetchPage(reset: true);
   }
 
-  // ── Mark all read ─────────────────────────────────────────────────────────
-  void _markAllRead() {
+  // ── Mark all read (optimistic UI + API) ──────────────────────────────────
+  Future<void> _markAllRead() async {
+    final unreadIds = _items
+        .where((e) => !e.isRead)
+        .map((e) => e.id)
+        .toList();
+
+    // Optimistic update
     setState(() {
-      _allItems = _allItems.map((e) => e.copyWith(isRead: true)).toList();
-      _displayedItems.clear();
-      _hasMore = true;
+      for (int i = 0; i < _items.length; i++) {
+        if (!_items[i].isRead) {
+          _items[i] = _items[i].copyWith(isRead: true);
+        }
+      }
+      _unreadCountFromApi = 0;
     });
-    _loadMore();
+
+    // Fire API calls concurrently
+    await Future.wait(unreadIds.map((id) => _repo.markAsRead(id: id)));
+
+    // Sync real count from server
+    _fetchUnreadCount();
   }
 
   // ── Mark single read ──────────────────────────────────────────────────────
-  void _markRead(String id) {
-    final idx = _allItems.indexWhere((e) => e.id == id);
-    if (idx == -1) return;
-    setState(() {
-      _allItems[idx] = _allItems[idx].copyWith(isRead: true);
-      final di = _displayedItems.indexWhere((e) => e.id == id);
-      if (di != -1) {
-        _displayedItems[di] = _displayedItems[di].copyWith(isRead: true);
-      }
-    });
+  Future<void> _markRead(NotificationItem item) async {
+    if (item.isRead) return;
+
+    // Optimistic update
+    final idx = _items.indexWhere((e) => e.id == item.id);
+    if (idx != -1) {
+      setState(() {
+        _items[idx] = _items[idx].copyWith(isRead: true);
+        if (_unreadCountFromApi > 0) _unreadCountFromApi--;
+      });
+    }
+
+    // API call then re-sync
+    await _repo.markAsRead(id: item.id);
+    _fetchUnreadCount();
   }
 
-  int get _unreadCount => _allItems.where((e) => !e.isRead).length;
+  // Badge count: dùng số từ API /UnreadCount (chính xác hơn)
+  int get _unreadBadge => _unreadCountFromApi;
+  // Đếm local để cập nhật optimistic trong filter chips
+  int get _unreadCountLocal => _items.where((e) => !e.isRead).length;
+  int get _readCount        => _items.where((e) => e.isRead).length;
+
+  // ── Total counts for filter chips ────────────────────────────────────────
+  int get _totalCount => _totalFromApi;
 
   // ─── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor =
-        isDark ? const Color(0xFF1C1C1C) : const Color(0xFFF5F5F5);
+    final bgColor = isDark ? const Color(0xFF1C1C1C) : const Color(0xFFF5F5F5);
     final appBarBg = isDark ? const Color(0xFF242424) : Colors.white;
     final titleColor = isDark ? Colors.white : const Color(0xFF111827);
-    final borderColor =
-        isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE5E7EB);
+    final borderColor = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE5E7EB);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -291,24 +278,32 @@ class _NotificationPageState extends State<NotificationPage> {
 
             // ── List ────────────────────────────────────────────────────
             Expanded(
-              child: _displayedItems.isEmpty && !_isLoadingMore
-                  ? _buildEmpty(isDark)
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(top: 8, bottom: 24),
-                      itemCount:
-                          _displayedItems.length + (_isLoadingMore ? 1 : 0),
-                      itemBuilder: (ctx, i) {
-                        if (i == _displayedItems.length) {
-                          return _buildLoadingIndicator();
-                        }
-                        return _NotificationItemWidget(
-                          item: _displayedItems[i],
-                          isDark: isDark,
-                          onTap: () => _markRead(_displayedItems[i].id),
-                        );
-                      },
-                    ),
+              child: _isFirstLoad
+                  ? _buildLoadingFull()
+                  : (_items.isEmpty && !_isLoadingMore
+                      ? _buildEmpty(isDark)
+                      : RefreshIndicator(
+                          color: const Color(0xFF42C83C),
+                          onRefresh: () async {
+                            await _fetchPage(reset: true);
+                            _fetchUnreadCount();
+                          },
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.only(top: 8, bottom: 24),
+                            itemCount: _items.length + (_isLoadingMore ? 1 : 0),
+                            itemBuilder: (ctx, i) {
+                              if (i == _items.length) {
+                                return _buildLoadingIndicator();
+                              }
+                              return _NotificationItemWidget(
+                                item: _items[i],
+                                isDark: isDark,
+                                onTap: () => _markRead(_items[i]),
+                              );
+                            },
+                          ),
+                        )),
             ),
           ],
         ),
@@ -347,7 +342,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     color: titleColor,
                   ),
                 ),
-                if (_unreadCount > 0) ...[
+                if (_unreadBadge > 0) ...[
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -357,7 +352,7 @@ class _NotificationPageState extends State<NotificationPage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      '$_unreadCount',
+                      '$_unreadBadge',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
@@ -370,7 +365,7 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
           ),
           // Mark all read button
-          if (_unreadCount > 0)
+          if (_unreadBadge > 0)
             TextButton.icon(
               onPressed: _markAllRead,
               icon: const Icon(Icons.done_all_rounded,
@@ -396,8 +391,7 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   // ── Filter row ─────────────────────────────────────────────────────────────
-  Widget _buildFilterRow(
-      bool isDark, Color appBarBg, Color borderColor) {
+  Widget _buildFilterRow(bool isDark, Color appBarBg, Color borderColor) {
     return Container(
       color: appBarBg,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
@@ -405,7 +399,7 @@ class _NotificationPageState extends State<NotificationPage> {
         children: [
           _FilterChip(
             label: 'Tất cả',
-            count: _allItems.length,
+            count: _totalFromApi,
             isSelected: _filterRead == null,
             isDark: isDark,
             onTap: () => _applyFilter(null),
@@ -413,7 +407,7 @@ class _NotificationPageState extends State<NotificationPage> {
           const SizedBox(width: 8),
           _FilterChip(
             label: 'Chưa đọc',
-            count: _allItems.where((e) => !e.isRead).length,
+            count: _unreadBadge,
             isSelected: _filterRead == false,
             isDark: isDark,
             onTap: () => _applyFilter(false),
@@ -421,7 +415,7 @@ class _NotificationPageState extends State<NotificationPage> {
           const SizedBox(width: 8),
           _FilterChip(
             label: 'Đã đọc',
-            count: _allItems.where((e) => e.isRead).length,
+            count: _readCount,
             isSelected: _filterRead == true,
             isDark: isDark,
             onTap: () => _applyFilter(true),
@@ -454,7 +448,17 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
-  // ── Loading indicator ──────────────────────────────────────────────────────
+  // ── Full-screen loading (lần đầu) ─────────────────────────────────────────
+  Widget _buildLoadingFull() {
+    return const Center(
+      child: CircularProgressIndicator(
+        strokeWidth: 2.5,
+        color: Color(0xFF42C83C),
+      ),
+    );
+  }
+
+  // ── Loading indicator (pagination) ────────────────────────────────────────
   Widget _buildLoadingIndicator() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 20),
@@ -618,14 +622,10 @@ class _NotificationItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final cfg = _iconFor(item.type);
 
-    // Background colors
     final unreadBg = isDark
-        ? const Color(0xFF1E2A1E)   // dark green tint for unread
-        : const Color(0xFFF0FDF4);  // light green tint for unread
-    final readBg = isDark
-        ? const Color(0xFF242424)
-        : Colors.white;
-
+        ? const Color(0xFF1E2A1E)
+        : const Color(0xFFF0FDF4);
+    final readBg = isDark ? const Color(0xFF242424) : Colors.white;
     final bg = item.isRead ? readBg : unreadBg;
     final titleColor = isDark ? Colors.white : const Color(0xFF111827);
     final contentColor =
@@ -669,11 +669,7 @@ class _NotificationItemWidget extends StatelessWidget {
                   color: cfg.bg.withOpacity(isDark ? 0.2 : 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  cfg.icon,
-                  color: cfg.bg,
-                  size: 22,
-                ),
+                child: Icon(cfg.icon, color: cfg.bg, size: 22),
               ),
               const SizedBox(width: 12),
 
@@ -744,7 +740,8 @@ class _NotificationItemWidget extends StatelessWidget {
                         const SizedBox(width: 3),
                         Text(
                           _formatTime(item.time),
-                          style: TextStyle(fontSize: 11, color: timeColor),
+                          style:
+                              TextStyle(fontSize: 11, color: timeColor),
                         ),
                         const Spacer(),
                         // Type label badge
@@ -752,7 +749,8 @@ class _NotificationItemWidget extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 7, vertical: 2),
                           decoration: BoxDecoration(
-                            color: cfg.bg.withOpacity(isDark ? 0.15 : 0.1),
+                            color:
+                                cfg.bg.withOpacity(isDark ? 0.15 : 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(

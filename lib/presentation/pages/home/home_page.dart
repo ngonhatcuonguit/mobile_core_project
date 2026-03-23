@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
+import 'package:flutter_core_project/domain/repository/notification/notification_repository.dart';
+import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/pages/home/widgets/home_banner_widget.dart';
 import 'package:flutter_core_project/presentation/pages/home/widgets/home_department_widget.dart';
 import 'package:flutter_core_project/presentation/pages/home/widgets/home_factory_widget.dart';
@@ -16,18 +18,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Đồng bộ unread count từ mock data — sẽ replace bằng API sau
-  int _unreadCount = _mockUnreadCount();
+  final NotificationRepository _repo = sl<NotificationRepository>();
+  int _unreadCount = 0;
 
-  static int _mockUnreadCount() =>
-      mockNotifications.where((e) => !e.isRead).length;
+  @override
+  void initState() {
+    super.initState();
+    _refreshUnreadCount();
+  }
+
+  Future<void> _refreshUnreadCount() async {
+    final count = await _repo.getUnreadCount();
+    if (mounted) setState(() => _unreadCount = count);
+  }
 
   void _openNotifications() async {
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const NotificationPage()),
     );
     // Sau khi quay lại, refresh unread count
-    if (mounted) setState(() => _unreadCount = _mockUnreadCount());
+    if (mounted) _refreshUnreadCount();
   }
 
   @override
