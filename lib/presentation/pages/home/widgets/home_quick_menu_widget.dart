@@ -1,15 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 
 class HomeQuickMenuWidget extends StatelessWidget {
   const HomeQuickMenuWidget({super.key});
 
   static const List<_MenuItem> _menuItems = [
-    _MenuItem(icon: Icons.description_outlined, label: 'Giấy tờ'),
-    _MenuItem(icon: Icons.calendar_month_outlined, label: 'NghỉTphép'),
-    _MenuItem(icon: Icons.account_balance_wallet_outlined, label: 'Bảng\nLương'),
-    _MenuItem(icon: Icons.info_outline_rounded, label: 'Thông tin'),
-    _MenuItem(icon: Icons.apps_rounded, label: 'See All'),
+    _MenuItem(
+      icon: Icons.description_outlined,
+      label: 'Giấy tờ',
+      iconColor: Color(0xFF3B82F6), // xanh dương
+      bgLight: Color(0xFFEFF6FF),
+      bgDark: Color(0xFF1E3A5F),
+    ),
+    _MenuItem(
+      icon: Icons.calendar_month_outlined,
+      label: 'Nghỉ phép',
+      iconColor: Color(0xFF8B5CF6), // tím
+      bgLight: Color(0xFFF5F3FF),
+      bgDark: Color(0xFF2E1B5E),
+    ),
+    _MenuItem(
+      icon: Icons.account_balance_wallet_outlined,
+      label: 'Bảng lương',
+      iconColor: Color(0xFFF59E0B), // cam vàng
+      bgLight: Color(0xFFFFFBEB),
+      bgDark: Color(0xFF422006),
+    ),
+    _MenuItem(
+      icon: Icons.info_outline_rounded,
+      label: 'Thông tin',
+      iconColor: Color(0xFF10B981), // xanh teal
+      bgLight: Color(0xFFECFDF5),
+      bgDark: Color(0xFF064E3B),
+    ),
+    _MenuItem(
+      icon: Icons.apps_rounded,
+      label: 'See All',
+      iconColor: Color(0xFFEF4444), // đỏ hồng
+      bgLight: Color(0xFFFFF1F2),
+      bgDark: Color(0xFF4C0519),
+    ),
   ];
 
   @override
@@ -36,7 +67,7 @@ class _QuickMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF0F0F0);
+    final bgColor = isDark ? item.bgDark : item.bgLight;
 
     return GestureDetector(
       onTap: () {},
@@ -51,18 +82,28 @@ class _QuickMenuItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.2 : 0.06),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+                  color: item.iconColor.withOpacity(isDark ? 0.25 : 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Center(
-              child: Icon(
-                item.icon,
-                color: const Color(0xFF42C83C),
-                size: 26,
-              ),
+              child: item.icon is String
+                  ? SvgPicture.asset(
+                      item.icon as String,
+                      width: 26,
+                      height: 26,
+                      colorFilter: ColorFilter.mode(
+                        item.iconColor,
+                        BlendMode.srcIn,
+                      ),
+                    )
+                  : Icon(
+                      item.icon as IconData,
+                      color: item.iconColor,
+                      size: 26,
+                    ),
             ),
           ),
           const SizedBox(height: 7),
@@ -89,8 +130,17 @@ class _QuickMenuItem extends StatelessWidget {
 }
 
 class _MenuItem {
-  final IconData icon;
+  final dynamic icon; // IconData hoặc String (SVG path)
   final String label;
+  final Color iconColor;
+  final Color bgLight;
+  final Color bgDark;
 
-  const _MenuItem({required this.icon, required this.label});
+  const _MenuItem({
+    required this.icon,
+    required this.label,
+    required this.iconColor,
+    required this.bgLight,
+    required this.bgDark,
+  });
 }

@@ -19,22 +19,31 @@ class _HomeBannerWidgetState extends State<HomeBannerWidget> {
       highlight: 'TRÀ XANH KHÔNG ĐỘ',
       subtitle:
           'Đi khắp 15 tỉnh thành cùng Sơn Tùng và\nTrà Xanh Không Độ. Bạn đã sẵn sàng?',
-      gradientStart: Color(0xFF2E7D32),
-      gradientEnd: Color(0xFF66BB6A),
+      gradientStart: Color(0xFF1B8C3E),
+      gradientEnd: Color(0xFF56C271),
+      accentColor: Color(0xFFFFEB3B),
+      decorIcon1: Icons.eco,
+      decorIcon2: Icons.spa,
     ),
     _BannerItem(
       title: 'Khám phá sản phẩm mới',
       highlight: 'THP GROUP 2026',
       subtitle: 'Những sản phẩm mới nhất từ THP Group\nĐặt hàng ngay hôm nay!',
-      gradientStart: Color(0xFF1B5E20),
-      gradientEnd: Color(0xFF43A047),
+      gradientStart: Color(0xFF4A1FB8),
+      gradientEnd: Color(0xFF8B5CF6),
+      accentColor: Color(0xFFFDE68A),
+      decorIcon1: Icons.star_outline_rounded,
+      decorIcon2: Icons.auto_awesome,
     ),
     _BannerItem(
       title: 'Chương trình ưu đãi đặc biệt',
       highlight: 'DÀNH CHO NHÂN VIÊN',
       subtitle: 'Ưu đãi độc quyền cho nhân viên THP\nÁp dụng từ tháng 3/2026',
-      gradientStart: Color(0xFF388E3C),
-      gradientEnd: Color(0xFF81C784),
+      gradientStart: Color(0xFFB83232),
+      gradientEnd: Color(0xFFFF7043),
+      accentColor: Color(0xFFFFF9C4),
+      decorIcon1: Icons.card_giftcard_outlined,
+      decorIcon2: Icons.local_offer_outlined,
     ),
   ];
 
@@ -118,14 +127,14 @@ class _BannerCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Decorative leaf/pattern overlay
+          // Decorative overlay
           Positioned(
             right: -10,
             bottom: -10,
             child: Opacity(
               opacity: 0.18,
               child: Icon(
-                Icons.eco,
+                item.decorIcon1,
                 size: 130,
                 color: Colors.white,
               ),
@@ -137,7 +146,7 @@ class _BannerCard extends StatelessWidget {
             child: Opacity(
               opacity: 0.12,
               child: Icon(
-                Icons.spa,
+                item.decorIcon2,
                 size: 100,
                 color: Colors.white,
               ),
@@ -162,8 +171,8 @@ class _BannerCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   item.highlight,
-                  style: const TextStyle(
-                    color: Color(0xFFFFEB3B),
+                  style: TextStyle(
+                    color: item.accentColor,
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                     fontFamily: 'Satoshi',
@@ -214,6 +223,9 @@ class _BannerItem {
   final String subtitle;
   final Color gradientStart;
   final Color gradientEnd;
+  final Color accentColor;
+  final IconData decorIcon1;
+  final IconData decorIcon2;
 
   const _BannerItem({
     required this.title,
@@ -221,6 +233,9 @@ class _BannerItem {
     required this.subtitle,
     required this.gradientStart,
     required this.gradientEnd,
+    required this.accentColor,
+    required this.decorIcon1,
+    required this.decorIcon2,
   });
 }
 

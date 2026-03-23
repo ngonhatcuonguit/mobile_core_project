@@ -13,31 +13,49 @@ class HomeDepartmentWidget extends StatelessWidget {
         code: 'BOM',
         name: 'Ban Giám Đốc',
         icon: Icons.groups_2_outlined,
+        iconColor: Color(0xFF8B5CF6), // tím
+        bgLight: Color(0xFFF5F3FF),
+        bgDark: Color(0xFF2E1B5E),
       ),
       _DepartmentItem(
         code: 'IT',
         name: 'Công Nghệ Thông Tin',
         icon: Icons.computer_outlined,
+        iconColor: Color(0xFF3B82F6), // xanh dương
+        bgLight: Color(0xFFEFF6FF),
+        bgDark: Color(0xFF1E3A5F),
       ),
       _DepartmentItem(
         code: 'HR',
         name: 'Nhân Sự',
         icon: Icons.manage_search_outlined,
+        iconColor: Color(0xFF10B981), // teal
+        bgLight: Color(0xFFECFDF5),
+        bgDark: Color(0xFF064E3B),
       ),
       _DepartmentItem(
         code: 'Logistics',
         name: 'Vận Tải & Kho Bãi',
         icon: Icons.local_shipping_outlined,
+        iconColor: Color(0xFFF59E0B), // cam vàng
+        bgLight: Color(0xFFFFFBEB),
+        bgDark: Color(0xFF422006),
       ),
       _DepartmentItem(
         code: 'Consumer',
         name: 'Hàng Tiêu Dùng',
         icon: Icons.shopping_cart_outlined,
+        iconColor: Color(0xFFEF4444), // đỏ
+        bgLight: Color(0xFFFFF1F2),
+        bgDark: Color(0xFF4C0519),
       ),
       _DepartmentItem(
         code: 'Legal',
         name: 'Pháp Lý',
         icon: Icons.gavel_outlined,
+        iconColor: Color(0xFF0EA5E9), // xanh sky
+        bgLight: Color(0xFFE0F2FE),
+        bgDark: Color(0xFF0C4A6E),
       ),
     ];
 
@@ -125,12 +143,12 @@ class _DepartmentCard extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFF42C83C).withOpacity(0.12),
+                color: isDark ? item.bgDark : item.bgLight,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 item.icon,
-                color: const Color(0xFF42C83C),
+                color: item.iconColor,
                 size: 20,
               ),
             ),
@@ -154,9 +172,7 @@ class _DepartmentCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
-                    color: isDark
-                        ? Colors.white38
-                        : const Color(0xFF6B7280),
+                    color: isDark ? Colors.white38 : const Color(0xFF6B7280),
                     fontFamily: 'Satoshi',
                   ),
                 ),
@@ -173,10 +189,16 @@ class _DepartmentItem {
   final String code;
   final String name;
   final IconData icon;
+  final Color iconColor;
+  final Color bgLight;
+  final Color bgDark;
+
   const _DepartmentItem({
     required this.code,
     required this.name,
     required this.icon,
+    required this.iconColor,
+    required this.bgLight,
+    required this.bgDark,
   });
 }
-
