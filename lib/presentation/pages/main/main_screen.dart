@@ -102,8 +102,8 @@ class _MainScreenState extends State<MainScreen> {
                 isDark: isDarkMode,
               ),
               _buildNavItem(
-                activeIcon: AppVectors.icHeartActive,
-                inactiveIcon: AppVectors.icHeart,
+                activeIcon: 'assets/vectors/ic_edit_document.svg',
+                inactiveIcon: 'assets/vectors/ic_edit_document.svg',
                 label: 'Đơn từ',
                 isActive: _currentIndex == 2,
                 isDark: isDarkMode,

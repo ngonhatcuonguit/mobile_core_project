@@ -5,6 +5,7 @@ import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
 import 'package:flutter_core_project/presentation/choose_mode/bloc/locale_cubit.dart';
 import 'package:flutter_core_project/presentation/choose_mode/bloc/theme_cubit.dart';
 import 'package:flutter_core_project/presentation/intro/pages/get_started.dart';
+import 'package:flutter_core_project/presentation/pages/notification/notification_page.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -100,7 +101,12 @@ class _ProfilePageState extends State<ProfilePage> {
               title: 'Notification',
               iconColor: const Color(0xFF1B94A1),
               onTap: () {
-                // Navigate to Notification
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationPage(),
+                  ),
+                );
               },
               isDark: isDark,
             ),

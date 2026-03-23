@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
-import 'package:flutter_core_project/presentation/widgets/appbar/app_bar.dart';
 
 class LeaveRequestPage extends StatefulWidget {
   const LeaveRequestPage({super.key});
@@ -101,62 +100,92 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
 
     return Scaffold(
       backgroundColor: scaffoldBg,
-      appBar: BasicAppBar(
-        hideLeading: true,
-        title: Text(
-          'Yêu Cầu Nghỉ Phép Mới',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: textColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ─── Inline TopBar ────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).maybePop(),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF2C2C2C)
+                              : Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black
+                                  .withOpacity(isDark ? 0.3 : 0.08),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 16,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Yêu Cầu Nghỉ Phép Mới',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ─── Employee Info Card ───────────────────────────────
+              _buildEmployeeCard(isDark, cardBg, subtitleColor),
+              const SizedBox(height: 16),
+
+              // ─── Thông tin nghỉ Section ───────────────────────────
+              _buildLeaveInfoSection(
+                isDark,
+                cardBg,
+                inputBg,
+                borderColor,
+                labelColor,
+                textColor,
+                sectionTitleColor,
+                subtitleColor,
+              ),
+              const SizedBox(height: 16),
+
+              // ─── Bàn giao công việc Section ───────────────────────
+              _buildHandoverSection(
+                isDark,
+                cardBg,
+                inputBg,
+                borderColor,
+                labelColor,
+                textColor,
+                sectionTitleColor,
+              ),
+              const SizedBox(height: 24),
+
+              // ─── Footer Buttons (cuộn theo trang) ─────────────────
+              _buildFooterButtons(isDark),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ─── Employee Info Card ───────────────────────────────
-                  _buildEmployeeCard(isDark, cardBg, subtitleColor),
-                  const SizedBox(height: 16),
-
-                  // ─── Thông tin nghỉ Section ───────────────────────────
-                  _buildLeaveInfoSection(
-                    isDark,
-                    cardBg,
-                    inputBg,
-                    borderColor,
-                    labelColor,
-                    textColor,
-                    sectionTitleColor,
-                    subtitleColor,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ─── Bàn giao công việc Section ───────────────────────
-                  _buildHandoverSection(
-                    isDark,
-                    cardBg,
-                    inputBg,
-                    borderColor,
-                    labelColor,
-                    textColor,
-                    sectionTitleColor,
-                  ),
-                  const SizedBox(height: 100),
-                ],
-              ),
-            ),
-          ),
-
-          // ─── Footer Buttons ────────────────────────────────────────────
-          _buildFooterButtons(isDark),
-        ],
       ),
     );
   }
@@ -697,20 +726,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
 
   // ── Footer Buttons ─────────────────────────────────────────────────────────
   Widget _buildFooterButtons(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, -3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
+    return Row(
+      children: [
           // Lưu Nháp
           Expanded(
             child: GestureDetector(
@@ -770,7 +787,6 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
             ),
           ),
         ],
-      ),
     );
   }
 

@@ -69,8 +69,6 @@ class _HomePageState extends State<HomePage> {
               SvgPicture.asset(
                 AppVectors.thp_logo_horizontal,
                 height: 42,
-                // ignore: deprecated_member_use
-                color: isDark ? Colors.white : null,
               ),
             ],
           ),
