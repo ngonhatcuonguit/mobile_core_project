@@ -6,6 +6,7 @@ import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_t
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_event.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_state.dart';
 import 'package:flutter_core_project/presentation/pages/timesheet/adjustment_report_page.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -480,7 +481,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
+            child: Text(context.tr('Đóng')),
           ),
         ],
       ),
@@ -985,11 +986,11 @@ class _TimesheetPageState extends State<TimesheetPage> {
     // Status badge
     String statusLabel; Color statusColor;
     if (dayData.wd >= 1.0) {
-      statusLabel = 'Đủ công';   statusColor = const Color(0xFF42C83C);
+      statusLabel = context.tr('timesheet_status_full');   statusColor = const Color(0xFF42C83C);
     } else if (dayData.wd > 0) {
-      statusLabel = 'Nửa ngày';  statusColor = const Color(0xFFFF9800);
+      statusLabel = context.tr('timesheet_status_half');  statusColor = const Color(0xFFFF9800);
     } else {
-      statusLabel = 'Nghỉ';      statusColor = Colors.grey;
+      statusLabel = context.tr('timesheet_status_off');      statusColor = Colors.grey;
     }
 
     // Helper: format value (skip 0.0)
@@ -1057,14 +1058,14 @@ class _TimesheetPageState extends State<TimesheetPage> {
                     children: [
                       const Icon(Icons.login, size: 14, color: Color(0xFF42C83C)),
                       const SizedBox(width: 6),
-                      Text('Vào: ', style: TextStyle(fontSize: 11, color: labelClr)),
+                      Text('${context.tr('timesheet_check_in')}: ', style: TextStyle(fontSize: 11, color: labelClr)),
                       Text(checkInTime,
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
                               color: checkInTime == '--:--' ? Colors.orange : valClr)),
                       const Spacer(),
                       const Icon(Icons.logout, size: 14, color: Colors.redAccent),
                       const SizedBox(width: 6),
-                      Text('Ra: ', style: TextStyle(fontSize: 11, color: labelClr)),
+                      Text('${context.tr('timesheet_check_out')}: ', style: TextStyle(fontSize: 11, color: labelClr)),
                       Text(checkOutTime,
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
                               color: checkOutTime == '--:--' ? Colors.orange : valClr)),
@@ -1074,7 +1075,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
                     children: [
                       Icon(Icons.info_outline, size: 14, color: Colors.grey[400]),
                       const SizedBox(width: 6),
-                      Text('Chưa có dữ liệu quét vân tay',
+                      Text(context.tr('timesheet_no_fingerprint'),
                           style: TextStyle(fontSize: 12, color: Colors.grey[500],
                               fontStyle: FontStyle.italic)),
                     ],
@@ -1083,7 +1084,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
           const SizedBox(height: 8),
           // ── CheckingPoint list (nếu nhiều hơn 1) ──────────────────────
           if (dayData.checkingPoints.length > 1) ...[
-            Text('Tất cả lần quét (${dayData.checkingPoints.length}):',
+            Text('${context.tr('timesheet_all_scans')} (${dayData.checkingPoints.length}):',
                 style: TextStyle(fontSize: 10, color: labelClr, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
             ...dayData.checkingPoints.map((cp2) {
@@ -1146,7 +1147,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
             children: [
               Icon(Icons.info_outline, size: 14, color: Colors.grey[400]),
               const SizedBox(width: 6),
-              Text('Không có dữ liệu công cho ngày này',
+              Text(context.tr('timesheet_no_data'),
                   style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[500],
@@ -1221,7 +1222,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
       child: SizedBox(
         width: double.infinity,
         child: _buildActionButton(
-          'Báo cáo điều chỉnh',
+          context.tr('timesheet_adjustment_report'),
           const Color(0xFF2196F3),
           Icons.edit_document,
           () {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:flutter_core_project/presentation/bloc/article/remote/remote_article_state.dart';
 import 'package:flutter_core_project/presentation/widgets/appbar/app_bar.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_core_project/services/network_service.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_core_project/presentation/widgets/no_internet_ui.dart';
@@ -30,36 +32,22 @@ class _DailyNewsState extends State<DailyNews> {
     });
   }
 
-  Future<void> _checkNetworkAndLoadArticles() async {
-    debugPrint('🔍 Checking network...');
-    final hasInternet = await NetworkService().hasInternetConnection();
-    debugPrint('📶 Has Internet: $hasInternet');
-
-    if (!hasInternet) {
-      debugPrint('❌ No internet detected');
-      if (mounted) {
-        setState(() {
-          _hasNoInternet = true;
-        });
-      }
-      return;
-    }
-
-    debugPrint('✅ Internet available, loading articles...');
-    if (mounted) {
-      setState(() {
-        _hasNoInternet = false;
-      });
-      try {
-        final bloc = context.read<RemoteArticlesBloc>();
-        if (!bloc.isClosed) {
-          debugPrint('📰 Dispatching GetArticles event');
-          bloc.add(const GetArticles());
-        }
-      } catch (e) {
-        debugPrint('❌ RemoteArticlesBloc error: $e');
-      }
-    }
+  @override
+  Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF1C1C1C) : const Color(0xFFF5F5F5),
+      appBar: BasicAppBar(
+        title: SvgPicture.asset(
+          AppVectors.thp_logo_horizontal,
+          height: 30,
+          width: 30,
+        ),
+        hideLeading: true,
+      ),
+      body: _hasNoInternet ? _buildNoInternetUI() : _buildBody(isDark),
+      resizeToAvoidBottomInset: false,
+    );
   }
 
   Widget _buildNoInternetUI() {
@@ -69,9 +57,6 @@ class _DailyNewsState extends State<DailyNews> {
         await _checkNetworkAndLoadArticles();
       },
       onDismiss: () {
-        debugPrint('❌ User dismissed No Internet UI');
-        // Simply hide the no internet UI
-        // User can still navigate to other tabs freely
         if (mounted) {
           setState(() {
             _hasNoInternet = false;
@@ -81,30 +66,16 @@ class _DailyNewsState extends State<DailyNews> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: BasicAppBar(
-        title: SvgPicture.asset(
-          AppVectors.thp_logo_horizontal,
-          height: 30,
-          width: 30,
-        ),
-        hideLeading: true,
-      ),
-      body: _hasNoInternet ? _buildNoInternetUI() : _buildBody(),
-      // Ensure body is not blocking interactions
-      resizeToAvoidBottomInset: false,
-    );
-  }
-
-  Widget _buildBody() {
+  Widget _buildBody(bool isDark) {
     return BlocBuilder<RemoteArticlesBloc, RemoteArticleState>(
       builder: (context, state) {
         if (state is RemoteArticleLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+            child: CircularProgressIndicator(
+              color: isDark ? const Color(0xFF42C83C) : null,
+            ),
+          );
         } else if (state is RemoteArticleError) {
-          // Parse error message to detect connection issues
           final errorMessage = state.error?.toString() ?? '';
           final isConnectionError =
               errorMessage.contains('Failed host lookup') ||
@@ -121,26 +92,29 @@ class _DailyNewsState extends State<DailyNews> {
                   Icon(
                     isConnectionError ? Icons.wifi_off : Icons.cloud_off,
                     size: 80,
-                    color: Colors.grey[400],
+                    color: isDark ? Colors.grey[600] : Colors.grey[400],
                   ),
                   const SizedBox(height: 16),
                   Text(
                     isConnectionError
-                        ? 'No Internet Connection'
-                        : 'Failed to load articles',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        ? context.tr('news_no_internet')
+                        : context.tr('news_failed_load'),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF111827),
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     isConnectionError
-                        ? 'Please check your internet connection.\nMake sure you can access newsapi.org.'
-                        : 'Something went wrong.\nPlease try again later.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                        ? 'Please check your internet connection.'
+                        : 'Something went wrong. Please try again later.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.grey[500] : Colors.grey[600],
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   if (isConnectionError) ...[
@@ -148,22 +122,33 @@ class _DailyNewsState extends State<DailyNews> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
+                        color: isDark
+                            ? Colors.orange.shade900.withOpacity(0.2)
+                            : Colors.orange.shade50,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.orange.shade200),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.orange.shade800
+                              : Colors.orange.shade200,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.info_outline,
-                              color: Colors.orange.shade700, size: 20),
+                              color: isDark
+                                  ? Colors.orange.shade400
+                                  : Colors.orange.shade700,
+                              size: 20),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
-                              'DNS lookup failed for newsapi.org',
+                              context.tr('news_dns_info'),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.orange.shade900,
+                                color: isDark
+                                    ? Colors.orange.shade300
+                                    : Colors.orange.shade900,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -174,14 +159,18 @@ class _DailyNewsState extends State<DailyNews> {
                   ],
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          isDark ? const Color(0xFF2A2A2A) : null,
+                      foregroundColor:
+                          isDark ? const Color(0xFF42C83C) : null,
+                    ),
                     onPressed: () {
-                      setState(() {
-                        _hasNoInternet = false;
-                      });
+                      setState(() => _hasNoInternet = false);
                       _checkNetworkAndLoadArticles();
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
+                    label: Text(context.tr('news_retry')),
                   ),
                 ],
               ),
@@ -198,23 +187,25 @@ class _DailyNewsState extends State<DailyNews> {
                     Icon(
                       Icons.article_outlined,
                       size: 80,
-                      color: Colors.grey[400],
+                      color: isDark ? Colors.grey[600] : Colors.grey[400],
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No articles available',
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                      context.tr('news_empty'),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : const Color(0xFF111827),
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Check back later for new articles.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                      context.tr('news_check_back'),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? Colors.grey[500] : Colors.grey[600],
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -230,7 +221,7 @@ class _DailyNewsState extends State<DailyNews> {
           );
         }
 
-        // Default state: Show empty state with action to load
+        // Default state
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -240,29 +231,38 @@ class _DailyNewsState extends State<DailyNews> {
                 Icon(
                   Icons.article_outlined,
                   size: 80,
-                  color: Colors.grey[400],
+                  color: isDark ? Colors.grey[600] : Colors.grey[400],
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Welcome to Daily News',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  context.tr('news_welcome'),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : const Color(0xFF111827),
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Tap the button below to load latest articles.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                  context.tr('news_check_back'),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? Colors.grey[500] : Colors.grey[600],
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        isDark ? const Color(0xFF2A2A2A) : null,
+                    foregroundColor:
+                        isDark ? const Color(0xFF42C83C) : null,
+                  ),
                   onPressed: _checkNetworkAndLoadArticles,
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Load Articles'),
+                  label: Text(context.tr('news_load_articles')),
                 ),
               ],
             ),
@@ -270,5 +270,28 @@ class _DailyNewsState extends State<DailyNews> {
         );
       },
     );
+  }
+
+  Future<void> _checkNetworkAndLoadArticles() async {
+    debugPrint('🔍 Checking network...');
+    final hasInternet = await NetworkService().hasInternetConnection();
+    debugPrint('📶 Has Internet: $hasInternet');
+
+    if (!hasInternet) {
+      if (mounted) setState(() => _hasNoInternet = true);
+      return;
+    }
+
+    if (mounted) {
+      setState(() => _hasNoInternet = false);
+      try {
+        final bloc = context.read<RemoteArticlesBloc>();
+        if (!bloc.isClosed) {
+          bloc.add(const GetArticles());
+        }
+      } catch (e) {
+        debugPrint('❌ RemoteArticlesBloc error: $e');
+      }
+    }
   }
 }

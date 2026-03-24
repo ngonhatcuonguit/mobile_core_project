@@ -7,6 +7,7 @@ import 'package:flutter_core_project/presentation/choose_mode/bloc/theme_cubit.d
 import 'package:flutter_core_project/presentation/intro/pages/get_started.dart';
 import 'package:flutter_core_project/presentation/pages/notification/notification_page.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -54,7 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
         //   onPressed: () => Navigator.pop(context),
         // ),
         title: Text(
-          'Profile',
+          context.tr('profile_title'),
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black,
             fontSize: 18,
@@ -82,10 +83,9 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildMenuItem(
               context,
               icon: AppVectors.icSettings,
-              title: 'Settings',
+              title: context.tr('profile_settings'),
               iconColor: const Color(0xFFB1B1B1),
               onTap: () {
-                // Navigate to Settings
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -98,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildMenuItem(
               context,
               icon: AppVectors.icNotification,
-              title: 'Notification',
+              title: context.tr('profile_notification'),
               iconColor: const Color(0xFF1B94A1),
               onTap: () {
                 Navigator.push(
@@ -113,7 +113,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildMenuItem(
               context,
               icon: AppVectors.icOrderHistory,
-              title: 'Order History',
+              title: context.tr('profile_order_history'),
               iconColor: const Color(0xFFFD9F12),
               onTap: () {
                 // Navigate to Order History
@@ -126,7 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Account',
+                  context.tr('profile_account'),
                   style: TextStyle(
                     color: isDark ? Colors.grey[600] : Colors.grey[500],
                     fontSize: 14,
@@ -139,7 +139,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildMenuItem(
               context,
               icon: AppVectors.icPrivacy,
-              title: 'Privacy & Policy',
+              title: context.tr('profile_privacy_policy'),
               iconColor: const Color(0xFF008BD9),
               onTap: () {
                 // Navigate to Privacy & Policy
@@ -149,7 +149,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildMenuItem(
               context,
               icon: AppVectors.icTerms,
-              title: 'Terms & Conditions',
+              title: context.tr('profile_terms'),
               iconColor: const Color(0xFFFFCC47),
               onTap: () {
                 // Navigate to Terms & Conditions
@@ -159,7 +159,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildMenuItem(
               context,
               icon: AppVectors.icLogout,
-              title: 'Log Out',
+              title: context.tr('profile_logout'),
               iconColor: const Color(0xFFF44545),
               onTap: () => _handleLogout(context),
               isDark: isDark,
@@ -333,19 +333,19 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
+        title: Text(context.tr('profile_logout_title')),
+        content: Text(context.tr('profile_logout_message')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('profile_logout_cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFFF44545),
             ),
-            child: const Text('Logout'),
+            child: Text(context.tr('profile_logout')),
           ),
         ],
       ),
@@ -391,7 +391,7 @@ class _SettingsPageState extends State<SettingsPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Settings',
+          context.tr('settings_title'),
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black,
             fontSize: 18,
@@ -407,7 +407,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               // Theme Mode Section
               Text(
-                'Appearance',
+                context.tr('settings_appearance'),
                 style: TextStyle(
                   color: isDark ? Colors.grey[400] : Colors.grey[600],
                   fontSize: 14,
@@ -420,7 +420,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
               // Language Section
               Text(
-                'Language',
+                context.tr('settings_app_language'),
                 style: TextStyle(
                   color: isDark ? Colors.grey[400] : Colors.grey[600],
                   fontSize: 14,
@@ -448,7 +448,7 @@ class _SettingsPageState extends State<SettingsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Theme Mode',
+            context.tr('settings_theme_mode'),
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black,
               fontSize: 16,
@@ -461,7 +461,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Expanded(
                 child: _buildThemeOption(
                   icon: Icons.light_mode,
-                  title: 'Light',
+                  title: context.tr('settings_light'),
                   isSelected: !isDark,
                   onTap: () {
                     context.read<ThemeCubit>().updateTheme(ThemeMode.light);
@@ -473,7 +473,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Expanded(
                 child: _buildThemeOption(
                   icon: Icons.dark_mode,
-                  title: 'Dark',
+                  title: context.tr('settings_dark'),
                   isSelected: isDark,
                   onTap: () {
                     context.read<ThemeCubit>().updateTheme(ThemeMode.dark);
@@ -550,7 +550,7 @@ class _SettingsPageState extends State<SettingsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'App Language',
+            context.tr('settings_app_language'),
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black,
               fontSize: 16,
@@ -559,7 +559,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 16),
           _buildLanguageOption(
-            title: 'English',
+            title: context.tr('english'),
             code: 'EN',
             isSelected: currentLocale == 'en',
             onTap: () {
@@ -570,7 +570,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 12),
           _buildLanguageOption(
-            title: 'Tiếng Việt',
+            title: context.tr('vietnamese'),
             code: 'VI',
             isSelected: currentLocale == 'vi',
             onTap: () {

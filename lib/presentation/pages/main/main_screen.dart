@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
 import 'package:flutter_core_project/presentation/pages/home/home_page.dart';
@@ -90,28 +91,28 @@ class _MainScreenState extends State<MainScreen> {
               _buildNavItem(
                 activeIcon: AppVectors.icHomeActive,
                 inactiveIcon: AppVectors.icHome,
-                label: 'Trang chủ',
+                label: context.tr('nav_home'),
                 isActive: _currentIndex == 0,
                 isDark: isDarkMode,
               ),
               _buildNavItem(
                 activeIcon: AppVectors.icDelivery,
                 inactiveIcon: AppVectors.icDelivery,
-                label: 'Bảng công',
+                label: context.tr('nav_timesheet'),
                 isActive: _currentIndex == 1,
                 isDark: isDarkMode,
               ),
               _buildNavItem(
                 activeIcon: 'assets/vectors/ic_edit_document.svg',
                 inactiveIcon: 'assets/vectors/ic_edit_document.svg',
-                label: 'Đơn từ',
+                label: context.tr('nav_leave'),
                 isActive: _currentIndex == 2,
                 isDark: isDarkMode,
               ),
               _buildNavItem(
                 activeIcon: AppVectors.icProfileActive,
                 inactiveIcon: AppVectors.icProfile,
-                label: 'Cá nhân',
+                label: context.tr('nav_profile'),
                 isActive: _currentIndex == 3,
                 isDark: isDarkMode,
               ),

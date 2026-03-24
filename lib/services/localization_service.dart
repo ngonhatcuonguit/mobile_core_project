@@ -42,3 +42,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   @override
   bool shouldReload(covariant LocalizationsDelegate<AppLocalizations> old) => false;
 }
+
+/// Convenience extension: `context.tr('key')`
+extension AppLocalizationsExtension on BuildContext {
+  String tr(String key) => AppLocalizations.of(this)?.translate(key) ?? key;
+}

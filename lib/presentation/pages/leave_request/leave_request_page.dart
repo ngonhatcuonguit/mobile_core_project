@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 
 class LeaveRequestPage extends StatefulWidget {
   const LeaveRequestPage({super.key});
@@ -9,22 +10,32 @@ class LeaveRequestPage extends StatefulWidget {
 }
 
 class _LeaveRequestPageState extends State<LeaveRequestPage> {
-  String? _selectedLeaveType = 'Phép năm (Annual Leave)';
+  int? _selectedLeaveTypeIndex = 0; // Use index instead of string
   DateTime? _fromDate;
   DateTime? _toDate;
+  late List<String> _leaveTypes;
   final TextEditingController _reasonController = TextEditingController();
   final TextEditingController _handoverPersonController =
       TextEditingController();
   final TextEditingController _handoverContentController =
       TextEditingController();
 
-  final List<String> _leaveTypes = [
-    'Phép năm (Annual Leave)',
-    'Nghỉ ốm (Sick Leave)',
-    'Nghỉ không lương (Unpaid Leave)',
-    'Nghỉ lễ (Public Holiday)',
-    'Nghỉ thai sản (Maternity Leave)',
-  ];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize leave types once per dependency change
+    _leaveTypes = [
+      context.tr('leave_type_annual'),
+      context.tr('leave_type_sick'),
+      context.tr('leave_type_unpaid'),
+      context.tr('leave_type_public'),
+      context.tr('leave_type_maternity'),
+    ];
+    // Set default selected index
+    _selectedLeaveTypeIndex ??= 0;
+  }
+
+  String? get _selectedLeaveType => _selectedLeaveTypeIndex != null ? _leaveTypes[_selectedLeaveTypeIndex!] : null;
 
   int get _totalDays {
     if (_fromDate == null || _toDate == null) return 0;
@@ -140,7 +151,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Yêu Cầu Nghỉ Phép Mới',
+                      context.tr('leave_request_title'),
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
@@ -245,7 +256,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'PHÉP KHẢ DỤNG',
+              context.tr('leave_available'),
               style: TextStyle(
                 color: subtitleColor,
                 fontSize: 11,
@@ -269,7 +280,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
-                    'ngày',
+                    context.tr('leave_days_unit'),
                     style: TextStyle(
                       color: subtitleColor,
                       fontSize: 14,
@@ -287,9 +298,9 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                       color: const Color(0xFF42C83C).withOpacity(0.4),
                     ),
                   ),
-                  child: const Text(
-                    'Năm 2025',
-                    style: TextStyle(
+                  child: Text(
+                    context.tr('leave_year_label'),
+                    style: const TextStyle(
                       color: Color(0xFF42C83C),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -356,9 +367,9 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
               ],
             ),
             const SizedBox(height: 12),
-            const Text(
-              'PHÉP KHẢ DỤNG',
-              style: TextStyle(
+            Text(
+              context.tr('leave_available'),
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
@@ -378,11 +389,11 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 6),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
-                    'ngày',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                    context.tr('leave_days_unit'),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ),
                 const Spacer(),
@@ -395,9 +406,9 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                     border: Border.all(
                         color: Colors.white.withOpacity(0.4)),
                   ),
-                  child: const Text(
-                    'Năm 2025',
-                    style: TextStyle(
+                  child: Text(
+                    context.tr('leave_year_label'),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -445,7 +456,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
               ),
               const SizedBox(width: 8),
               Text(
-                'THÔNG TIN NGHỈ',
+                context.tr('leave_info_section'),
                 style: TextStyle(
                   color: sectionTitleColor,
                   fontSize: 13,
@@ -458,7 +469,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           const SizedBox(height: 16),
 
           // Loại phép
-          _buildFieldLabel('Loại phép', isRequired: true, labelColor: labelColor),
+          _buildFieldLabel(context.tr('leave_type_label'), isRequired: true, labelColor: labelColor),
           const SizedBox(height: 6),
           _buildDropdown(isDark, inputBg, borderColor, textColor),
           const SizedBox(height: 14),
@@ -470,15 +481,11 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildFieldLabel('Từ ngày', isRequired: true, labelColor: labelColor),
+                    _buildFieldLabel(context.tr('leave_from_date'), isRequired: true, labelColor: labelColor),
                     const SizedBox(height: 6),
                     _buildDateField(
-                      isDark,
-                      inputBg,
-                      borderColor,
-                      textColor,
-                      _formatDate(_fromDate),
-                      () => _pickDate(true),
+                      isDark, inputBg, borderColor, textColor,
+                      _formatDate(_fromDate), () => _pickDate(true),
                     ),
                   ],
                 ),
@@ -488,15 +495,11 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildFieldLabel('Đến ngày', isRequired: true, labelColor: labelColor),
+                    _buildFieldLabel(context.tr('leave_to_date'), isRequired: true, labelColor: labelColor),
                     const SizedBox(height: 6),
                     _buildDateField(
-                      isDark,
-                      inputBg,
-                      borderColor,
-                      textColor,
-                      _formatDate(_toDate),
-                      () => _pickDate(false),
+                      isDark, inputBg, borderColor, textColor,
+                      _formatDate(_toDate), () => _pickDate(false),
                     ),
                   ],
                 ),
@@ -523,7 +526,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                         : const Color(0xFF6B7280)),
                 const SizedBox(width: 8),
                 Text(
-                  'Tổng cộng:',
+                  context.tr('leave_total'),
                   style: TextStyle(
                     color: isDark
                         ? const Color(0xFF9CA3AF)
@@ -533,7 +536,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                 ),
                 const Spacer(),
                 Text(
-                  '$_totalDays ngày',
+                  '$_totalDays ${context.tr('leave_days_unit')}',
                   style: const TextStyle(
                     color: Color(0xFF42C83C),
                     fontSize: 14,
@@ -546,7 +549,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           const SizedBox(height: 14),
 
           // Lý do nghỉ
-          _buildFieldLabel('Lý do nghỉ', isRequired: true, labelColor: labelColor),
+          _buildFieldLabel(context.tr('leave_reason'), isRequired: true, labelColor: labelColor),
           const SizedBox(height: 6),
           Container(
             decoration: BoxDecoration(
@@ -559,7 +562,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
               maxLines: 4,
               style: TextStyle(color: textColor, fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Nhập lý do chi tiết...',
+                hintText: context.tr('leave_hint_reason'),
                 hintStyle: TextStyle(
                   color: isDark
                       ? const Color(0xFF4B5563)
@@ -608,7 +611,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
               ),
               const SizedBox(width: 8),
               Text(
-                'BÀN GIAO CÔNG VIỆC',
+                context.tr('leave_handover_section'),
                 style: TextStyle(
                   color: sectionTitleColor,
                   fontSize: 13,
@@ -621,7 +624,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           const SizedBox(height: 16),
 
           // Người nhận bàn giao
-          _buildFieldLabel('Người nhận bàn giao', labelColor: labelColor),
+          _buildFieldLabel(context.tr('leave_handover_person'), labelColor: labelColor),
           const SizedBox(height: 6),
           Container(
             decoration: BoxDecoration(
@@ -633,7 +636,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
               controller: _handoverPersonController,
               style: TextStyle(color: textColor, fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Tìm tên nhân viên...',
+                hintText: context.tr('leave_hint_search'),
                 hintStyle: TextStyle(
                   color: isDark
                       ? const Color(0xFF4B5563)
@@ -656,7 +659,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           const SizedBox(height: 14),
 
           // Nội dung công việc
-          _buildFieldLabel('Nội dung công việc', labelColor: labelColor),
+          _buildFieldLabel(context.tr('leave_work_content'), labelColor: labelColor),
           const SizedBox(height: 6),
           Container(
             decoration: BoxDecoration(
@@ -669,7 +672,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
               maxLines: 3,
               style: TextStyle(color: textColor, fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Mô tả ngắn gọn công việc...',
+                hintText: context.tr('leave_hint_work'),
                 hintStyle: TextStyle(
                   color: isDark
                       ? const Color(0xFF4B5563)
@@ -706,7 +709,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Đính kèm tệp',
+                    context.tr('leave_attach_file'),
                     style: TextStyle(
                       color: isDark
                           ? const Color(0xFF9CA3AF)
@@ -745,7 +748,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                 ),
                 child: Center(
                   child: Text(
-                    'Lưu Nháp',
+                    context.tr('leave_save_draft'),
                     style: TextStyle(
                       color: isDark ? Colors.white : const Color(0xFF374151),
                       fontSize: 15,
@@ -768,19 +771,19 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                   color: const Color(0xFF42C83C),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Gửi Yêu Cầu',
-                      style: TextStyle(
+                      context.tr('leave_submit'),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 8),
-                    Icon(Icons.send_outlined, color: Colors.white, size: 18),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.send_outlined, color: Colors.white, size: 18),
                   ],
                 ),
               ),
@@ -826,8 +829,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
         border: Border.all(color: borderColor),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedLeaveType,
+        child: DropdownButton<int>(
+          value: _selectedLeaveTypeIndex,
           isExpanded: true,
           dropdownColor: inputBg,
           icon: Icon(
@@ -840,17 +843,18 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
             fontWeight: FontWeight.w400,
           ),
           onChanged: (val) {
-            setState(() => _selectedLeaveType = val);
+            setState(() => _selectedLeaveTypeIndex = val);
           },
-          items: _leaveTypes.map((type) {
-            return DropdownMenuItem<String>(
-              value: type,
+          items: List.generate(
+            _leaveTypes.length,
+            (index) => DropdownMenuItem<int>(
+              value: index,
               child: Text(
-                type,
+                _leaveTypes[index],
                 style: TextStyle(color: textColor, fontSize: 14),
               ),
-            );
-          }).toList(),
+            ),
+          ),
         ),
       ),
     );

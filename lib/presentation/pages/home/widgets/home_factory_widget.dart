@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 
 class HomeFactoryWidget extends StatelessWidget {
   const HomeFactoryWidget({super.key});
@@ -8,34 +9,34 @@ class HomeFactoryWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
 
-    const factories = [
+    final factories = [
       _FactoryItem(
-        name: 'Nhà máy Bình Dương',
-        description: 'Trụ sở chính',
-        iconColor: Color(0xFF10B981), // teal — flagship
-        bgLight: Color(0xFFECFDF5),
-        bgDark: Color(0xFF064E3B),
+        name: context.tr('factory_binh_duong'),
+        description: context.tr('factory_binh_duong_desc'),
+        iconColor: const Color(0xFF10B981),
+        bgLight: const Color(0xFFECFDF5),
+        bgDark: const Color(0xFF064E3B),
       ),
       _FactoryItem(
-        name: 'Nhà máy Hậu Giang',
-        description: 'Khu vực Miền Tây',
-        iconColor: Color(0xFF3B82F6), // xanh dương
-        bgLight: Color(0xFFEFF6FF),
-        bgDark: Color(0xFF1E3A5F),
+        name: context.tr('factory_hau_giang'),
+        description: context.tr('factory_hau_giang_desc'),
+        iconColor: const Color(0xFF3B82F6),
+        bgLight: const Color(0xFFEFF6FF),
+        bgDark: const Color(0xFF1E3A5F),
       ),
       _FactoryItem(
-        name: 'Nhà máy Chu Lai',
-        description: 'Khu vực Miền Trung',
-        iconColor: Color(0xFFF59E0B), // cam vàng
-        bgLight: Color(0xFFFFFBEB),
-        bgDark: Color(0xFF422006),
+        name: context.tr('factory_chu_lai'),
+        description: context.tr('factory_chu_lai_desc'),
+        iconColor: const Color(0xFFF59E0B),
+        bgLight: const Color(0xFFFFFBEB),
+        bgDark: const Color(0xFF422006),
       ),
       _FactoryItem(
-        name: 'Nhà máy Hà Nam',
-        description: 'Khu vực Miền Bắc',
-        iconColor: Color(0xFF8B5CF6), // tím
-        bgLight: Color(0xFFF5F3FF),
-        bgDark: Color(0xFF2E1B5E),
+        name: context.tr('factory_ha_nam'),
+        description: context.tr('factory_ha_nam_desc'),
+        iconColor: const Color(0xFF8B5CF6),
+        bgLight: const Color(0xFFF5F3FF),
+        bgDark: const Color(0xFF2E1B5E),
       ),
     ];
 
@@ -134,7 +135,7 @@ class _FactoryItem {
   final Color bgLight;
   final Color bgDark;
 
-  const _FactoryItem({
+  _FactoryItem({
     required this.name,
     required this.description,
     required this.iconColor,

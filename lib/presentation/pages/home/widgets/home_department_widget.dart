@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 
 class HomeDepartmentWidget extends StatelessWidget {
   const HomeDepartmentWidget({super.key});
@@ -8,54 +9,54 @@ class HomeDepartmentWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
 
-    const departments = [
+    final departments = [
       _DepartmentItem(
         code: 'BOM',
-        name: 'Ban Giám Đốc',
+        name: context.tr('dept_bom'),
         icon: Icons.groups_2_outlined,
-        iconColor: Color(0xFF8B5CF6), // tím
-        bgLight: Color(0xFFF5F3FF),
-        bgDark: Color(0xFF2E1B5E),
+        iconColor: const Color(0xFF8B5CF6),
+        bgLight: const Color(0xFFF5F3FF),
+        bgDark: const Color(0xFF2E1B5E),
       ),
       _DepartmentItem(
         code: 'IT',
-        name: 'Công Nghệ Thông Tin',
+        name: context.tr('dept_it'),
         icon: Icons.computer_outlined,
-        iconColor: Color(0xFF3B82F6), // xanh dương
-        bgLight: Color(0xFFEFF6FF),
-        bgDark: Color(0xFF1E3A5F),
+        iconColor: const Color(0xFF3B82F6),
+        bgLight: const Color(0xFFEFF6FF),
+        bgDark: const Color(0xFF1E3A5F),
       ),
       _DepartmentItem(
         code: 'HR',
-        name: 'Nhân Sự',
+        name: context.tr('dept_hr'),
         icon: Icons.manage_search_outlined,
-        iconColor: Color(0xFF10B981), // teal
-        bgLight: Color(0xFFECFDF5),
-        bgDark: Color(0xFF064E3B),
+        iconColor: const Color(0xFF10B981),
+        bgLight: const Color(0xFFECFDF5),
+        bgDark: const Color(0xFF064E3B),
       ),
       _DepartmentItem(
         code: 'Logistics',
-        name: 'Vận Tải & Kho Bãi',
+        name: context.tr('dept_logistics'),
         icon: Icons.local_shipping_outlined,
-        iconColor: Color(0xFFF59E0B), // cam vàng
-        bgLight: Color(0xFFFFFBEB),
-        bgDark: Color(0xFF422006),
+        iconColor: const Color(0xFFF59E0B),
+        bgLight: const Color(0xFFFFFBEB),
+        bgDark: const Color(0xFF422006),
       ),
       _DepartmentItem(
         code: 'Consumer',
-        name: 'Hàng Tiêu Dùng',
+        name: context.tr('dept_consumer'),
         icon: Icons.shopping_cart_outlined,
-        iconColor: Color(0xFFEF4444), // đỏ
-        bgLight: Color(0xFFFFF1F2),
-        bgDark: Color(0xFF4C0519),
+        iconColor: const Color(0xFFEF4444),
+        bgLight: const Color(0xFFFFF1F2),
+        bgDark: const Color(0xFF4C0519),
       ),
       _DepartmentItem(
         code: 'Legal',
-        name: 'Pháp Lý',
+        name: context.tr('dept_legal'),
         icon: Icons.gavel_outlined,
-        iconColor: Color(0xFF0EA5E9), // xanh sky
-        bgLight: Color(0xFFE0F2FE),
-        bgDark: Color(0xFF0C4A6E),
+        iconColor: const Color(0xFF0EA5E9),
+        bgLight: const Color(0xFFE0F2FE),
+        bgDark: const Color(0xFF0C4A6E),
       ),
     ];
 
@@ -68,7 +69,7 @@ class HomeDepartmentWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Phòng ban',
+                context.tr('home_departments'),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -78,9 +79,9 @@ class HomeDepartmentWidget extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () {},
-                child: const Text(
-                  'Xem tất cả',
-                  style: TextStyle(
+                child: Text(
+                  context.tr('home_see_all'),
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF42C83C),

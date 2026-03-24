@@ -4,20 +4,24 @@ import 'package:flutter_core_project/data/models/timesheet/adjustment_report_mod
 import 'package:flutter_core_project/domain/usecases/submit_adjustment_report_usecase.dart';
 import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 
 /// Loại báo cáo điều chỉnh — code khớp với ReasonCode trên server
 enum AdjustmentType {
-  dayBusiness('DAY_BUSINESS', 'Công tác trong ngày'),
-  shiftSwapping('SHIFT_SWAPPING', 'Đảo ca'),
-  nightShift('NIGHT_SHIFT', 'Ca Đêm'),
-  mccError('MCC_ERROR', 'Quét vân tay nhưng MCC không ghi nhận'),
-  forgotten('FORGOTEN', 'Quên quét vân tay (Forgoten)'),
-  notYet('NOT_YET', 'Chưa lấy vân tay (Not yet)'),
-  other('OTHER', 'Khác (Other)');
+  dayBusiness('DAY_BUSINESS', 'Công tác trong ngày', 'adjustment_type_day_business'),
+  shiftSwapping('SHIFT_SWAPPING', 'Đảo ca', 'adjustment_type_shift_swapping'),
+  nightShift('NIGHT_SHIFT', 'Ca Đêm', 'adjustment_type_night_shift'),
+  mccError('MCC_ERROR', 'Quét vân tay nhưng MCC không ghi nhận', 'adjustment_type_mcc_error'),
+  forgotten('FORGOTEN', 'Quên quét vân tay (Forgoten)', 'adjustment_type_forgotten'),
+  notYet('NOT_YET', 'Chưa lấy vân tay (Not yet)', 'adjustment_type_not_yet'),
+  other('OTHER', 'Khác (Other)', 'adjustment_type_other');
 
   final String code;
   final String label;
-  const AdjustmentType(this.code, this.label);
+  final String l10nKey;
+  const AdjustmentType(this.code, this.label, this.l10nKey);
+
+  String localizedLabel(BuildContext context) => context.tr(l10nKey);
 }
 
 class AdjustmentReportPage extends StatefulWidget {
@@ -235,21 +239,21 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
         actions: [
           SizedBox(
             width: double.infinity,
-            child: TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: success ? Colors.green : _primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: success ? Colors.green : _primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (success) {
+                    _clearForm();
+                  }
+                },
+                child: Text(context.tr('adjustment_close'), style: const TextStyle(fontWeight: FontWeight.w600)),
               ),
-              onPressed: () {
-                Navigator.of(context).pop(); // đóng dialog
-                if (success) {
-                  _clearForm(); // clear form, disable button
-                }
-              },
-              child: const Text('Đóng', style: TextStyle(fontWeight: FontWeight.w600)),
-            ),
           ),
         ],
       ),
@@ -268,7 +272,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
           icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: _textColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('Báo cáo điều chỉnh',
+        title: Text(_isDark ? context.tr('adjustment_title') : context.tr('adjustment_title'),
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textColor)),
         centerTitle: true,
         bottom: PreferredSize(
@@ -289,26 +293,26 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
                   _buildInfoBanner(),
                   const SizedBox(height: 16),
 
-                  // ── Chọn ngày ────────────────────────────────────────────────
-                  _buildSectionLabel('Ngày điều chỉnh', Icons.calendar_today_rounded),
+                  // ── Chọn ngày
+                  _buildSectionLabel(context.tr('adjustment_date_label'), Icons.calendar_today_rounded),
                   const SizedBox(height: 8),
                   _buildDatePicker(),
                   const SizedBox(height: 20),
 
-                  // ── TimeIn / TimeOut ─────────────────────────────────────────
-                  _buildSectionLabel('Giờ vào / Giờ ra', Icons.access_time_rounded),
+                  // ── TimeIn / TimeOut
+                  _buildSectionLabel(context.tr('adjustment_time_in_out'), Icons.access_time_rounded),
                   const SizedBox(height: 8),
                   _buildTimeRow(),
                   const SizedBox(height: 20),
 
-                  // ── Loại báo cáo ─────────────────────────────────────────────
-                  _buildSectionLabel('Loại báo cáo *', Icons.category_rounded),
+                  // ── Loại báo cáo
+                  _buildSectionLabel(context.tr('adjustment_report_type'), Icons.category_rounded),
                   const SizedBox(height: 8),
                   _buildTypeDropdown(),
                   const SizedBox(height: 20),
 
-                  // ── Lý do điều chỉnh ─────────────────────────────────────────
-                  _buildSectionLabel('Lý do điều chỉnh', Icons.notes_rounded),
+                  // ── Lý do điều chỉnh
+                  _buildSectionLabel(context.tr('adjustment_reason'), Icons.notes_rounded),
                   const SizedBox(height: 8),
                   _buildNoteField(),
                   const SizedBox(height: 32),
@@ -343,7 +347,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Đang gửi báo cáo...',
+                        context.tr('adjustment_submitting'),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -375,7 +379,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Điền đầy đủ thông tin và gửi yêu cầu điều chỉnh công đến bộ phận nhân sự.',
+              context.tr('adjustment_info_banner'),
               style: TextStyle(
                   fontSize: 12,
                   color: _isDark ? Colors.blue[200] : _primary,
@@ -421,11 +425,11 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
               child: const Icon(Icons.calendar_month_rounded, color: _primary, size: 18),
             ),
             const SizedBox(width: 12),
-            Expanded(
+              Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Ngày được chọn',
+                  Text(context.tr('adjustment_date_selected'),
                       style: TextStyle(fontSize: 11, color: _labelColor)),
                   const SizedBox(height: 2),
                   Text(
@@ -455,7 +459,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
 
   Widget _buildTimeTile({required bool isTimeIn}) {
     final value = isTimeIn ? _timeIn : _timeOut;
-    final label = isTimeIn ? 'Giờ vào' : 'Giờ ra';
+    final label = isTimeIn ? context.tr('adjustment_time_in') : context.tr('adjustment_time_out');
 
     return Container(
       decoration: BoxDecoration(
@@ -500,7 +504,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
                                   fontSize: 13, fontWeight: FontWeight.w700, color: _textColor,
                                 ),
                               )
-                            : Text('Chưa chọn',
+                            : Text(context.tr('adjustment_not_selected'),
                                 style: TextStyle(fontSize: 13, color: _labelColor)),
                       ],
                     ),
@@ -526,7 +530,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
                   children: [
                     Icon(Icons.close_rounded, size: 14, color: Colors.red[400]),
                     const SizedBox(width: 4),
-                    Text('Xoá', style: TextStyle(fontSize: 12, color: Colors.red[400])),
+                    Text(context.tr('adjustment_delete'), style: TextStyle(fontSize: 12, color: Colors.red[400])),
                   ],
                 ),
               ),
@@ -557,7 +561,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
             isExpanded: true,
             hint: Padding(
               padding: const EdgeInsets.only(left: 2),
-              child: Text('Chọn loại báo cáo...',
+              child: Text(context.tr('adjustment_select_type_hint'),
                   style: TextStyle(fontSize: 13, color: _labelColor)),
             ),
             icon: Padding(
@@ -571,7 +575,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
               return DropdownMenuItem<AdjustmentType>(
                 value: type,
                 child: Text(
-                  type.label,
+                  type.localizedLabel(context),
                   style: TextStyle(
                     fontSize: 15,
                     color: _textColor,
@@ -589,7 +593,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 2),
                   child: Text(
-                    type.label,
+                    type.localizedLabel(context),
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 15,
@@ -627,7 +631,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
             minLines: 4,
             style: TextStyle(fontSize: 13, color: _textColor, height: 1.5),
             decoration: InputDecoration(
-              hintText: 'Nhập lý do điều chỉnh (thời gian, lý do cụ thể...)',
+              hintText: context.tr('adjustment_hint_reason'),
               hintStyle: TextStyle(fontSize: 12, color: _labelColor),
               filled: true,
               fillColor: _cardColor,
@@ -678,7 +682,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
             ),
             const SizedBox(width: 8),
             Text(
-              enabled ? 'Gửi báo cáo' : 'Vui lòng chọn loại báo cáo',
+              enabled ? context.tr('adjustment_submit') : context.tr('adjustment_select_type'),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
             ),
           ],

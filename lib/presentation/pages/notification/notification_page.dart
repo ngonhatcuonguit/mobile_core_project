@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_core_project/data/models/notification/notification_model.dart';
 import 'package:flutter_core_project/domain/repository/notification/notification_repository.dart';
 import 'package:flutter_core_project/injection_container.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:intl/intl.dart';
 
 // ─── Notification Type từ MessageType string ──────────────────────────────────
@@ -164,14 +165,14 @@ class _NotificationPageState extends State<NotificationPage> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.notifications_none_rounded,
+            const Icon(Icons.notifications_none_rounded,
                 color: Colors.white, size: 18),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
-              'Bạn đã xem hết thông báo',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              context.tr('notification_no_more'),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -370,9 +371,9 @@ class _NotificationPageState extends State<NotificationPage> {
               onPressed: _markAllRead,
               icon: const Icon(Icons.done_all_rounded,
                   size: 15, color: Color(0xFF42C83C)),
-              label: const Text(
-                'Đọc tất cả',
-                style: TextStyle(
+              label: Text(
+                context.tr('notification_mark_all_read'),
+                style: const TextStyle(
                   color: Color(0xFF42C83C),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -436,7 +437,7 @@ class _NotificationPageState extends State<NotificationPage> {
               color: isDark ? Colors.grey[700] : Colors.grey[300]),
           const SizedBox(height: 16),
           Text(
-            'Không có thông báo',
+            context.tr('notification_empty'),
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -570,39 +571,39 @@ class _NotificationItemWidget extends StatelessWidget {
   static _IconConfig _iconFor(NotificationType type) {
     switch (type) {
       case NotificationType.timesheet:
-        return _IconConfig(
+        return const _IconConfig(
           icon: Icons.calendar_month_rounded,
-          bg: const Color(0xFF42C83C),
+          bg: Color(0xFF42C83C),
         );
       case NotificationType.leaveRequest:
-        return _IconConfig(
+        return const _IconConfig(
           icon: Icons.event_available_rounded,
-          bg: const Color(0xFF2196F3),
+          bg: Color(0xFF2196F3),
         );
       case NotificationType.payroll:
-        return _IconConfig(
+        return const _IconConfig(
           icon: Icons.payments_rounded,
-          bg: const Color(0xFF10B981),
+          bg: Color(0xFF10B981),
         );
       case NotificationType.announcement:
-        return _IconConfig(
+        return const _IconConfig(
           icon: Icons.campaign_rounded,
-          bg: const Color(0xFFF59E0B),
+          bg: Color(0xFFF59E0B),
         );
       case NotificationType.warning:
-        return _IconConfig(
+        return const _IconConfig(
           icon: Icons.warning_amber_rounded,
-          bg: const Color(0xFFEF4444),
+          bg: Color(0xFFEF4444),
         );
       case NotificationType.system:
-        return _IconConfig(
+        return const _IconConfig(
           icon: Icons.settings_rounded,
-          bg: const Color(0xFF8B5CF6),
+          bg: Color(0xFF8B5CF6),
         );
       case NotificationType.birthday:
-        return _IconConfig(
-          icon: Icons.cake_rounded,
-          bg: const Color(0xFFEC4899),
+        return const _IconConfig(
+          icon:  Icons.cake_rounded,
+          bg: Color(0xFFEC4899),
         );
     }
   }

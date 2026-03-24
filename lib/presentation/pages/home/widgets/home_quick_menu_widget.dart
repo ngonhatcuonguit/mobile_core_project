@@ -1,57 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 
 class HomeQuickMenuWidget extends StatelessWidget {
   const HomeQuickMenuWidget({super.key});
-
-  static const List<_MenuItem> _menuItems = [
-    _MenuItem(
-      icon: Icons.description_outlined,
-      label: 'Giấy tờ',
-      iconColor: Color(0xFF3B82F6), // xanh dương
-      bgLight: Color(0xFFEFF6FF),
-      bgDark: Color(0xFF1E3A5F),
-    ),
-    _MenuItem(
-      icon: Icons.calendar_month_outlined,
-      label: 'Nghỉ phép',
-      iconColor: Color(0xFF8B5CF6), // tím
-      bgLight: Color(0xFFF5F3FF),
-      bgDark: Color(0xFF2E1B5E),
-    ),
-    _MenuItem(
-      icon: Icons.account_balance_wallet_outlined,
-      label: 'Bảng lương',
-      iconColor: Color(0xFFF59E0B), // cam vàng
-      bgLight: Color(0xFFFFFBEB),
-      bgDark: Color(0xFF422006),
-    ),
-    _MenuItem(
-      icon: Icons.info_outline_rounded,
-      label: 'Thông tin',
-      iconColor: Color(0xFF10B981), // xanh teal
-      bgLight: Color(0xFFECFDF5),
-      bgDark: Color(0xFF064E3B),
-    ),
-    _MenuItem(
-      icon: Icons.apps_rounded,
-      label: 'See All',
-      iconColor: Color(0xFFEF4444), // đỏ hồng
-      bgLight: Color(0xFFFFF1F2),
-      bgDark: Color(0xFF4C0519),
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
 
+    final menuItems = [
+      _MenuItem(
+        icon: Icons.description_outlined,
+        label: context.tr('menu_documents'),
+        iconColor: const Color(0xFF3B82F6),
+        bgLight: const Color(0xFFEFF6FF),
+        bgDark: const Color(0xFF1E3A5F),
+      ),
+      _MenuItem(
+        icon: Icons.calendar_month_outlined,
+        label: context.tr('menu_leave'),
+        iconColor: const Color(0xFF8B5CF6),
+        bgLight: const Color(0xFFF5F3FF),
+        bgDark: const Color(0xFF2E1B5E),
+      ),
+      _MenuItem(
+        icon: Icons.account_balance_wallet_outlined,
+        label: context.tr('menu_payroll'),
+        iconColor: const Color(0xFFF59E0B),
+        bgLight: const Color(0xFFFFFBEB),
+        bgDark: const Color(0xFF422006),
+      ),
+      _MenuItem(
+        icon: Icons.info_outline_rounded,
+        label: context.tr('menu_info'),
+        iconColor: const Color(0xFF10B981),
+        bgLight: const Color(0xFFECFDF5),
+        bgDark: const Color(0xFF064E3B),
+      ),
+      _MenuItem(
+        icon: Icons.apps_rounded,
+        label: context.tr('menu_see_all'),
+        iconColor: const Color(0xFFEF4444),
+        bgLight: const Color(0xFFFFF1F2),
+        bgDark: const Color(0xFF4C0519),
+      ),
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: _menuItems
+        children: menuItems
             .map((item) => _QuickMenuItem(item: item, isDark: isDark))
             .toList(),
       ),
@@ -130,13 +131,13 @@ class _QuickMenuItem extends StatelessWidget {
 }
 
 class _MenuItem {
-  final dynamic icon; // IconData hoặc String (SVG path)
+  final dynamic icon;
   final String label;
   final Color iconColor;
   final Color bgLight;
   final Color bgDark;
 
-  const _MenuItem({
+  _MenuItem({
     required this.icon,
     required this.label,
     required this.iconColor,
