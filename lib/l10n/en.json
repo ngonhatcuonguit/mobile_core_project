@@ -46,7 +46,7 @@
 
   "nav_home": "Home",
   "nav_timesheet": "Timesheet",
-  "nav_leave": "Leave",
+  "nav_service": "Service",
   "nav_profile": "Profile",
 
   "timesheet_loading": "Loading timesheet...",
@@ -164,5 +164,14 @@
   "news_check_back": "Check back later for new articles.",
   "news_retry": "Retry",
   "news_load_articles": "Load Articles",
-  "news_dns_info": "DNS lookup failed for newsapi.org"
+  "news_dns_info": "DNS lookup failed for newsapi.org",
+
+  "service_title": "Services",
+  "service_achievement": "Achievement",
+  "service_leave_request": "Leave Request",
+  "service_feedback": "Feedback",
+  "service_organization": "Organization",
+  "service_timesheet": "Timesheet",
+  "service_documents": "Documents",
+  "service_info_banner": "Update your tax records by the end of this month to ensure accurate payroll processing for the Q3 cycle."
 }

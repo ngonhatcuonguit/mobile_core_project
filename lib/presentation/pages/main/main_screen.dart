@@ -6,7 +6,7 @@ import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
 import 'package:flutter_core_project/presentation/pages/home/home_page.dart';
-import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
+import 'package:flutter_core_project/presentation/pages/service/service_page.dart';
 import 'package:flutter_core_project/presentation/pages/timesheet/timesheet_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
 
@@ -31,7 +31,7 @@ class _MainScreenState extends State<MainScreen> {
         value: sl<RemoteTimesheetBloc>(),
         child: const TimesheetPage(),
       ),
-      const LeaveRequestPage(),
+      const ServicePage(),
       const ProfilePage(),
     ];
   }
@@ -105,7 +105,7 @@ class _MainScreenState extends State<MainScreen> {
               _buildNavItem(
                 activeIcon: 'assets/vectors/ic_edit_document.svg',
                 inactiveIcon: 'assets/vectors/ic_edit_document.svg',
-                label: context.tr('nav_leave'),
+                label: context.tr('nav_service'),
                 isActive: _currentIndex == 2,
                 isDark: isDarkMode,
               ),
