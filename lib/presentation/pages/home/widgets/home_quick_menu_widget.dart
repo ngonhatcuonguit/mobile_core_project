@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
+import 'package:flutter_core_project/presentation/pages/work_schedule/work_schedule_setup_page.dart';
 
 class HomeQuickMenuWidget extends StatelessWidget {
   const HomeQuickMenuWidget({super.key});
@@ -20,7 +21,7 @@ class HomeQuickMenuWidget extends StatelessWidget {
       ),
       _MenuItem(
         icon: Icons.calendar_month_outlined,
-        label: context.tr('menu_leave'),
+        label: context.tr('menu_work_schedule'),
         iconColor: const Color(0xFF8B5CF6),
         bgLight: const Color(0xFFF5F3FF),
         bgDark: const Color(0xFF2E1B5E),
@@ -48,13 +49,32 @@ class HomeQuickMenuWidget extends StatelessWidget {
       ),
     ];
 
+    final menuTaps = <VoidCallback?>[
+      null, // documents
+      // work schedule
+      () => Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (_) => const WorkScheduleSetupPage()),
+      ),
+
+      null, // payroll
+      null, // info
+      // () => Navigator.of(context).push(
+      //       MaterialPageRoute(
+      //           builder: (_) => const WorkScheduleSetupPage()),
+      //     ), // info → work schedule setup
+      null, // see all
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: menuItems
-            .map((item) => _QuickMenuItem(item: item, isDark: isDark))
-            .toList(),
+        children: List.generate(
+          menuItems.length,
+          (i) => _QuickMenuItem(
+              item: menuItems[i], isDark: isDark, onTap: menuTaps[i]),
+        ),
       ),
     );
   }
@@ -63,15 +83,17 @@ class HomeQuickMenuWidget extends StatelessWidget {
 class _QuickMenuItem extends StatelessWidget {
   final _MenuItem item;
   final bool isDark;
+  final VoidCallback? onTap;
 
-  const _QuickMenuItem({required this.item, required this.isDark});
+  const _QuickMenuItem(
+      {required this.item, required this.isDark, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final bgColor = isDark ? item.bgDark : item.bgLight;
 
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
