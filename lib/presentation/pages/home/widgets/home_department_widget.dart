@@ -17,6 +17,7 @@ class HomeDepartmentWidget extends StatelessWidget {
         iconColor: const Color(0xFF8B5CF6),
         bgLight: const Color(0xFFF5F3FF),
         bgDark: const Color(0xFF2E1B5E),
+        isComingSoon: true,
       ),
       _DepartmentItem(
         code: 'IT',
@@ -41,6 +42,7 @@ class HomeDepartmentWidget extends StatelessWidget {
         iconColor: const Color(0xFFF59E0B),
         bgLight: const Color(0xFFFFFBEB),
         bgDark: const Color(0xFF422006),
+        isComingSoon: true,
       ),
       _DepartmentItem(
         code: 'Consumer',
@@ -49,6 +51,7 @@ class HomeDepartmentWidget extends StatelessWidget {
         iconColor: const Color(0xFFEF4444),
         bgLight: const Color(0xFFFFF1F2),
         bgDark: const Color(0xFF4C0519),
+        isComingSoon: true,
       ),
       _DepartmentItem(
         code: 'Legal',
@@ -57,6 +60,7 @@ class HomeDepartmentWidget extends StatelessWidget {
         iconColor: const Color(0xFF0EA5E9),
         bgLight: const Color(0xFFE0F2FE),
         bgDark: const Color(0xFF0C4A6E),
+        isComingSoon: true,
       ),
     ];
 
@@ -122,65 +126,111 @@ class _DepartmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.3 : 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: isDark ? item.bgDark : item.bgLight,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                item.icon,
-                color: item.iconColor,
-                size: 20,
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.code,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : const Color(0xFF111827),
-                    fontFamily: 'Satoshi',
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  item.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                    color: isDark ? Colors.white38 : const Color(0xFF6B7280),
-                    fontFamily: 'Satoshi',
-                  ),
+      onTap: item.isComingSoon ? null : () {},
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Main card — fill toàn bộ cell GridView
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDark ? 0.3 : 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-          ],
-        ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isDark ? item.bgDark : item.bgLight,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    item.icon,
+                    color: item.iconColor,
+                    size: 20,
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.code,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xFF111827),
+                        fontFamily: 'Satoshi',
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        color: isDark
+                            ? Colors.white38
+                            : const Color(0xFF6B7280),
+                        fontFamily: 'Satoshi',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Dim overlay for coming soon
+          if (item.isComingSoon)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.black.withOpacity(0.38)
+                      : Colors.white.withOpacity(0.50),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          // "Sắp ra mắt" badge — top-right, 1 dòng, màu trầm
+          if (item.isComingSoon)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF64748B),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'Sắp ra mắt',
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    fontFamily: 'Satoshi',
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -193,6 +243,7 @@ class _DepartmentItem {
   final Color iconColor;
   final Color bgLight;
   final Color bgDark;
+  final bool isComingSoon;
 
   const _DepartmentItem({
     required this.code,
@@ -201,5 +252,6 @@ class _DepartmentItem {
     required this.iconColor,
     required this.bgLight,
     required this.bgDark,
+    this.isComingSoon = false,
   });
 }

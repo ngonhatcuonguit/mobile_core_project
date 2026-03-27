@@ -222,5 +222,7 @@
   "ws_shift_paused": "PAUSED",
   "ws_saved_success": "✓ Work schedule saved!",
   "ws_error_no_shift": "Please add at least one work shift.",
-  "ws_error_no_shift_name": "Please enter a shift name."
+  "ws_error_no_shift_name": "Please enter a shift name.",
+  "coming_soon": "Coming soon",
+  "coming_soon_toast": "This feature is coming soon 🚀"
 }

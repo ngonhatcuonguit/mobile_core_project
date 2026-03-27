@@ -232,5 +232,7 @@
   "ws_shift_paused": "TẠM DỪNG",
   "ws_saved_success": "✓ Lịch làm việc đã được lưu!",
   "ws_error_no_shift": "Vui lòng thêm ít nhất một ca làm việc.",
-  "ws_error_no_shift_name": "Vui lòng nhập tên ca."
+  "ws_error_no_shift_name": "Vui lòng nhập tên ca.",
+  "coming_soon": "Sắp ra mắt",
+  "coming_soon_toast": "Tính năng này sắp ra mắt 🚀"
 }

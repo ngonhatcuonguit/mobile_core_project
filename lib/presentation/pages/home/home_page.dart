@@ -57,8 +57,6 @@ class _HomePageState extends State<HomePage> {
             const SliverToBoxAdapter(child: HomeQuickMenuWidget()),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
             const SliverToBoxAdapter(child: HomeDepartmentWidget()),
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            const SliverToBoxAdapter(child: HomeFactoryWidget()),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
