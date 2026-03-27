@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/data/models/work_schedule/work_schedule_model.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
+import 'package:flutter_core_project/services/work_schedule_notification_service.dart';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const _kGreen  = Color(0xFF42C83C);
@@ -88,6 +90,9 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(kWorkScheduleKey, json);
+
+    // Schedule notifications
+    await WorkScheduleNotificationService.instance.scheduleFromWorkSchedule(model);
 
     // TODO: when API is ready → call PATCH /api/v1/work-schedules
 
@@ -254,6 +259,31 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
                 ),
             },
           ),
+          // Debug: Test notification button (only in debug mode)
+          if (kDebugMode) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () async {
+                await WorkScheduleNotificationService.instance.showTestNotification();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Test notification sent!'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: _kAmber.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(Icons.notifications_active, size: 16, color: _kAmber),
+              ),
+            ),
+          ],
         ],
       ),
     );
