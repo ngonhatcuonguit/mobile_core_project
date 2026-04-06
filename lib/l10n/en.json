@@ -235,5 +235,6 @@
   "rh_all": "All",
   "rh_pending": "Pending",
   "rh_approved": "Approved",
+  "menu_request": "Request",
   "menu_request_history": "Request History"
 }
