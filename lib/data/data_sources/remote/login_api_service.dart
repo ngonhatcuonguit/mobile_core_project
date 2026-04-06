@@ -27,6 +27,8 @@ class LoginApiService {
       data: body,
       options: Options(
         validateStatus: (status) => status != null && status < 500,
+        // Bỏ qua global error dialog — màn hình login tự xử lý lỗi credentials
+        extra: {'skipErrorDialog': true},
       ),
     );
 

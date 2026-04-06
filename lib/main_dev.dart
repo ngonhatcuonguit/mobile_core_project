@@ -13,8 +13,10 @@ import 'package:flutter_core_project/presentation/auth/pages/sign_in.dart';
 import 'package:flutter_core_project/presentation/pages/main/main_screen.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/analytics_observer.dart';
+import 'package:flutter_core_project/data/data_sources/remote/notification_api_service.dart';
 import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
+import 'package:flutter_core_project/services/navigation_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -37,13 +39,21 @@ Future<void> main() async {
     initializeDependencies(),
   ]);
 
+  // Inject NotificationApiService vào FirebaseService sau khi DI sẵn sàng.
+  FirebaseService.instance.notificationApiService = sl<NotificationApiService>();
+
+  // Retry gửi FCM token — lần đầu trong _initFCM() bị bỏ qua vì DI chạy song song.
+  final isLoggedIn = await AuthService.isLoggedIn();
+  if (isLoggedIn) {
+    FirebaseService.instance.registerCurrentDevice();
+  }
+
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
         ? HydratedStorage.webStorageDirectory
         : results[1] as Directory,
   );
 
-  final isLoggedIn = await AuthService.isLoggedIn();
   FlutterNativeSplash.remove();
 
   runApp(MyApp(isLoggedIn: isLoggedIn));
@@ -71,6 +81,7 @@ class MyApp extends StatelessWidget {
             builder: (context, locale) {
               return MaterialApp(
                 title: AppConfig.appTitle,
+                navigatorKey: NavigationService.navigatorKey,
                 theme: AppTheme.lightTheme,
                 darkTheme: AppTheme.darkTheme,
                 themeMode: themeMode,

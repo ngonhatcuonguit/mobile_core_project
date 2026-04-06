@@ -6,6 +6,7 @@ import 'package:flutter_core_project/data/data_sources/remote/login_api_service.
 import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/pages/main/main_screen.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
+import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -73,6 +74,9 @@ class _SigninPageState extends State<SigninPage> {
           token: result.token,
           employeeId: result.username,
         );
+        // Gửi FCM token cho account vừa đăng nhập (kể cả khi đổi sang account khác)
+        // fire-and-forget — không cần chờ, không block navigation
+        FirebaseService.instance.registerCurrentDevice();
         if (!mounted) return;
         Navigator.pushReplacement(
           context,

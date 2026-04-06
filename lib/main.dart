@@ -12,9 +12,10 @@ import 'package:flutter_core_project/presentation/pages/main/main_screen.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/presentation/widgets/network/network_status_banner.dart';
 import 'package:flutter_core_project/services/analytics_observer.dart';
-import 'package:flutter_core_project/domain/usecases/register_device_usecase.dart';
+import 'package:flutter_core_project/data/data_sources/remote/notification_api_service.dart';
 import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
+import 'package:flutter_core_project/services/navigation_service.dart';
 import 'package:flutter_core_project/services/network_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -35,12 +36,18 @@ Future<void> main() async {
     NetworkService().init(),
   ]);
 
-  // Inject RegisterDeviceUseCase vào FirebaseService sau khi DI sẵn sàng.
-  // FirebaseService sẽ dùng use case này để gửi FCM token lên server.
-  FirebaseService.instance.registerDeviceUseCase = sl<RegisterDeviceUseCase>();
+  // Inject NotificationApiService vào FirebaseService sau khi DI sẵn sàng.
+  // FirebaseService sẽ dùng service này để gửi FCM token lên server.
+  FirebaseService.instance.notificationApiService = sl<NotificationApiService>();
 
-  // Xác định màn hình đầu tiên ngay tại đây — không cần SplashPage
+  // Retry gửi FCM token — lần đầu trong _initFCM() bị bỏ qua vì DI chạy song song.
+  // Nếu user đã đăng nhập thì gửi ngay, chưa đăng nhập thì token sẽ được gửi
+  // trong sign_in.dart sau khi login thành công.
   final isLoggedIn = await AuthService.isLoggedIn();
+  if (isLoggedIn) {
+    // fire-and-forget — không block splash
+    FirebaseService.instance.registerCurrentDevice();
+  }
 
   // Dismiss native splash ngay trước runApp
   FlutterNativeSplash.remove();
@@ -75,6 +82,7 @@ class MyApp extends StatelessWidget {
             builder: (context, locale) {
               return MaterialApp(
                 title: 'Flutter Core Project',
+                navigatorKey: NavigationService.navigatorKey,
                 theme: AppTheme.lightTheme,
                 darkTheme: AppTheme.darkTheme,
                 themeMode: themeMode,
