@@ -3,6 +3,7 @@ import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/presentation/intro/pages/get_started.dart';
 import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
+import 'package:flutter_core_project/presentation/pages/request_history/request_history_page.dart';
 import 'package:flutter_core_project/presentation/pages/work_schedule/work_schedule_setup_page.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
@@ -230,11 +231,17 @@ class _AllMenuSheetState extends State<_AllMenuSheet> {
       ),
       _SheetItem(
         icon: Icons.history_outlined,
-        label: 'Lịch sử\nphản hồi',
+        label: context.tr('menu_request_history'),
         iconColor: const Color(0xFF0EA5E9),
         bgLight: const Color(0xFFE0F2FE),
         bgDark: const Color(0xFF0C4A6E),
-        isComingSoon: true,
+        onTap: () {
+          Navigator.pop(context); // đóng bottom sheet
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const RequestHistoryPage()),
+          );
+        },
       ),
       _SheetItem(
         icon: Icons.settings_outlined,

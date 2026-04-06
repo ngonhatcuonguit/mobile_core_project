@@ -60,7 +60,7 @@
   "timesheet_year": "Năm",
   "timesheet_month_word": "Tháng",
   "timesheet_close": "Đóng",
-  "timesheet_adjustment_report": "Báo cáo điều chỉnh",
+  "timesheet_adjustment_report": "Yêu cầu xem xét công",
   "timesheet_detail": "Chi tiết",
   "timesheet_check_in": "Vào",
   "timesheet_check_out": "Ra",
@@ -234,5 +234,16 @@
   "ws_error_no_shift": "Vui lòng thêm ít nhất một ca làm việc.",
   "ws_error_no_shift_name": "Vui lòng nhập tên ca.",
   "coming_soon": "Sắp ra mắt",
-  "coming_soon_toast": "Tính năng này sắp ra mắt 🚀"
+  "coming_soon_toast": "Tính năng này sắp ra mắt 🚀",
+
+  "rh_title": "Lịch sử phản hồi",
+  "rh_detail_title": "Chi tiết phản hồi",
+  "rh_empty": "Chưa có yêu cầu nào",
+  "rh_loading": "Đang tải...",
+  "rh_error": "Không tải được lịch sử yêu cầu",
+  "rh_retry": "Thử lại",
+  "rh_all": "Tất cả",
+  "rh_pending": "Đang chờ",
+  "rh_approved": "Đã duyệt",
+  "menu_request_history": "Lịch sử phản hồi"
 }

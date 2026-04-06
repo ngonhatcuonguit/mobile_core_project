@@ -224,5 +224,16 @@
   "ws_error_no_shift": "Please add at least one work shift.",
   "ws_error_no_shift_name": "Please enter a shift name.",
   "coming_soon": "Coming soon",
-  "coming_soon_toast": "This feature is coming soon 🚀"
+  "coming_soon_toast": "This feature is coming soon 🚀",
+
+  "rh_title": "Request History",
+  "rh_detail_title": "Request Detail",
+  "rh_empty": "No requests found",
+  "rh_loading": "Loading...",
+  "rh_error": "Failed to load requests",
+  "rh_retry": "Retry",
+  "rh_all": "All",
+  "rh_pending": "Pending",
+  "rh_approved": "Approved",
+  "menu_request_history": "Request History"
 }

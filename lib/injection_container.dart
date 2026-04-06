@@ -7,11 +7,14 @@ import 'package:flutter_core_project/data/data_sources/remote/adjustment_report_
 import 'package:flutter_core_project/data/data_sources/remote/login_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/news_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/notification_api_service.dart';
+import 'package:flutter_core_project/data/data_sources/remote/request_history_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/timesheet_api_service.dart';
 import 'package:flutter_core_project/data/repositories/notification/notification_repository_impl.dart';
+import 'package:flutter_core_project/data/repositories/request_history/request_history_repository_impl.dart';
 import 'package:flutter_core_project/data/repositories/timesheet/timesheet_repository_impl.dart';
 import 'package:flutter_core_project/domain/repository/news/article_repository.dart';
 import 'package:flutter_core_project/domain/repository/notification/notification_repository.dart';
+import 'package:flutter_core_project/data/repositories/request_history/request_history_repository_impl.dart' show RequestHistoryRepository, RequestHistoryRepositoryImpl;
 import 'package:flutter_core_project/domain/repository/timesheet/timesheet_repository.dart';
 import 'package:flutter_core_project/domain/usecases/submit_adjustment_report_usecase.dart';
 import 'package:flutter_core_project/domain/usecases/get_timesheet.dart';
@@ -147,9 +150,11 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<TimesheetApiService>(TimesheetApiService(thpDio));
   sl.registerSingleton<NotificationApiService>(NotificationApiService(thpDio));
   sl.registerSingleton<AdjustmentReportApiService>(AdjustmentReportApiService(thpDio));
+  sl.registerSingleton<RequestHistoryApiService>(RequestHistoryApiService(thpDio));
   sl.registerSingleton<ArticleRepository>(ArticleRepositoryImpl(sl()));
   sl.registerSingleton<TimesheetRepository>(TimesheetRepositoryImpl(sl()));
   sl.registerSingleton<NotificationRepository>(NotificationRepositoryImpl(sl()));
+  sl.registerSingleton<RequestHistoryRepository>(RequestHistoryRepositoryImpl(sl()));
   sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
   sl.registerSingleton<GetTimesheetUseCase>(GetTimesheetUseCase(sl()));
   sl.registerSingleton<SubmitAdjustmentReportUseCase>(SubmitAdjustmentReportUseCase(sl()));
