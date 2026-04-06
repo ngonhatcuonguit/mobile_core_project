@@ -73,7 +73,7 @@ class HomeDepartmentWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                context.tr('home_departments'),
+                context.tr('home_department_service'),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,

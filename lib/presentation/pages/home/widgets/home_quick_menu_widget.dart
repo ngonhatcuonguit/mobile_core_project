@@ -5,6 +5,9 @@ import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_core_project/presentation/pages/home/widgets/home_all_menu_sheet.dart';
 import 'package:flutter_core_project/presentation/pages/work_schedule/work_schedule_setup_page.dart';
 
+import '../../profile/user_info_page.dart';
+import '../../request_history/request_history_page.dart';
+
 class HomeQuickMenuWidget extends StatelessWidget {
   const HomeQuickMenuWidget({super.key});
 
@@ -29,12 +32,11 @@ class HomeQuickMenuWidget extends StatelessWidget {
         bgDark: const Color(0xFF2E1B5E),
       ),
       _MenuItem(
-        icon: Icons.account_balance_wallet_outlined,
-        label: context.tr('menu_payroll'),
+        icon: Icons.history_outlined,
+        label: context.tr('menu_request_history'),
         iconColor: const Color(0xFFF59E0B),
         bgLight: const Color(0xFFFFFBEB),
         bgDark: const Color(0xFF422006),
-        isComingSoon: true,
       ),
       _MenuItem(
         icon: Icons.info_outline_rounded,
@@ -59,9 +61,14 @@ class HomeQuickMenuWidget extends StatelessWidget {
         MaterialPageRoute(
             builder: (_) => const WorkScheduleSetupPage()),
       ),
-
-      null, // payroll
-      null, // info
+          () => Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (_) => const RequestHistoryPage()),
+      ), // request history
+          () => Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (_) => const UserInfoPage()),
+      ),
       () => showAllMenuSheet(context), // see all
     ];
 

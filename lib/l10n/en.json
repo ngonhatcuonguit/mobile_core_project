@@ -29,7 +29,7 @@
   "profile_settings": "Settings",
   "profile_notification": "Notifications",
   "profile_order_history": "Order History",
-  "profile_account": "Account",
+  "profile_account": "Account information",
   "profile_privacy_policy": "Privacy & Policy",
   "profile_terms": "Terms & Conditions",
   "profile_logout": "Log Out",
@@ -131,7 +131,7 @@
   "leave_type_public": "Public Holiday",
   "leave_type_maternity": "Maternity Leave",
 
-  "home_departments": "Departments",
+  "home_department_service": "Departments_services",
   "home_see_all": "See All",
   "home_factories": "Factories",
   "menu_documents": "Documents",

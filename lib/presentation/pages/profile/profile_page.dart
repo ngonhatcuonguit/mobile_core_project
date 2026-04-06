@@ -6,6 +6,7 @@ import 'package:flutter_core_project/presentation/choose_mode/bloc/locale_cubit.
 import 'package:flutter_core_project/presentation/choose_mode/bloc/theme_cubit.dart';
 import 'package:flutter_core_project/presentation/intro/pages/get_started.dart';
 import 'package:flutter_core_project/presentation/pages/notification/notification_page.dart';
+import 'package:flutter_core_project/presentation/pages/profile/user_info_page.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -110,6 +111,21 @@ class _ProfilePageState extends State<ProfilePage> {
               },
               isDark: isDark,
             ),
+            // _buildMenuItem(
+            //   context,
+            //   icon: AppVectors.icOrderHistory,
+            //   title: context.tr('profile_account'),
+            //   iconColor: const Color(0xFF6366F1),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (_) => const UserInfoPage(),
+            //       ),
+            //     );
+            //   },
+            //   isDark: isDark,
+            // ),
             _buildMenuItem(
               context,
               icon: AppVectors.icOrderHistory,
@@ -146,16 +162,31 @@ class _ProfilePageState extends State<ProfilePage> {
               },
               isDark: isDark,
             ),
-            _buildMenuItem(
-              context,
-              icon: AppVectors.icTerms,
-              title: context.tr('profile_terms'),
-              iconColor: const Color(0xFFFFCC47),
-              onTap: () {
-                // Navigate to Terms & Conditions
-              },
-              isDark: isDark,
-            ),
+            // _buildMenuItem(
+            //   context,
+            //   icon: AppVectors.icTerms,
+            //   title: context.tr('profile_terms'),
+            //   iconColor: const Color(0xFFFFCC47),
+            //   onTap: () {
+            //     // Navigate to Terms & Conditions
+            //   },
+            //   isDark: isDark,
+            // ),
+          _buildMenuItem(
+            context,
+            icon: AppVectors.icTerms,
+            title: context.tr('profile_account'),
+            iconColor: const Color(0xFF6366F1),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const UserInfoPage(),
+                ),
+              );
+            },
+            isDark: isDark,
+          ),
             _buildMenuItem(
               context,
               icon: AppVectors.icLogout,

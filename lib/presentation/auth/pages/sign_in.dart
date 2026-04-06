@@ -73,6 +73,8 @@ class _SigninPageState extends State<SigninPage> {
           displayName: result.displayName,
           token: result.token,
           employeeId: result.username,
+          position: result.position,
+          department: result.department,
         );
         // Gửi FCM token cho account vừa đăng nhập (kể cả khi đổi sang account khác)
         // fire-and-forget — không cần chờ, không block navigation

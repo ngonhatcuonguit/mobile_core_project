@@ -29,7 +29,7 @@
   "profile_settings": "Cài Đặt",
   "profile_notification": "Thông Báo",
   "profile_order_history": "Lịch Sử",
-  "profile_account": "Tài Khoản",
+  "profile_account": "Thông tin tài khoản",
   "profile_privacy_policy": "Chính Sách Bảo Mật",
   "profile_terms": "Điều Khoản Sử Dụng",
   "profile_logout": "Đăng Xuất",
@@ -131,7 +131,7 @@
   "leave_type_public": "Nghỉ lễ (Public Holiday)",
   "leave_type_maternity": "Nghỉ thai sản (Maternity Leave)",
 
-  "home_departments": "Phòng ban",
+  "home_department_services": "Dịch vụ phòng ban",
   "home_see_all": "Xem tất cả",
   "home_factories": "Nhà máy",
   "menu_documents": "Giấy tờ",

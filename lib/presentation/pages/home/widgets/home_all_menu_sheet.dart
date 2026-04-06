@@ -221,12 +221,12 @@ class _AllMenuSheetState extends State<_AllMenuSheet> {
           );
         },
       ),
-      _SheetItem(
+      const _SheetItem(
         icon: Icons.folder_outlined,
         label: 'Tài liệu',
-        iconColor: const Color(0xFFF97316),
-        bgLight: const Color(0xFFFFF7ED),
-        bgDark: const Color(0xFF431407),
+        iconColor: Color(0xFFF97316),
+        bgLight: Color(0xFFFFF7ED),
+        bgDark: Color(0xFF431407),
         isComingSoon: true,
       ),
       _SheetItem(

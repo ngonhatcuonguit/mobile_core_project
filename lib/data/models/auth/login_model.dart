@@ -20,6 +20,8 @@ class LoginResponse {
   final String? username;
   final String? displayName;
   final String? email;
+  final String? position;   // Chức vụ
+  final String? department; // Phòng ban
   final String? message;
 
   const LoginResponse({
@@ -28,6 +30,8 @@ class LoginResponse {
     this.username,
     this.displayName,
     this.email,
+    this.position,
+    this.department,
     this.message,
   });
 
@@ -41,6 +45,8 @@ class LoginResponse {
         username: data['username'] as String?,
         displayName: data['displayname'] as String?,
         email: data['email'] as String?,
+        position: data['position'] as String?,
+        department: data['department'] as String?,
       );
     } else {
       return LoginResponse(
@@ -50,4 +56,3 @@ class LoginResponse {
     }
   }
 }
-

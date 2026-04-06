@@ -7,6 +7,8 @@ class AuthService {
   static const String _displayNameKey = 'display_name';
   static const String _tokenKey = 'auth_token';
   static const String _employeeIdKey = 'employee_id';
+  static const String _positionKey = 'position';
+  static const String _departmentKey = 'department';
 
   /// Check if user is logged in
   static Future<bool> isLoggedIn() async {
@@ -21,6 +23,8 @@ class AuthService {
     String? displayName,
     String? token,
     String? employeeId,
+    String? position,
+    String? department,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_isLoggedInKey, true);
@@ -29,6 +33,8 @@ class AuthService {
     if (displayName != null) await prefs.setString(_displayNameKey, displayName);
     if (token != null) await prefs.setString(_tokenKey, token);
     if (employeeId != null) await prefs.setString(_employeeIdKey, employeeId);
+    if (position != null) await prefs.setString(_positionKey, position);
+    if (department != null) await prefs.setString(_departmentKey, department);
   }
 
   /// Get auth token
@@ -61,7 +67,19 @@ class AuthService {
     return prefs.getString(_employeeIdKey);
   }
 
-  /// Logout — clear token và toàn bộ thông tin user để bảo vệ dữ liệu
+  /// Get position (chức vụ)
+  static Future<String?> getPosition() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_positionKey);
+  }
+
+  /// Get department (phòng ban)
+  static Future<String?> getDepartment() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_departmentKey);
+  }
+
+  /// Logout — clear token và toàn bộ thông tin user
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_isLoggedInKey);
@@ -70,6 +88,8 @@ class AuthService {
     await prefs.remove(_displayNameKey);
     await prefs.remove(_tokenKey);
     await prefs.remove(_employeeIdKey);
+    await prefs.remove(_positionKey);
+    await prefs.remove(_departmentKey);
   }
 
   /// Clear all data (for testing)

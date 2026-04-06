@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
+import 'package:flutter_core_project/presentation/pages/request_history/request_history_page.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -43,6 +44,12 @@ class _ServicePageState extends State<ServicePage> {
         bgColor: const Color(0xFFF5F3FF),
         bgColorDark: const Color(0xFF2E1B5E),
         accentColor: const Color(0xFF8B5CF6),
+        action: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const RequestHistoryPage()),
+          );
+        },
       ),
       _ServiceItem(
         key: 'service_organization',
