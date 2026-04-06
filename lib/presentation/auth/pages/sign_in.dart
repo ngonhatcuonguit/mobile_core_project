@@ -100,11 +100,20 @@ class _SigninPageState extends State<SigninPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(children: [
-          const Icon(Icons.error_outline, color: Color(0xFFF44545)),
-          const SizedBox(width: 8),
-          Text(l?.translate('login_failed') ?? 'Đăng nhập thất bại'),
-        ]),
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Color(0xFFF44545)),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                l?.translate('login_failed') ?? 'Đăng nhập thất bại',
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ),
+          ],
+        ),
         content: Text(message),
         actions: [
           TextButton(

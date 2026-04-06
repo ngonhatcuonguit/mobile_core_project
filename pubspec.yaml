@@ -92,27 +92,33 @@ flutter:
           weight: 300
 
 # ─── Native Splash Screen ───────────────────────────────────────────────────
-# Sau khi thêm config này, chạy: dart run flutter_native_splash:create
+# Sau khi thay đổi config này, chạy: dart run flutter_native_splash:create
 flutter_native_splash:
   # Màu nền trắng — khớp với SplashPage Flutter
   color: "#FFFFFF"
   color_dark: "#FFFFFF"
 
-  # Logo THP được generate từ mk_splash.py
+  # Logo THP — center gravity để logo không bị stretch/crop
   image: assets/images/splash_logo.png
   image_dark: assets/images/splash_logo.png
 
+  # Hiển thị logo ở giữa màn hình, không scale lên đầy màn hình
+  android_gravity: center
+  ios_content_mode: center
 
   # Tắt fullscreen (giữ status bar bình thường)
   fullscreen: false
 
   # Android 12+ Splash API
+  # ⚠️  Adaptive icon: logo phải nằm trong vùng 66% trung tâm của ảnh
+  #     (1152×1152px, logo an toàn trong vòng tròn 672×672px ở giữa).
+  #     Nếu logo bị cut, hãy tạo lại splash_logo.png với padding 17% mỗi cạnh,
+  #     sau đó chạy: dart run flutter_native_splash:create
   android_12:
     color: "#FFFFFF"
     color_dark: "#FFFFFF"
     image: assets/images/splash_logo.png
     image_dark: assets/images/splash_logo.png
-    # icon_background_color trong vòng tròn icon của Android 12+
     icon_background_color: "#FFFFFF"
     icon_background_color_dark: "#FFFFFF"
 

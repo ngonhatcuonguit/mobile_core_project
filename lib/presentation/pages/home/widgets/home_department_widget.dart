@@ -97,7 +97,7 @@ class HomeDepartmentWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Padding(
+          Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: GridView.builder(
             shrinkWrap: true,
@@ -106,7 +106,7 @@ class HomeDepartmentWidget extends StatelessWidget {
               crossAxisCount: 2,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio: 1.6,
+              childAspectRatio: 1.4, // ↓ was 1.6 — taller cards to prevent overflow on small screens
             ),
             itemCount: departments.length,
             itemBuilder: (_, i) =>
@@ -134,7 +134,7 @@ class _DepartmentCard extends StatelessWidget {
           Container(
             width: double.infinity,
             height: double.infinity,
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
               borderRadius: BorderRadius.circular(16),

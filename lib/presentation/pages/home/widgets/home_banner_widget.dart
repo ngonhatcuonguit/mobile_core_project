@@ -154,7 +154,7 @@ class _BannerCard extends StatelessWidget {
           ),
           // Content
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -168,7 +168,7 @@ class _BannerCard extends StatelessWidget {
                     fontFamily: 'Satoshi',
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   item.highlight,
                   style: TextStyle(
@@ -179,7 +179,7 @@ class _BannerCard extends StatelessWidget {
                     letterSpacing: 0.5,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   item.subtitle,
                   style: const TextStyle(
@@ -189,7 +189,7 @@ class _BannerCard extends StatelessWidget {
                     fontFamily: 'Satoshi',
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
