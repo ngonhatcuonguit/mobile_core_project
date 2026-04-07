@@ -283,11 +283,29 @@ class FirebaseService {
   /// Lấy FCM token hiện tại của thiết bị
   Future<String?> getFCMToken() async {
     if (Platform.isIOS) {
-      // iOS cần APNS token trước
-      final apns = await messaging.getAPNSToken();
-      if (apns == null) return null;
+      // iOS cần APNS token trước — timeout 10s để tránh hang trên simulator hoặc
+      // khi APNs chưa sẵn sàng (không có push entitlement / offline).
+      try {
+        final apns = await messaging
+            .getAPNSToken()
+            .timeout(const Duration(seconds: 10), onTimeout: () => null);
+        if (apns == null) {
+          debugPrint('[FCM] ⚠️ APNS token null (simulator hoặc APNs chưa sẵn sàng) — bỏ qua lấy FCM token.');
+          return null;
+        }
+      } catch (e) {
+        debugPrint('[FCM] ⚠️ getAPNSToken lỗi: $e');
+        return null;
+      }
     }
-    return messaging.getToken();
+    try {
+      return await messaging
+          .getToken()
+          .timeout(const Duration(seconds: 15), onTimeout: () => null);
+    } catch (e) {
+      debugPrint('[FCM] ⚠️ getToken lỗi: $e');
+      return null;
+    }
   }
 
   /// Ghi nhận lỗi thủ công lên Crashlytics (dùng trong catch blocks)

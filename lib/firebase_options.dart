@@ -34,14 +34,14 @@ class DefaultFirebaseOptions {
     storageBucket: 'mythp-9b465.firebasestorage.app',
   );
 
-  // Values from ios/Runner/GoogleService-Info.plist — update if you have a plist
+  // Values from ios/Runner/GoogleService-Info.plist
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDJBXStU4GJ-O7vRMfZF98ODPhX1vU0LOY',
-    appId: '1:42808366470:ios:788bfa8a80f1daf82d4807',
+    apiKey: 'AIzaSyADxsGoqXmG1MI6m0NO-xfz6Q6um-7MF0k',
+    appId: '1:42808366470:ios:75a96755f45d5c962d4807',
     messagingSenderId: '42808366470',
     projectId: 'mythp-9b465',
     storageBucket: 'mythp-9b465.firebasestorage.app',
-    iosBundleId: 'com.digital.thp.myThp',
+    iosBundleId: 'com.digital.thp.mythpapp',
   );
 }
 
