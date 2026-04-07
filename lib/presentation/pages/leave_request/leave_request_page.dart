@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
+import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
 class LeaveRequestPage extends StatefulWidget {
@@ -20,6 +21,25 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
   final TextEditingController _handoverContentController =
       TextEditingController();
 
+  // User data
+  String? _displayName;
+  String? _department;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final displayName = await AuthService.getDisplayName();
+    final department = await AuthService.getDepartment();
+    setState(() {
+      _displayName = displayName;
+      _department = department;
+    });
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -35,7 +55,6 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
     _selectedLeaveTypeIndex ??= 0;
   }
 
-  String? get _selectedLeaveType => _selectedLeaveTypeIndex != null ? _leaveTypes[_selectedLeaveTypeIndex!] : null;
 
   int get _totalDays {
     if (_fromDate == null || _toDate == null) return 0;
@@ -203,6 +222,9 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
 
   // ── Employee Card ──────────────────────────────────────────────────────────
   Widget _buildEmployeeCard(bool isDark, Color cardBg, Color subtitleColor) {
+    final displayName = _displayName ?? 'User';
+    final department = _department ?? 'Department';
+
     if (isDark) {
       return Container(
         padding: const EdgeInsets.all(16),
@@ -234,9 +256,9 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Ngô Nhật Cường',
-                      style: TextStyle(
+                    Text(
+                      displayName,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -244,7 +266,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'IT Technical Development',
+                      department,
                       style: TextStyle(
                         color: subtitleColor,
                         fontSize: 13,
@@ -343,21 +365,21 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ngô Nhật Cường',
-                      style: TextStyle(
+                      displayName,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
-                      'IT Technical Development',
-                      style: TextStyle(
+                      department,
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
                       ),
@@ -551,27 +573,33 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           // Lý do nghỉ
           _buildFieldLabel(context.tr('leave_reason'), isRequired: true, labelColor: labelColor),
           const SizedBox(height: 6),
-          Container(
-            decoration: BoxDecoration(
-              color: inputBg,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: borderColor),
-            ),
-            child: TextField(
-              controller: _reasonController,
-              maxLines: 4,
-              style: TextStyle(color: textColor, fontSize: 14),
-              decoration: InputDecoration(
-                hintText: context.tr('leave_hint_reason'),
-                hintStyle: TextStyle(
-                  color: isDark
-                      ? const Color(0xFF4B5563)
-                      : const Color(0xFF9CA3AF),
-                  fontSize: 14,
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.all(12),
+          TextField(
+            controller: _reasonController,
+            maxLines: 4,
+            style: TextStyle(color: textColor, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: context.tr('leave_hint_reason'),
+              hintStyle: TextStyle(
+                color: isDark
+                    ? const Color(0xFF4B5563)
+                    : const Color(0xFF9CA3AF),
+                fontSize: 14,
               ),
+              filled: true,
+              fillColor: inputBg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              contentPadding: const EdgeInsets.all(12),
             ),
           ),
         ],
@@ -626,34 +654,40 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           // Người nhận bàn giao
           _buildFieldLabel(context.tr('leave_handover_person'), labelColor: labelColor),
           const SizedBox(height: 6),
-          Container(
-            decoration: BoxDecoration(
-              color: inputBg,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: borderColor),
-            ),
-            child: TextField(
-              controller: _handoverPersonController,
-              style: TextStyle(color: textColor, fontSize: 14),
-              decoration: InputDecoration(
-                hintText: context.tr('leave_hint_search'),
-                hintStyle: TextStyle(
-                  color: isDark
-                      ? const Color(0xFF4B5563)
-                      : const Color(0xFF9CA3AF),
-                  fontSize: 14,
-                ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: isDark
-                      ? const Color(0xFF4B5563)
-                      : const Color(0xFF9CA3AF),
-                  size: 20,
-                ),
-                border: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          TextField(
+            controller: _handoverPersonController,
+            style: TextStyle(color: textColor, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: context.tr('leave_hint_search'),
+              hintStyle: TextStyle(
+                color: isDark
+                    ? const Color(0xFF4B5563)
+                    : const Color(0xFF9CA3AF),
+                fontSize: 14,
               ),
+              prefixIcon: Icon(
+                Icons.search,
+                color: isDark
+                    ? const Color(0xFF4B5563)
+                    : const Color(0xFF9CA3AF),
+                size: 20,
+              ),
+              filled: true,
+              fillColor: inputBg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             ),
           ),
           const SizedBox(height: 14),
@@ -661,27 +695,33 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           // Nội dung công việc
           _buildFieldLabel(context.tr('leave_work_content'), labelColor: labelColor),
           const SizedBox(height: 6),
-          Container(
-            decoration: BoxDecoration(
-              color: inputBg,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: borderColor),
-            ),
-            child: TextField(
-              controller: _handoverContentController,
-              maxLines: 3,
-              style: TextStyle(color: textColor, fontSize: 14),
-              decoration: InputDecoration(
-                hintText: context.tr('leave_hint_work'),
-                hintStyle: TextStyle(
-                  color: isDark
-                      ? const Color(0xFF4B5563)
-                      : const Color(0xFF9CA3AF),
-                  fontSize: 14,
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.all(12),
+          TextField(
+            controller: _handoverContentController,
+            maxLines: 3,
+            style: TextStyle(color: textColor, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: context.tr('leave_hint_work'),
+              hintStyle: TextStyle(
+                color: isDark
+                    ? const Color(0xFF4B5563)
+                    : const Color(0xFF9CA3AF),
+                fontSize: 14,
               ),
+              filled: true,
+              fillColor: inputBg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              contentPadding: const EdgeInsets.all(12),
             ),
           ),
           const SizedBox(height: 14),

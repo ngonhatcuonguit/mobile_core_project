@@ -370,7 +370,18 @@ class _SigninPageState extends State<SigninPage> {
             fontSize: 15,
           ),
           suffixIcon: suffixIcon,
-          border: InputBorder.none,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 18,

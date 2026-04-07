@@ -205,7 +205,7 @@ class _ServicePageState extends State<ServicePage> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              context.tr('service_info_banner'),
+              'Phiên bản app đang trong thời gian thử nghiệm nên một số tính năng và màn hình vẫn còn đang phát triển. Mong quý nhân viên chú ý!',
               style: const TextStyle(
                 fontSize: 13,
                 color: Color(0xFF1B5E20),

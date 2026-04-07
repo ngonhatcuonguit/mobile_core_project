@@ -7,6 +7,8 @@ import 'package:flutter_core_project/presentation/choose_mode/bloc/theme_cubit.d
 import 'package:flutter_core_project/presentation/intro/pages/get_started.dart';
 import 'package:flutter_core_project/presentation/pages/notification/notification_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/user_info_page.dart';
+import 'package:flutter_core_project/presentation/pages/profile/terms_of_service_page.dart';
+import 'package:flutter_core_project/presentation/pages/request_history/request_history_page.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -132,7 +134,12 @@ class _ProfilePageState extends State<ProfilePage> {
               title: context.tr('profile_order_history'),
               iconColor: const Color(0xFFFD9F12),
               onTap: () {
-                // Navigate to Order History
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const RequestHistoryPage(),
+                  ),
+                );
               },
               isDark: isDark,
             ),
@@ -155,10 +162,15 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildMenuItem(
               context,
               icon: AppVectors.icPrivacy,
-              title: context.tr('profile_privacy_policy'),
+              title: 'Điều khoản dịch vụ',
               iconColor: const Color(0xFF008BD9),
               onTap: () {
-                // Navigate to Privacy & Policy
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const TermsOfServicePage(),
+                  ),
+                );
               },
               isDark: isDark,
             ),

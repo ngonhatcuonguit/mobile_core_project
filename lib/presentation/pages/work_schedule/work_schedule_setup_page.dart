@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/data/models/work_schedule/work_schedule_model.dart';
+import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_core_project/services/work_schedule_notification_service.dart';
 
@@ -35,11 +36,27 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
   _SaveStatus _saveStatus = _SaveStatus.saved;
   Timer? _saveTimer;
 
+  // User data
+  String? _employeeId;
+  String? _displayName;
+  String? _department;
 
   @override
   void initState() {
     super.initState();
     _loadSaved();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final employeeId = await AuthService.getEmployeeId();
+    final displayName = await AuthService.getDisplayName();
+    final department = await AuthService.getDepartment();
+    setState(() {
+      _employeeId = employeeId;
+      _displayName = displayName;
+      _department = department;
+    });
   }
 
   @override
@@ -76,9 +93,9 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
 
     final now = DateTime.now();
     final model = WorkScheduleModel(
-      employeeId:   'EMP001',
-      employeeName: 'Ngô Nhật Cường',
-      department:   'IT Technical Development',
+      employeeId:   _employeeId ?? 'EMP001',
+      employeeName: _displayName ?? 'User',
+      department:   _department ?? 'Department',
       scheduleId:   'SCH_${now.millisecondsSinceEpoch}',
       scheduleName: 'Lịch làm việc',
       shifts:       _shifts,
@@ -185,7 +202,12 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _EmployeeCard(isDark: isDark, sub: sub),
+                      _EmployeeCard(
+                        isDark: isDark,
+                        sub: sub,
+                        employeeName: _displayName,
+                        department: _department,
+                      ),
                       const SizedBox(height: 16),
                       _buildShiftList(isDark, card, border, txt, sub),
                       const SizedBox(height: 16),
@@ -532,7 +554,16 @@ class _CircleBtn extends StatelessWidget {
 class _EmployeeCard extends StatelessWidget {
   final bool isDark;
   final Color sub;
-  const _EmployeeCard({required this.isDark, required this.sub});
+  final String? employeeName;
+  final String? department;
+
+  const _EmployeeCard({
+    required this.isDark,
+    required this.sub,
+    this.employeeName,
+    this.department,
+  });
+
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
@@ -549,11 +580,17 @@ class _EmployeeCard extends StatelessWidget {
         child: const Icon(Icons.person_outline, color: Colors.white, size: 24),
       ),
       const SizedBox(width: 12),
-      const Expanded(
+      Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Ngô Nhật Cường', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
-          SizedBox(height: 2),
-          Text('IT Technical Development', style: TextStyle(color: Colors.white70, fontSize: 12)),
+          Text(
+            employeeName ?? 'User',
+            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            department ?? 'Department',
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          ),
         ]),
       ),
       Container(
@@ -1083,23 +1120,38 @@ class _ShiftEditorSheetState extends State<_ShiftEditorSheet> {
               // ── Shift name ──────────────────────────────────────
               _SheetLabel(label: context.tr('ws_shift_name'), color: lbl),
               const SizedBox(height: 6),
-              Container(
-                decoration: BoxDecoration(
-                  color: inputBg,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: _nameError ? _kRed : border, width: _nameError ? 1.5 : 1),
-                ),
-                child: TextField(
-                  controller: _nameCtrl,
-                  style: TextStyle(color: txt, fontSize: 14),
-                  inputFormatters: [LengthLimitingTextInputFormatter(30)],
-                  onChanged: (_) { if (_nameError) setState(() => _nameError = false); },
-                  decoration: InputDecoration(
-                    hintText: context.tr('ws_shift_name_hint'),
-                    hintStyle: TextStyle(color: lbl, fontSize: 13),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              TextField(
+                controller: _nameCtrl,
+                style: TextStyle(color: txt, fontSize: 14),
+                inputFormatters: [LengthLimitingTextInputFormatter(30)],
+                onChanged: (_) { if (_nameError) setState(() => _nameError = false); },
+                decoration: InputDecoration(
+                  hintText: context.tr('ws_shift_name_hint'),
+                  hintStyle: TextStyle(color: lbl, fontSize: 13),
+                  filled: true,
+                  fillColor: inputBg,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: _nameError ? _kRed : border,
+                      width: _nameError ? 1.5 : 1,
+                    ),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: _nameError ? _kRed : border,
+                      width: _nameError ? 1.5 : 1,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: _nameError ? _kRed : border,
+                      width: _nameError ? 1.5 : 1,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
               ),
               if (_nameError) ...[

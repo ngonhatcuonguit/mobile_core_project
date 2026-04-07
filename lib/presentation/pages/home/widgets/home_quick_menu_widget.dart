@@ -169,7 +169,7 @@ class _QuickMenuItem extends StatelessWidget {
                         fontSize: 7.5,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
-                        fontFamily: 'Satoshi',
+                        // fontFamily: 'Satoshi',
                         height: 1.3,
                       ),
                     ),
@@ -180,18 +180,26 @@ class _QuickMenuItem extends StatelessWidget {
           const SizedBox(height: 7),
           SizedBox(
             width: 62,
-            child: Text(
-              item.label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: isDark ? const Color(0xFFBEBEBE) : const Color(0xFF374151),
-                fontFamily: 'Satoshi',
-                height: 1.3,
-              ),
+            height: 28,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    item.label,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? const Color(0xFFBEBEBE) : const Color(0xFF374151),
+                      // fontFamily: 'Satoshi',
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

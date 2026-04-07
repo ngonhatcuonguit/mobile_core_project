@@ -617,15 +617,7 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 1))],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          decoration: BoxDecoration(
-            color: _cardColor,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: _borderColor),
-          ),
-          child: TextFormField(
+      child: TextFormField(
             controller: _noteController,
             maxLines: 5,
             minLines: 4,
@@ -635,18 +627,34 @@ class _AdjustmentReportPageState extends State<AdjustmentReportPage> {
               hintStyle: TextStyle(fontSize: 12, color: _labelColor),
               filled: true,
               fillColor: _cardColor,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              focusedErrorBorder: InputBorder.none,
-              disabledBorder: InputBorder.none,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: _borderColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: _borderColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: _borderColor),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.red[400] ?? Colors.red),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.red[400] ?? Colors.red),
+              ),
+              disabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: _borderColor),
+              ),
               contentPadding: const EdgeInsets.all(14),
               errorStyle: TextStyle(fontSize: 11, color: Colors.red[400]),
             ),
           ),
-        ),
-      ),
     );
   }
 
