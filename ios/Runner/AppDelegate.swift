@@ -1,5 +1,6 @@
 import UIKit
 import Flutter
+import UserNotifications
 import FirebaseCore
 import FirebaseMessaging
 
@@ -39,6 +40,25 @@ import FirebaseMessaging
                              didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
     Messaging.messaging().apnsToken = deviceToken
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
+  }
+
+  // MARK: - Remote Notification (required when FirebaseAppDelegateProxyEnabled = false)
+  // Firebase cannot auto-swizzle this method, so we must call appDidReceiveMessage manually
+  // to ensure FCM receives background & data-only notifications correctly.
+  override func application(_ application: UIApplication,
+                             didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+                             fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    // Forward to Firebase Messaging so FCM can process data messages / background refresh
+    Messaging.messaging().appDidReceiveMessage(userInfo)
+    // Forward to Flutter plugins (firebase_messaging plugin handles onMessage / onBackgroundMessage)
+    super.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
+  }
+
+  // MARK: - Registration failure (for debugging)
+  override func application(_ application: UIApplication,
+                             didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    print("[APNs] ❌ Failed to register for remote notifications: \(error.localizedDescription)")
+    super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
   }
 }
 

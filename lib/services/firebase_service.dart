@@ -251,7 +251,11 @@ class FirebaseService {
     final notification = message.notification;
     final android = message.notification?.android;
 
-    if (notification != null && !kIsWeb) {
+    // iOS: setForegroundNotificationPresentationOptions() already shows the banner natively.
+    // DO NOT call localNotifications.show() on iOS — it would create a duplicate notification.
+    // Only use local notifications on Android (FCM foreground messages are silent on Android
+    // unless the app manually displays them via a local notification channel).
+    if (notification != null && !kIsWeb && Platform.isAndroid) {
       _localNotifications.show(
         notification.hashCode,
         notification.title,
@@ -265,7 +269,6 @@ class FirebaseService {
             importance: Importance.high,
             priority: Priority.high,
           ),
-          iOS: const DarwinNotificationDetails(),
         ),
         payload: message.data.toString(),
       );
