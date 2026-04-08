@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.digital.thp.mythpapp</string>
+	<string>vn.com.thp.payroll</string>
 	<key>PROJECT_ID</key>
 	<string>mythp-9b465</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:42808366470:ios:75a96755f45d5c962d4807</string>
+	<string>1:42808366470:ios:6229d65555e52ae22d4807</string>
 </dict>
 </plist>
