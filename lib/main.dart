@@ -56,6 +56,20 @@ Future<void> main() async {
   try {
     FirebaseService.instance.notificationApiService = sl<NotificationApiService>();
 
+    // ⚠️ CRITICAL: Initialize HydratedBloc storage FIRST
+    // ThemeCubit & LocaleCubit extend HydratedCubit, so this MUST be before runApp()
+    try {
+      HydratedBloc.storage = await HydratedStorage.build(
+        storageDirectory: kIsWeb
+            ? HydratedStorage.webStorageDirectory
+            : results[1] as Directory,
+      );
+      debugPrint('[main] ✅ HydratedBloc storage initialized successfully');
+    } catch (storageError, storageStack) {
+      debugPrint('[main] ❌ Failed to initialize HydratedBloc storage: $storageError\n$storageStack');
+      // Continue anyway - Cubits will use defaults if storage fails
+    }
+
     // Retry gửi FCM token — lần đầu trong _initFCM() bị bỏ qua vì DI chạy song song.
     // Nếu user đã đăng nhập thì gửi ngay, chưa đăng nhập thì token sẽ được gửi
     // trong sign_in.dart sau khi login thành công.
@@ -68,11 +82,6 @@ Future<void> main() async {
     // Dismiss native splash ngay trước runApp
     FlutterNativeSplash.remove();
 
-    HydratedBloc.storage = await HydratedStorage.build(
-      storageDirectory: kIsWeb
-          ? HydratedStorage.webStorageDirectory
-          : results[1] as Directory,
-    );
 
     runApp(MyApp(isLoggedIn: isLoggedIn));
   } catch (e, stack) {

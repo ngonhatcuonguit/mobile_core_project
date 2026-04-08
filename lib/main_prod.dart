@@ -38,6 +38,20 @@ Future<void> main() async {
     initializeDependencies(),
   ]);
 
+  // ⚠️ CRITICAL: Initialize HydratedBloc storage BEFORE creating any HydratedBloc instances
+  // ThemeCubit & LocaleCubit extend HydratedCubit, so this MUST come before runApp()
+  try {
+    HydratedBloc.storage = await HydratedStorage.build(
+      storageDirectory: kIsWeb
+          ? HydratedStorage.webStorageDirectory
+          : results[1] as Directory,
+    );
+    debugPrint('[main_prod] ✅ HydratedBloc storage initialized successfully');
+  } catch (storageError, storageStack) {
+    debugPrint('[main_prod] ❌ Failed to initialize HydratedBloc storage: $storageError\n$storageStack');
+    // Continue anyway - Cubits will use defaults if storage fails
+  }
+
   // Inject NotificationApiService vào FirebaseService sau khi DI sẵn sàng.
   FirebaseService.instance.notificationApiService = sl<NotificationApiService>();
 
@@ -47,11 +61,6 @@ Future<void> main() async {
     FirebaseService.instance.registerCurrentDevice();
   }
 
-  HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory: kIsWeb
-        ? HydratedStorage.webStorageDirectory
-        : results[1] as Directory,
-  );
 
   FlutterNativeSplash.remove();
 
