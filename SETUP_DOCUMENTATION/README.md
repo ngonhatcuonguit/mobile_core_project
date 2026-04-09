@@ -265,3 +265,13 @@ flutter run -t lib/main_dev.dart
 
 Good luck! 🚀
 
+
+# Upload lên Firebase App Distribution (prod)
+flutter build apk --flavor prod --release --dart-define=FLAVOR=prod -t lib/main_prod.dart
+
+# Build dev để test nội bộ
+flutter build apk --flavor dev --release --dart-define=FLAVOR=dev -t lib/main_dev.dart
+
+# Hoặc dùng script
+./build-apk.sh prod release
+./build-apk.sh dev release
