@@ -138,7 +138,6 @@ class _UserInfoPageState extends State<UserInfoPage>
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: titleColor,
-                        // fontFamily: 'Satoshi',
                       ),
                     ),
                   ),
@@ -179,7 +178,6 @@ class _UserInfoPageState extends State<UserInfoPage>
                         color: Colors.white,
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        // fontFamily: 'Satoshi',
                       ),
                     ),
                   ),
@@ -200,7 +198,6 @@ class _UserInfoPageState extends State<UserInfoPage>
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: titleColor,
-                                // fontFamily: 'Satoshi',
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -223,7 +220,6 @@ class _UserInfoPageState extends State<UserInfoPage>
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: subColor,
-                                  fontFamily: 'Satoshi',
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -244,7 +240,6 @@ class _UserInfoPageState extends State<UserInfoPage>
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: subColor,
-                                  fontFamily: 'Satoshi',
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -321,12 +316,10 @@ class _UserInfoPageState extends State<UserInfoPage>
         labelStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          // fontFamily: 'Satoshi',
         ),
         unselectedLabelStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w400,
-          // fontFamily: 'Satoshi',
         ),
         tabs: [
           Tab(text: isVi ? 'THÔNG TIN CÁ NHÂN' : 'PERSONAL INFO'),
@@ -372,7 +365,6 @@ class _AchievementChip extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: isDark ? Colors.white : const Color(0xFF111827),
-            // fontFamily: 'Satoshi',
           ),
         ),
         Text(
@@ -380,7 +372,6 @@ class _AchievementChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 9,
             color: subColor,
-            // fontFamily: 'Satoshi',
           ),
           textAlign: TextAlign.center,
         ),
@@ -573,7 +564,6 @@ class _FamilyInfoTab extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               color: subColor,
-              fontFamily: 'Satoshi',
             ),
           ),
         ],
@@ -643,7 +633,6 @@ class _InfoSection extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: titleColor,
-                    // fontFamily: 'Satoshi',
                   ),
                 ),
               ],
@@ -724,7 +713,6 @@ class _InfoRowWidget extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 color: labelColor,
-                // fontFamily: 'Satoshi',
               ),
             ),
           ),
@@ -738,7 +726,6 @@ class _InfoRowWidget extends StatelessWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: valueColor,
-                      // fontFamily: 'Satoshi',
                     ),
                     maxLines: data.multiline ? 3 : 1,
                     overflow: TextOverflow.ellipsis,

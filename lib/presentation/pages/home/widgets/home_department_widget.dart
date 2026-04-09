@@ -78,7 +78,6 @@ class HomeDepartmentWidget extends StatelessWidget {
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: isDark ? Colors.white : const Color(0xFF111827),
-                  // fontFamily: 'Satoshi',
                 ),
               ),
               GestureDetector(
@@ -89,7 +88,6 @@ class HomeDepartmentWidget extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF42C83C),
-                    // fontFamily: 'Satoshi',
                   ),
                 ),
               ),
@@ -172,7 +170,6 @@ class _DepartmentCard extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: isDark ? Colors.white : const Color(0xFF111827),
-                        // fontFamily: 'Satoshi',
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -186,7 +183,6 @@ class _DepartmentCard extends StatelessWidget {
                         color: isDark
                             ? Colors.white38
                             : const Color(0xFF6B7280),
-                        // fontFamily: 'Satoshi',
                       ),
                     ),
                   ],
@@ -225,7 +221,6 @@ class _DepartmentCard extends StatelessWidget {
                     fontSize: 9,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
-                    // fontFamily: 'Satoshi',
                   ),
                 ),
               ),

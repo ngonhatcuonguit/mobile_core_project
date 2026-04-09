@@ -213,9 +213,8 @@ class _SigninPageState extends State<SigninPage> {
 
                   // Subtitle
                   Center(
-                    child: RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
+                    child: Text.rich(
+                      TextSpan(
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
@@ -228,6 +227,7 @@ class _SigninPageState extends State<SigninPage> {
                           TextSpan(text: l?.translate('login_welcome_sub') ?? 'chúng tôi nhớ bạn!'),
                         ],
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: 40),

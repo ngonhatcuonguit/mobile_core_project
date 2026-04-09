@@ -98,7 +98,6 @@ class RequestHistoryDetailPage extends StatelessWidget {
             fontSize: 17,
             fontWeight: FontWeight.w700,
             color: titleColor,
-            fontFamily: 'Satoshi',
           ),
         ),
         centerTitle: true,
@@ -196,7 +195,6 @@ class RequestHistoryDetailPage extends StatelessWidget {
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: titleColor,
-                            fontFamily: 'Satoshi',
                           ),
                         ),
                       ),
@@ -224,7 +222,6 @@ class RequestHistoryDetailPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       color: item.reason.isNotEmpty ? titleColor : subColor,
-                      fontFamily: 'Satoshi',
                       height: 1.5,
                       fontStyle: item.reason.isEmpty
                           ? FontStyle.italic
@@ -272,7 +269,6 @@ class RequestHistoryDetailPage extends StatelessWidget {
                                     item.hrbpNote!.isNotEmpty
                                 ? titleColor
                                 : subColor,
-                            fontFamily: 'Satoshi',
                             height: 1.5,
                             fontStyle:
                                 item.hrbpNote == null || item.hrbpNote!.isEmpty
@@ -366,7 +362,6 @@ class _StatusBanner extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: statusColor,
-              fontFamily: 'Satoshi',
             ),
           ),
           if (requestedAt != null) ...[
@@ -379,7 +374,6 @@ class _StatusBanner extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   color: subColor,
-                  fontFamily: 'Satoshi',
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -424,7 +418,6 @@ class _InfoCard extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: sectionHeaderColor,
               letterSpacing: 0.8,
-              fontFamily: 'Satoshi',
             ),
           ),
         ),
@@ -482,7 +475,6 @@ class _InfoRow extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               color: subColor,
-              fontFamily: 'Satoshi',
             ),
           ),
           const Spacer(),
@@ -492,7 +484,6 @@ class _InfoRow extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: titleColor,
-              fontFamily: 'Satoshi',
             ),
           ),
         ],
@@ -558,7 +549,6 @@ class _TimelineRow extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   color: subColor,
-                  fontFamily: 'Satoshi',
                 ),
               ),
               const SizedBox(height: 2),
@@ -568,7 +558,6 @@ class _TimelineRow extends StatelessWidget {
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: titleColor,
-                  fontFamily: 'Satoshi',
                 ),
               ),
             ],

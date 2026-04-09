@@ -110,7 +110,6 @@ class _AllMenuSheetState extends State<_AllMenuSheet> {
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: isDark ? Colors.white : const Color(0xFF111827),
-                      fontFamily: 'Satoshi',
                     ),
                   ),
                   const Spacer(),
@@ -342,7 +341,6 @@ class _SheetMenuItem extends StatelessWidget {
                           fontSize: 7,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
-                          // fontFamily: 'Satoshi',
                           height: 1.3,
                         ),
                       ),
@@ -365,7 +363,6 @@ class _SheetMenuItem extends StatelessWidget {
                 color: isDark
                     ? const Color(0xFFBEBEBE)
                     : const Color(0xFF374151),
-                // fontFamily: 'Satoshi',
                 height: 1.3,
               ),
             ),

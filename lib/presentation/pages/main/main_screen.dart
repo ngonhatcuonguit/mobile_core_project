@@ -79,12 +79,10 @@ class _MainScreenState extends State<MainScreen> {
             selectedLabelStyle: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              fontFamily: 'Satoshi',
             ),
             unselectedLabelStyle: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w400,
-              fontFamily: 'Satoshi',
             ),
             elevation: 0,
             items: [

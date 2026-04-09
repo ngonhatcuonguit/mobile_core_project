@@ -159,7 +159,6 @@ class _RequestHistoryPageState extends State<RequestHistoryPage> {
             fontSize: 17,
             fontWeight: FontWeight.w700,
             color: titleColor,
-            // fontFamily: 'Satoshi',
           ),
         ),
         centerTitle: true,
@@ -319,7 +318,6 @@ class _FilterBar extends StatelessWidget {
                             : (isDark
                                 ? Colors.white38
                                 : const Color(0xFF9CA3AF)),
-                        // fontFamily: 'Satoshi',
                       ),
                     ),
                   ),
@@ -419,7 +417,6 @@ class _RequestCard extends StatelessWidget {
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: titleColor,
-                                // fontFamily: 'Satoshi',
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -428,7 +425,6 @@ class _RequestCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 12,
                                 color: subColor,
-                                // fontFamily: 'Satoshi',
                               ),
                             ),
                           ],
@@ -460,7 +456,6 @@ class _RequestCard extends StatelessWidget {
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: statusColor,
-                                // fontFamily: 'Satoshi',
                               ),
                             ),
                           ],
@@ -492,7 +487,6 @@ class _RequestCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           color: subColor,
-                          // fontFamily: 'Satoshi',
                         ),
                       ),
                       const Spacer(),
@@ -503,7 +497,6 @@ class _RequestCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             color: subColor,
-                            // fontFamily: 'Satoshi',
                           ),
                         ),
                     ],
@@ -526,7 +519,6 @@ class _RequestCard extends StatelessWidget {
                               fontSize: 12,
                               color: subColor,
                               fontStyle: FontStyle.italic,
-                              // fontFamily: 'Satoshi',
                             ),
                           ),
                         ),
@@ -564,7 +556,6 @@ class _EmptyView extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             color: isDark ? Colors.white38 : const Color(0xFF9CA3AF),
-            // fontFamily: 'Satoshi',
           ),
         ),
       ],
@@ -599,7 +590,6 @@ class _ErrorView extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white54 : const Color(0xFF6B7280),
-              // fontFamily: 'Satoshi',
             ),
           ),
           const SizedBox(height: 16),
