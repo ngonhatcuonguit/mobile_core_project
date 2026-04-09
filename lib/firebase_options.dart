@@ -35,13 +35,14 @@ class DefaultFirebaseOptions {
   );
 
   // Values from ios/Runner/GoogleService-Info.plist
+  // Firebase iOS app: vn.com.thp.payroll (GOOGLE_APP_ID: 1:42808366470:ios:6229d65555e52ae22d4807)
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyADxsGoqXmG1MI6m0NO-xfz6Q6um-7MF0k',
-    appId: '1:42808366470:ios:75a96755f45d5c962d4807',
+    appId: '1:42808366470:ios:6229d65555e52ae22d4807',
     messagingSenderId: '42808366470',
     projectId: 'mythp-9b465',
     storageBucket: 'mythp-9b465.firebasestorage.app',
-    iosBundleId: 'com.digital.thp.mythpapp',
+    iosBundleId: 'vn.com.thp.payroll',
   );
 }
 

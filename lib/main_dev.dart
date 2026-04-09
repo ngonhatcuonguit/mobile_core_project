@@ -22,50 +22,85 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_core_project/utils/in_memory_storage.dart';
 
 import 'presentation/choose_mode/bloc/locale_cubit.dart';
 import 'presentation/choose_mode/bloc/theme_cubit.dart';
 
 Future<void> main() async {
-  // preserve() phải gọi TRƯỚC WidgetsFlutterBinding
   final binding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   await dotenv.load(fileName: ".env.dev");
 
-  final results = await Future.wait([
-    FirebaseService.instance.initialize(),
-    getApplicationDocumentsDirectory(),
-    initializeDependencies(),
-  ]);
+  // ① HydratedBloc storage PHẢI được khởi tạo TRƯỚC KHI bất kỳ HydratedCubit nào được tạo.
+  //    Chạy TUẦN TỰ trước Future.wait — ThemeCubit/LocaleCubit crash nếu storage = null.
+  await _initHydratedStorage('[main_dev]');
 
-  // ⚠️ CRITICAL: Initialize HydratedBloc storage BEFORE creating any HydratedBloc instances
-  // ThemeCubit & LocaleCubit extend HydratedCubit, so this MUST come before runApp()
+  // ② Sau khi storage đã sẵn sàng, chạy các init còn lại song song
   try {
-    HydratedBloc.storage = await HydratedStorage.build(
-      storageDirectory: kIsWeb
-          ? HydratedStorage.webStorageDirectory
-          : results[1] as Directory,
-    );
-    debugPrint('[main_dev] ✅ HydratedBloc storage initialized successfully');
-  } catch (storageError, storageStack) {
-    debugPrint('[main_dev] ❌ Failed to initialize HydratedBloc storage: $storageError\n$storageStack');
-    // Continue anyway - Cubits will use defaults if storage fails
+    await Future.wait([
+      FirebaseService.instance.initialize(),
+      initializeDependencies(),
+    ]);
+  } catch (e, stack) {
+    debugPrint('[main_dev] ❌ Lỗi khởi động: $e\n$stack');
   }
 
   // Inject NotificationApiService vào FirebaseService sau khi DI sẵn sàng.
-  FirebaseService.instance.notificationApiService = sl<NotificationApiService>();
+  try {
+    FirebaseService.instance.notificationApiService = sl<NotificationApiService>();
+  } catch (_) {}
 
-  // Retry gửi FCM token — lần đầu trong _initFCM() bị bỏ qua vì DI chạy song song.
   final isLoggedIn = await AuthService.isLoggedIn();
   if (isLoggedIn) {
     FirebaseService.instance.registerCurrentDevice();
   }
 
-
   FlutterNativeSplash.remove();
-
   runApp(MyApp(isLoggedIn: isLoggedIn));
+}
+
+/// Khởi tạo HydratedBloc storage — luôn thành công, không để storage = null.
+Future<void> _initHydratedStorage(String tag) async {
+  if (kIsWeb) {
+    try {
+      HydratedBloc.storage = await HydratedStorage.build(
+        storageDirectory: HydratedStorage.webStorageDirectory,
+      );
+    } catch (e) {
+      debugPrint('$tag ❌ HydratedStorage (web) lỗi: $e — dùng MemoryStorage');
+      HydratedBloc.storage = InMemoryStorage();
+    }
+    return;
+  }
+
+  Directory? storageDir;
+  try {
+    storageDir = await getApplicationDocumentsDirectory();
+  } catch (e) {
+    debugPrint('$tag ⚠️ getApplicationDocumentsDirectory lỗi: $e');
+    try {
+      storageDir = await getTemporaryDirectory();
+    } catch (e2) {
+      debugPrint('$tag ⚠️ getTemporaryDirectory lỗi: $e2');
+    }
+  }
+
+  if (storageDir != null) {
+    try {
+      HydratedBloc.storage = await HydratedStorage.build(
+        storageDirectory: storageDir,
+      );
+      debugPrint('$tag ✅ HydratedBloc storage: ${storageDir.path}');
+      return;
+    } catch (e) {
+      debugPrint('$tag ❌ HydratedStorage.build() lỗi: $e — dùng MemoryStorage');
+    }
+  }
+
+  HydratedBloc.storage = InMemoryStorage();
+  debugPrint('$tag ⚠️ HydratedBloc dùng MemoryStorage (state không persist)');
 }
 
 class MyApp extends StatelessWidget {

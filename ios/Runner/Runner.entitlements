@@ -2,10 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- aps-environment is intentionally managed by Xcode automatic signing.
-	     - Debug builds  → provisioning profile uses APNs Sandbox  (development)
-	     - Release builds → provisioning profile uses APNs Production
-	     Hardcoding this value here overrides the provisioning profile and breaks
-	     release builds / TestFlight. Leave it absent and let Xcode handle it. -->
+	<key>aps-environment</key>
+	<string>development</string>
 </dict>
 </plist>

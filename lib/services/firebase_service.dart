@@ -147,7 +147,14 @@ class FirebaseService {
       sound: true,
       provisional: false,
     );
-    debugPrint('[FCM] Permission status: ${settings.authorizationStatus}');
+    debugPrint('[FCM] ════════════════════════════════════════');
+    debugPrint('[FCM] Permission status  : ${settings.authorizationStatus}');
+    debugPrint('[FCM] Alert   : ${settings.alert}');
+    debugPrint('[FCM] Badge   : ${settings.badge}');
+    debugPrint('[FCM] Sound   : ${settings.sound}');
+    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+      debugPrint('[FCM] ⚠️ CẢNH BÁO: User chưa cấp quyền notification! Push sẽ không hoạt động.');
+    }
 
     // Cấu hình local notifications để hiện notification khi app foreground
     await _setupLocalNotifications();
@@ -171,18 +178,51 @@ class FirebaseService {
       sound: true,
     );
 
-    // Lấy FCM token
-    final token = await getFCMToken();
-    debugPrint('[FCM] Token: $token');
-    if (token != null && token.isNotEmpty) {
-      await _sendTokenToServer(token);
-    }
+    // Lấy FCM token với diagnostic đầy đủ
+    await _initFCMToken();
 
     // Lắng nghe token refresh
     messaging.onTokenRefresh.listen((newToken) async {
-      debugPrint('[FCM] Token refreshed: $newToken');
+      debugPrint('[FCM] 🔄 Token refreshed: $newToken');
       await _sendTokenToServer(newToken);
     });
+    debugPrint('[FCM] ════════════════════════════════════════');
+  }
+
+  Future<void> _initFCMToken() async {
+    if (Platform.isIOS) {
+      debugPrint('[FCM] [iOS] Đang lấy APNs token...');
+      try {
+        final apns = await messaging
+            .getAPNSToken()
+            .timeout(const Duration(seconds: 10), onTimeout: () => null);
+        if (apns == null) {
+          debugPrint('[FCM] [iOS] ❌ APNs token = NULL');
+          debugPrint('[FCM] [iOS]    Nguyên nhân có thể:');
+          debugPrint('[FCM] [iOS]    1. Đang chạy trên Simulator (không hỗ trợ push)');
+          debugPrint('[FCM] [iOS]    2. App chưa có Push Notifications capability trong Apple Developer Portal');
+          debugPrint('[FCM] [iOS]    3. Provisioning profile không có APNs entitlement');
+          return;
+        }
+        debugPrint('[FCM] [iOS] ✅ APNs token = ${apns.substring(0, 10)}...');
+      } catch (e) {
+        debugPrint('[FCM] [iOS] ❌ getAPNSToken lỗi: $e');
+        return;
+      }
+    }
+    try {
+      final token = await messaging
+          .getToken()
+          .timeout(const Duration(seconds: 15), onTimeout: () => null);
+      if (token == null) {
+        debugPrint('[FCM] ❌ FCM token = NULL (timeout hoặc lỗi kết nối)');
+      } else {
+        debugPrint('[FCM] ✅ FCM token = $token');
+        await _sendTokenToServer(token);
+      }
+    } catch (e) {
+      debugPrint('[FCM] ❌ getToken lỗi: $e');
+    }
   }
 
   /// Lấy FCM token hiện tại và gửi lên server qua POST /api/account/RegisterNotification.

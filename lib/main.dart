@@ -21,6 +21,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_core_project/utils/in_memory_storage.dart';
 import 'presentation/choose_mode/bloc/locale_cubit.dart';
 import 'presentation/choose_mode/bloc/theme_cubit.dart';
 
@@ -29,66 +30,101 @@ Future<void> main() async {
   // Giữ native splash hiển thị trong suốt quá trình init — không màn hình trắng
   FlutterNativeSplash.preserve(widgetsBinding: binding);
 
-  late List<dynamic> results;
+  // ① HydratedBloc storage PHẢI được khởi tạo TRƯỚC KHI bất kỳ HydratedCubit nào được tạo.
+  //    ThemeCubit & LocaleCubit extend HydratedCubit → crash nếu storage = null.
+  //    Chạy TUẦN TỰ và TRƯỚC Future.wait để đảm bảo thứ tự.
+  await _initHydratedStorage();
+
+  // ② Sau khi storage đã sẵn sàng, chạy các init còn lại song song
   try {
-    results = await Future.wait([
+    await Future.wait([
       // Timeout toàn bộ Firebase init — tránh splash bị kẹt nếu Firebase/APNs hang
       FirebaseService.instance
           .initialize()
           .timeout(const Duration(seconds: 20), onTimeout: () {
         debugPrint('[main] ⚠️ Firebase init timeout — tiếp tục không có Firebase.');
       }),
-      getApplicationDocumentsDirectory(),
       initializeDependencies(),
       NetworkService().init(),
     ]).timeout(const Duration(seconds: 30), onTimeout: () {
       debugPrint('[main] ⚠️ Startup timeout — tiếp tục chạy app.');
-      return [null, Directory.systemTemp, null, null];
+      return [null, null, null];
     });
   } catch (e, stack) {
     debugPrint('[main] ❌ Lỗi khởi động: $e\n$stack');
-    // Vẫn tiếp tục để splash được gỡ và app được hiển thị
-    results = [null, Directory.systemTemp, null, null];
   }
 
-  // Inject NotificationApiService vào FirebaseService sau khi DI sẵn sàng.
-  // FirebaseService sẽ dùng service này để gửi FCM token lên server.
+  // ③ Post-init: inject dependencies & run app
   try {
+    // Inject NotificationApiService vào FirebaseService sau khi DI sẵn sàng.
     FirebaseService.instance.notificationApiService = sl<NotificationApiService>();
 
-    // ⚠️ CRITICAL: Initialize HydratedBloc storage FIRST
-    // ThemeCubit & LocaleCubit extend HydratedCubit, so this MUST be before runApp()
-    try {
-      HydratedBloc.storage = await HydratedStorage.build(
-        storageDirectory: kIsWeb
-            ? HydratedStorage.webStorageDirectory
-            : results[1] as Directory,
-      );
-      debugPrint('[main] ✅ HydratedBloc storage initialized successfully');
-    } catch (storageError, storageStack) {
-      debugPrint('[main] ❌ Failed to initialize HydratedBloc storage: $storageError\n$storageStack');
-      // Continue anyway - Cubits will use defaults if storage fails
-    }
-
     // Retry gửi FCM token — lần đầu trong _initFCM() bị bỏ qua vì DI chạy song song.
-    // Nếu user đã đăng nhập thì gửi ngay, chưa đăng nhập thì token sẽ được gửi
-    // trong sign_in.dart sau khi login thành công.
     final isLoggedIn = await AuthService.isLoggedIn();
     if (isLoggedIn) {
       // fire-and-forget — không block splash
       FirebaseService.instance.registerCurrentDevice();
     }
 
-    // Dismiss native splash ngay trước runApp
     FlutterNativeSplash.remove();
-
-
     runApp(MyApp(isLoggedIn: isLoggedIn));
   } catch (e, stack) {
     debugPrint('[main] ❌ Lỗi post-init: $e\n$stack');
     FlutterNativeSplash.remove();
     runApp(MyApp(isLoggedIn: false));
   }
+}
+
+/// Khởi tạo HydratedBloc storage — luôn thành công, không bao giờ để storage = null.
+///
+/// Thứ tự ưu tiên:
+///   1. getApplicationDocumentsDirectory() — persistent storage tốt nhất
+///   2. getTemporaryDirectory()             — fallback khi documents dir không truy cập được
+///   3. MemoryStorage()                     — in-memory, state không persist nhưng app chạy bình thường
+Future<void> _initHydratedStorage() async {
+  if (kIsWeb) {
+    try {
+      HydratedBloc.storage = await HydratedStorage.build(
+        storageDirectory: HydratedStorage.webStorageDirectory,
+      );
+      debugPrint('[main] ✅ HydratedBloc storage (web) initialized');
+    } catch (e) {
+      debugPrint('[main] ❌ HydratedStorage (web) lỗi: $e — dùng MemoryStorage');
+      HydratedBloc.storage = InMemoryStorage();
+    }
+    return;
+  }
+
+  // Native (iOS / Android): thử documents → temp → memory
+  Directory? storageDir;
+  try {
+    storageDir = await getApplicationDocumentsDirectory();
+  } catch (e) {
+    debugPrint('[main] ⚠️ getApplicationDocumentsDirectory lỗi: $e');
+    try {
+      storageDir = await getTemporaryDirectory();
+      debugPrint('[main] ⚠️ Dùng temp directory cho HydratedBloc storage');
+    } catch (e2) {
+      debugPrint('[main] ⚠️ getTemporaryDirectory lỗi: $e2');
+    }
+  }
+
+  if (storageDir != null) {
+    try {
+      HydratedBloc.storage = await HydratedStorage.build(
+        storageDirectory: storageDir,
+      );
+      debugPrint('[main] ✅ HydratedBloc storage: ${storageDir.path}');
+      return;
+    } catch (e) {
+      debugPrint('[main] ❌ HydratedStorage.build() lỗi: $e — dùng MemoryStorage');
+    }
+  }
+
+  // Absolute fallback — state không được persist nhưng app chạy bình thường.
+  // Điều này xảy ra khi file system không truy cập được (rất hiếm).
+  HydratedBloc.storage = InMemoryStorage();
+  debugPrint('[main] ⚠️ HydratedBloc dùng InMemoryStorage — state sẽ reset mỗi lần khởi động app');
 }
 
 class MyApp extends StatelessWidget {
