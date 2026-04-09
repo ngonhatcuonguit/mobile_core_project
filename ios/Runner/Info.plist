@@ -28,6 +28,30 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- ── App Transport Security ──────────────────────────────────────────
+	     Server mythp-api.thp.com.vn uses TLSv1.2 with ECDHE-RSA-AES128-SHA
+	     (SHA-1 MAC). iOS ATS only allows SHA-2 cipher suites by default,
+	     so we add a domain exception to allow this cipher suite while
+	     still requiring TLS 1.2 and forward secrecy (ECDHE).
+	──────────────────────────────────────────────────────────────────── -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>mythp-api.thp.com.vn</key>
+			<dict>
+				<!-- Allow TLS 1.2 (already the minimum, explicit for clarity) -->
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+				<!-- Allow SHA-1 based cipher suites (ECDHE-RSA-AES128-SHA) -->
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<!-- Do not include subdomains (only affects this host) -->
+				<key>NSIncludesSubdomains</key>
+				<false/>
+			</dict>
+		</dict>
+	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

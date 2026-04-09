@@ -141,6 +141,12 @@ Dio _buildThpDio() {
 }
 
 Future<void> initializeDependencies() async {
+  // Guard: nếu LoginApiService đã được đăng ký (hot restart / reinit), bỏ qua
+  if (sl.isRegistered<LoginApiService>()) {
+    debugPrint('[DI] ⚠️  Đã khởi tạo trước đó — bỏ qua (hot restart guard).');
+    return;
+  }
+
   setupApiErrorConfigs();
 
   sl.registerSingleton<Dio>(Dio());
@@ -161,6 +167,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<RegisterDeviceUseCase>(RegisterDeviceUseCase(sl()));
   sl.registerSingleton<RemoteArticlesBloc>(RemoteArticlesBloc(sl()));
   sl.registerSingleton<RemoteTimesheetBloc>(RemoteTimesheetBloc(sl()));
+  debugPrint('[DI] ✅ initializeDependencies hoàn tất.');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

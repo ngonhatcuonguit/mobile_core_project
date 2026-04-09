@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
@@ -8,6 +11,7 @@ import 'package:flutter_core_project/presentation/pages/main/main_screen.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
+import 'package:get_it/get_it.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SigninPage extends StatefulWidget {
@@ -61,6 +65,15 @@ class _SigninPageState extends State<SigninPage> {
 
     setState(() => _isLoading = true);
     try {
+      // ── Kiểm tra DI trước khi gọi service ─────────────────────────────────
+      // Nếu initializeDependencies() chưa hoàn tất (ví dụ Firebase fail khi
+      // khởi động), LoginApiService sẽ chưa được đăng ký và GetIt sẽ throw.
+      // Thử khởi tạo lại nếu chưa có.
+      if (!sl.isRegistered<LoginApiService>()) {
+        debugPrint('[Login] ⚠️ LoginApiService chưa được đăng ký, thử khởi tạo lại...');
+        await initializeDependencies();
+      }
+
       final result = await sl<LoginApiService>().login(
         userName: username,
         password: password,
@@ -88,9 +101,56 @@ class _SigninPageState extends State<SigninPage> {
         _showError(result.message ?? 'Đăng nhập thất bại');
       }
     } on DioException catch (e) {
-      if (mounted) _showError(e.message ?? 'Lỗi kết nối, vui lòng thử lại');
-    } catch (_) {
-      if (mounted) _showError('Đã có lỗi xảy ra, vui lòng thử lại');
+      debugPrint('[Login] DioException: type=${e.type} msg=${e.message} error=${e.error?.runtimeType}: ${e.error}');
+      String msg = e.message ?? 'Lỗi kết nối, vui lòng thử lại';
+      if (e.type == DioExceptionType.connectionError) {
+        msg = 'Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.';
+      } else if (e.type == DioExceptionType.connectionTimeout ||
+                 e.type == DioExceptionType.receiveTimeout ||
+                 e.type == DioExceptionType.sendTimeout) {
+        msg = 'Kết nối hết thời gian, vui lòng thử lại.';
+      }
+      if (kDebugMode) msg = '[DioException ${e.type}] ${e.message}\nInner: ${e.error}';
+      if (mounted) _showError(msg);
+    } on HandshakeException catch (e) {
+      // iOS ATS hoặc SSL handshake thất bại
+      debugPrint('[Login] HandshakeException: $e');
+      if (mounted) {
+        _showError(kDebugMode
+            ? '[HandshakeException] $e'
+            : 'Không thể kết nối tới máy chủ (SSL). Vui lòng thử lại.');
+      }
+    } on TlsException catch (e) {
+      // TlsException là parent của HandshakeException & CertificateException (Dart mới)
+      debugPrint('[Login] TlsException: $e');
+      if (mounted) {
+        _showError(kDebugMode
+            ? '[TlsException] $e'
+            : 'Lỗi bảo mật kết nối (TLS). Vui lòng thử lại.');
+      }
+    } on SocketException catch (e) {
+      debugPrint('[Login] SocketException: $e');
+      if (mounted) {
+        _showError(kDebugMode
+            ? '[SocketException] $e'
+            : 'Không có kết nối mạng, vui lòng thử lại.');
+      }
+    } on IOException catch (e) {
+      // Bắt tất cả IO exception còn lại (HttpException, OSError, v.v.)
+      debugPrint('[Login] IOException (${e.runtimeType}): $e');
+      if (mounted) {
+        _showError(kDebugMode
+            ? '[${e.runtimeType}] $e'
+            : 'Lỗi kết nối, vui lòng thử lại.');
+      }
+    } catch (e, stack) {
+      debugPrint('[Login] Unknown error (${e.runtimeType}): $e\n$stack');
+      // Trong debug mode: hiện loại lỗi thực sự để dễ chẩn đoán
+      if (mounted) {
+        _showError(kDebugMode
+            ? '[${e.runtimeType}] $e'
+            : 'Đã có lỗi xảy ra, vui lòng thử lại');
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
