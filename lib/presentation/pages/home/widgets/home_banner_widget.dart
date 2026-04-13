@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_core_project/presentation/widgets/dialogs/under_development_dialog.dart';
 
 class HomeBannerWidget extends StatefulWidget {
   const HomeBannerWidget({super.key});
@@ -82,7 +83,10 @@ class _HomeBannerWidgetState extends State<HomeBannerWidget> {
             controller: _pageController,
             onPageChanged: (i) => setState(() => _currentPage = i),
             itemCount: _banners.length,
-            itemBuilder: (_, i) => _BannerCard(item: _banners[i]),
+            itemBuilder: (_, i) => _BannerCard(
+              item: _banners[i],
+              onTap: () => showUnderDevelopmentDialog(context),
+            ),
           ),
         ),
         const SizedBox(height: 10),
@@ -111,103 +115,106 @@ class _HomeBannerWidgetState extends State<HomeBannerWidget> {
 
 class _BannerCard extends StatelessWidget {
   final _BannerItem item;
-  const _BannerCard({required this.item});
+  final VoidCallback? onTap;
+  const _BannerCard({required this.item, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          colors: [item.gradientStart, item.gradientEnd],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [item.gradientStart, item.gradientEnd],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-      ),
-      child: Stack(
-        children: [
-          // Decorative overlay
-          Positioned(
-            right: -10,
-            bottom: -10,
-            child: Opacity(
-              opacity: 0.18,
-              child: Icon(
-                item.decorIcon1,
-                size: 130,
-                color: Colors.white,
+        child: Stack(
+          children: [
+            // Decorative overlay
+            Positioned(
+              right: -10,
+              bottom: -10,
+              child: Opacity(
+                opacity: 0.18,
+                child: Icon(
+                  item.decorIcon1,
+                  size: 130,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          Positioned(
-            right: 40,
-            top: -20,
-            child: Opacity(
-              opacity: 0.12,
-              child: Icon(
-                item.decorIcon2,
-                size: 100,
-                color: Colors.white,
+            Positioned(
+              right: 40,
+              top: -20,
+              child: Opacity(
+                opacity: 0.12,
+                child: Icon(
+                  item.decorIcon2,
+                  size: 100,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  item.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  item.highlight,
-                  style: TextStyle(
-                    color: item.accentColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item.subtitle,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white38, width: 1),
-                  ),
-                  child: const Text(
-                    'Xem thêm',
-                    style: TextStyle(
+            // Content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    item.title,
+                    style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 3),
+                  Text(
+                    item.highlight,
+                    style: TextStyle(
+                      color: item.accentColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.subtitle,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.25),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white38, width: 1),
+                    ),
+                    child: const Text(
+                      'Xem thêm',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

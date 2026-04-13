@@ -17,7 +17,7 @@ class HomeDepartmentWidget extends StatelessWidget {
         iconColor: const Color(0xFF8B5CF6),
         bgLight: const Color(0xFFF5F3FF),
         bgDark: const Color(0xFF2E1B5E),
-        isComingSoon: true,
+        isHidden: true,
       ),
       _DepartmentItem(
         code: 'IT',
@@ -26,6 +26,7 @@ class HomeDepartmentWidget extends StatelessWidget {
         iconColor: const Color(0xFF3B82F6),
         bgLight: const Color(0xFFEFF6FF),
         bgDark: const Color(0xFF1E3A5F),
+        isComingSoon: true,
       ),
       _DepartmentItem(
         code: 'HR',
@@ -34,6 +35,7 @@ class HomeDepartmentWidget extends StatelessWidget {
         iconColor: const Color(0xFF10B981),
         bgLight: const Color(0xFFECFDF5),
         bgDark: const Color(0xFF064E3B),
+        isComingSoon: true,
       ),
       _DepartmentItem(
         code: 'Logistics',
@@ -104,11 +106,13 @@ class HomeDepartmentWidget extends StatelessWidget {
               crossAxisCount: 2,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio: 1.4, // ↓ was 1.6 — taller cards to prevent overflow on small screens
+              childAspectRatio: 1.4,
             ),
-            itemCount: departments.length,
-            itemBuilder: (_, i) =>
-                _DepartmentCard(item: departments[i], isDark: isDark),
+            itemCount: departments.where((d) => !d.isHidden).length,
+            itemBuilder: (_, i) {
+              final visibleDepts = departments.where((d) => !d.isHidden).toList();
+              return _DepartmentCard(item: visibleDepts[i], isDark: isDark);
+            },
           ),
         ),
       ],
@@ -239,6 +243,7 @@ class _DepartmentItem {
   final Color bgLight;
   final Color bgDark;
   final bool isComingSoon;
+  final bool isHidden;
 
   const _DepartmentItem({
     required this.code,
@@ -248,5 +253,6 @@ class _DepartmentItem {
     required this.bgLight,
     required this.bgDark,
     this.isComingSoon = false,
+    this.isHidden = false,
   });
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
 import 'package:flutter_core_project/presentation/pages/request_history/request_history_page.dart';
+import 'package:flutter_core_project/presentation/pages/timesheet/timesheet_page.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -64,6 +65,12 @@ class _ServicePageState extends State<ServicePage> {
         bgColor: const Color(0xFFFFF1F2),
         bgColorDark: const Color(0xFF4C0519),
         accentColor: const Color(0xFFEF4444),
+        action: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TimesheetPage()),
+          );
+        },
       ),
       _ServiceItem(
         key: 'service_documents',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
+import 'package:flutter_core_project/presentation/widgets/dialogs/under_development_dialog.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
@@ -774,7 +775,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           // Lưu Nháp
           Expanded(
             child: GestureDetector(
-              onTap: () {},
+              onTap: () => showUnderDevelopmentDialog(context),
               child: Container(
                 height: 50,
                 decoration: BoxDecoration(
@@ -804,7 +805,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           Expanded(
             flex: 2,
             child: GestureDetector(
-              onTap: () {},
+              onTap: () => showUnderDevelopmentDialog(context),
               child: Container(
                 height: 50,
                 decoration: BoxDecoration(

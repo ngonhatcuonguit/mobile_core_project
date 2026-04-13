@@ -3,6 +3,7 @@ import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/presentation/intro/pages/get_started.dart';
 import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
+import 'package:flutter_core_project/presentation/pages/profile/user_info_page.dart';
 import 'package:flutter_core_project/presentation/pages/request_history/request_history_page.dart';
 import 'package:flutter_core_project/presentation/pages/work_schedule/work_schedule_setup_page.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
@@ -204,6 +205,13 @@ class _AllMenuSheetState extends State<_AllMenuSheet> {
         iconColor: const Color(0xFF10B981),
         bgLight: const Color(0xFFECFDF5),
         bgDark: const Color(0xFF064E3B),
+        onTap: () {
+          Navigator.pop(context); // đóng bottom sheet
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const UserInfoPage()),
+          );
+        },
       ),
 
       // ── Chức năng mới ──────────────────────────────────────────
