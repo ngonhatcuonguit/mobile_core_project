@@ -497,7 +497,7 @@ void main() async {
 ```env
 ENVIRONMENT=development
 APP_TITLE=My THP (DEV)
-API_BASE_URL=https://mythp-api.thp.com.vn
+API_BASE_URL=https://mobile-app.thp.com.vn
 API_TIMEOUT_MS=30000
 ```
 
@@ -516,7 +516,7 @@ String apiUrl = dotenv.env['API_BASE_URL'] ?? '';
 ```env
 ENVIRONMENT=production
 APP_TITLE=My THP
-API_BASE_URL=https://mythp-api.thp.com.vn
+API_BASE_URL=https://mobile-app.thp.com.vn
 API_TIMEOUT_MS=30000
 ```
 

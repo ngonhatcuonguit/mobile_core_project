@@ -18,9 +18,9 @@ THP_API
 
 Mỗi request sẽ in ra:
 ```
-[THP_API] ▶ POST https://mythp-api.thp.com.vn/api/account/internallogin
+[THP_API] ▶ POST https://mobile-app.thp.com.vn/api/account/internallogin
 [THP_API]   Body: {UserName: 43950, Password: ...}
-[THP_API] ◀ 200 https://mythp-api.thp.com.vn/api/account/internallogin
+[THP_API] ◀ 200 https://mobile-app.thp.com.vn/api/account/internallogin
 [THP_API]   Response: {status: success, data: {...}}
 ```
 

@@ -44,7 +44,7 @@ ENVIRONMENT=production
 APP_TITLE=My THP
 
 # Domain production chính thức
-API_BASE_URL=https://mythp-api.thp.com.vn
+API_BASE_URL=https://mobile-app.thp.com.vn
 
 API_TIMEOUT_MS=30000
 ```

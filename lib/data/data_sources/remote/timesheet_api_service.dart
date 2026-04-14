@@ -80,6 +80,6 @@ class TimesheetApiService {
   }
 
   String _buildUrl(String path, String? empId, int year, int month) =>
-      'https://mythp-api.thp.com.vn$path'
+      'https://mobile-app.thp.com.vn$path'
       '?employeeid=$empId&year=$year&month=$month';
 }

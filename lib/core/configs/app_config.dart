@@ -10,9 +10,9 @@ class AppConfig {
   static String get environment =>
       dotenv.env['ENVIRONMENT'] ?? 'development';
 
-  /// Base URL for the THP API (e.g. https://mythp-api.thp.com.vn)
+  /// Base URL for the THP API (e.g. https://mobile-app.thp.com.vn)
   static String get baseUrl =>
-      dotenv.env['API_BASE_URL'] ?? 'https://mythp-api.thp.com.vn';
+      dotenv.env['API_BASE_URL'] ?? 'https://mobile-app.thp.com.vn';
 
   /// Display name shown in app title / debug banner
   static String get appTitle =>
