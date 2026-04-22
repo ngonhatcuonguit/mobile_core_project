@@ -404,7 +404,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 const Text(
-                  '1.14',
+                  '1.05',//load ngày từ api
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 32,

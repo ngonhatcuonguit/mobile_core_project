@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/data/models/notification/notification_model.dart';
 import 'package:flutter_core_project/domain/repository/notification/notification_repository.dart';
 import 'package:flutter_core_project/injection_container.dart';
+import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
+import 'package:flutter_core_project/presentation/pages/timesheet/timesheet_page.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:intl/intl.dart';
 
@@ -248,6 +251,20 @@ class _NotificationPageState extends State<NotificationPage> {
     _fetchUnreadCount();
   }
 
+  Future<void> _openTimesheetFromNotification(NotificationItem item) async {
+    await _markRead(item);
+    if (!mounted) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider<RemoteTimesheetBloc>.value(
+          value: sl<RemoteTimesheetBloc>(),
+          child: const TimesheetPage(),
+        ),
+      ),
+    );
+  }
+
   // Badge count: dùng số từ API /UnreadCount (chính xác hơn)
   int get _unreadBadge => _unreadCountFromApi;
   // Đếm local để cập nhật optimistic trong filter chips
@@ -300,7 +317,7 @@ class _NotificationPageState extends State<NotificationPage> {
                               return _NotificationItemWidget(
                                 item: _items[i],
                                 isDark: isDark,
-                                onTap: () => _markRead(_items[i]),
+                                onTap: () => _openTimesheetFromNotification(_items[i]),
                               );
                             },
                           ),

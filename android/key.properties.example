@@ -1,0 +1,7 @@
+# Copy this file to android/key.properties and update values.
+# Do NOT commit android/key.properties.
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=YOUR_KEY_ALIAS
+storeFile=/absolute/path/to/your/upload-or-release-key.jks
+
