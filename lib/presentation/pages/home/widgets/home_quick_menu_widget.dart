@@ -6,6 +6,7 @@ import 'package:flutter_core_project/presentation/pages/home/widgets/home_all_me
 import 'package:flutter_core_project/presentation/pages/work_schedule/work_schedule_setup_page.dart';
 
 import '../../profile/user_info_page.dart';
+import '../../profile/profile_page.dart';
 import '../../request_history/request_history_page.dart';
 
 class HomeQuickMenuWidget extends StatelessWidget {
@@ -17,12 +18,11 @@ class HomeQuickMenuWidget extends StatelessWidget {
 
     final menuItems = [
       _MenuItem(
-        icon: Icons.description_outlined,
-        label: context.tr('menu_documents'),
-        iconColor: const Color(0xFF3B82F6),
-        bgLight: const Color(0xFFEFF6FF),
-        bgDark: const Color(0xFF1E3A5F),
-        isComingSoon: true,
+        icon: Icons.settings_outlined,
+        label: context.tr('menu_settings'),
+        iconColor: const Color(0xFF6B7280),
+        bgLight: const Color(0xFFF3F4F6),
+        bgDark: const Color(0xFF1F2937),
       ),
       _MenuItem(
         icon: Icons.calendar_month_outlined,
@@ -55,7 +55,11 @@ class HomeQuickMenuWidget extends StatelessWidget {
     ];
 
     final menuTaps = <VoidCallback?>[
-      null, // documents
+      // settings
+      () => Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (_) => const SettingsPage()),
+      ),
       // work schedule
       () => Navigator.of(context).push(
         MaterialPageRoute(

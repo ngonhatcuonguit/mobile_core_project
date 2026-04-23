@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/presentation/intro/pages/get_started.dart';
-import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/user_info_page.dart';
 import 'package:flutter_core_project/presentation/pages/request_history/request_history_page.dart';
@@ -221,12 +220,7 @@ class _AllMenuSheetState extends State<_AllMenuSheet> {
         iconColor: const Color(0xFFEC4899),
         bgLight: const Color(0xFFFDF2F8),
         bgDark: const Color(0xFF500724),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const LeaveRequestPage()),
-          );
-        },
+        isComingSoon: true,
       ),
       const _SheetItem(
         icon: Icons.folder_outlined,

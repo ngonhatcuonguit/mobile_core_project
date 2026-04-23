@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_core_project/presentation/widgets/dialogs/under_development_dialog.dart';
 
 class HomeBannerWidget extends StatefulWidget {
   const HomeBannerWidget({super.key});
@@ -77,18 +76,18 @@ class _HomeBannerWidgetState extends State<HomeBannerWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(
-          height: 170,
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (i) => setState(() => _currentPage = i),
-            itemCount: _banners.length,
-            itemBuilder: (_, i) => _BannerCard(
-              item: _banners[i],
-              onTap: () => showUnderDevelopmentDialog(context),
+          SizedBox(
+            height: 170,
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (i) => setState(() => _currentPage = i),
+              itemCount: _banners.length,
+              itemBuilder: (_, i) => _BannerCard(
+                item: _banners[i],
+                onTap: null,
+              ),
             ),
           ),
-        ),
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
-import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
 import 'package:flutter_core_project/presentation/pages/request_history/request_history_page.dart';
 import 'package:flutter_core_project/presentation/pages/timesheet/timesheet_page.dart';
+import 'package:flutter_core_project/presentation/pages/profile/user_info_page.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -25,6 +25,12 @@ class _ServicePageState extends State<ServicePage> {
         bgColor: const Color(0xFFFFF0E6),
         bgColorDark: const Color(0xFF4A2E1F),
         accentColor: const Color(0xFFF97316),
+        action: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const UserInfoPage()),
+          );
+        },
       ),
       _ServiceItem(
         key: 'service_leave_request',
@@ -32,12 +38,7 @@ class _ServicePageState extends State<ServicePage> {
         bgColor: const Color(0xFFEFF6FF),
         bgColorDark: const Color(0xFF1E3A5F),
         accentColor: const Color(0xFF3B82F6),
-        action: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const LeaveRequestPage()),
-          );
-        },
+        isHidden: true,
       ),
       _ServiceItem(
         key: 'service_feedback',
@@ -58,6 +59,7 @@ class _ServicePageState extends State<ServicePage> {
         bgColor: const Color(0xFFECFDF5),
         bgColorDark: const Color(0xFF064E3B),
         accentColor: const Color(0xFF10B981),
+        isHidden: true,
       ),
       _ServiceItem(
         key: 'service_timesheet',
@@ -78,6 +80,7 @@ class _ServicePageState extends State<ServicePage> {
         bgColor: const Color(0xFFE0F2FE),
         bgColorDark: const Color(0xFF0C4A6E),
         accentColor: const Color(0xFF0EA5E9),
+        isHidden: true,
       ),
     ];
 
@@ -103,9 +106,10 @@ class _ServicePageState extends State<ServicePage> {
                   crossAxisSpacing: 12,
                   childAspectRatio: 1.0,
                 ),
-                itemCount: services.length,
+                itemCount: services.where((s) => !s.isHidden).length,
                 itemBuilder: (context, index) {
-                  final service = services[index];
+                  final visibleServices = services.where((s) => !s.isHidden).toList();
+                  final service = visibleServices[index];
                   return _ServiceCard(
                     service: service,
                     isDark: isDark,
@@ -234,6 +238,7 @@ class _ServiceItem {
   final Color bgColorDark;
   final Color accentColor;
   final VoidCallback? action;
+  final bool isHidden;
 
   _ServiceItem({
     required this.key,
@@ -242,6 +247,7 @@ class _ServiceItem {
     required this.bgColorDark,
     required this.accentColor,
     this.action,
+    this.isHidden = false,
   });
 }
 

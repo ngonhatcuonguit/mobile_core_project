@@ -4,8 +4,7 @@ import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
 import 'package:flutter_core_project/domain/repository/notification/notification_repository.dart';
 import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_core_project/presentation/pages/home/widgets/home_banner_widget.dart';
-import 'package:flutter_core_project/presentation/pages/home/widgets/home_department_widget.dart';
-import 'package:flutter_core_project/presentation/pages/home/widgets/home_factory_widget.dart';
+import 'package:flutter_core_project/presentation/pages/home/widgets/home_work_schedule_widget.dart';
 import 'package:flutter_core_project/presentation/pages/home/widgets/home_quick_menu_widget.dart';
 import 'package:flutter_core_project/presentation/pages/notification/notification_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -56,7 +55,7 @@ class _HomePageState extends State<HomePage> {
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
             const SliverToBoxAdapter(child: HomeQuickMenuWidget()),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            const SliverToBoxAdapter(child: HomeDepartmentWidget()),
+            const SliverToBoxAdapter(child: HomeWorkScheduleWidget()),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
