@@ -158,22 +158,22 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            _buildMenuItem(
-              context,
-              icon: AppVectors.icPrivacy,
-              title: 'Điều khoản dịch vụ',
-              iconColor: const Color(0xFF008BD9),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const TermsOfServicePage(),
-                  ),
-                );
-              },
-              isDark: isDark,
-            ),
+            // const SizedBox(height: 12),
+            // _buildMenuItem(
+            //   context,
+            //   icon: AppVectors.icPrivacy,
+            //   title: 'Điều khoản dịch vụ',
+            //   iconColor: const Color(0xFF008BD9),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (_) => const TermsOfServicePage(),
+            //       ),
+            //     );
+            //   },
+            //   isDark: isDark,
+            // ),
             // _buildMenuItem(
             //   context,
             //   icon: AppVectors.icTerms,

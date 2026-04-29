@@ -114,9 +114,9 @@ flutter_native_splash:
   color: "#FFFFFF"
   color_dark: "#FFFFFF"
 
-  # Logo THP — center gravity để logo không bị stretch/crop
-  image: assets/images/splash_logo.png
-  image_dark: assets/images/splash_logo.png
+  # Icon launcher của app — center gravity để logo không bị stretch/crop
+  image: assets/images/app_launcher_icon.png
+  image_dark: assets/images/app_launcher_icon.png
 
   # Hiển thị logo ở giữa màn hình, không scale lên đầy màn hình
   android_gravity: center
@@ -128,13 +128,14 @@ flutter_native_splash:
   # Android 12+ Splash API
   # ⚠️  Adaptive icon: logo phải nằm trong vùng 66% trung tâm của ảnh
   #     (1152×1152px, logo an toàn trong vòng tròn 672×672px ở giữa).
-  #     Nếu logo bị cut, hãy tạo lại splash_logo.png với padding 17% mỗi cạnh,
+  #     Nếu logo bị cut, hãy cập nhật app_launcher_icon.png với padding 17% mỗi cạnh,
   #     sau đó chạy: dart run flutter_native_splash:create
   android_12:
     color: "#FFFFFF"
     color_dark: "#FFFFFF"
-    image: assets/images/splash_logo.png
-    image_dark: assets/images/splash_logo.png
+    image: assets/images/app_launcher_icon.png
+    image_dark: assets/images/app_launcher_icon.png
     icon_background_color: "#FFFFFF"
     icon_background_color_dark: "#FFFFFF"
 
+#    flutter build appbundle --flavor prod -t lib/main_prod.dart

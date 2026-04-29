@@ -27,8 +27,8 @@ class _HomeBannerWidgetState extends State<HomeBannerWidget> {
     ),
     _BannerItem(
       title: 'Khám phá sản phẩm mới',
-      highlight: 'THP GROUP 2026',
-      subtitle: 'Những sản phẩm mới nhất từ THP Group\nĐặt hàng ngay hôm nay!',
+      highlight: 'My THP 2026',
+      subtitle: 'Những sản phẩm mới nhất từ My THP\nĐặt hàng ngay hôm nay!',
       gradientStart: Color(0xFF4A1FB8),
       gradientEnd: Color(0xFF8B5CF6),
       accentColor: Color(0xFFFDE68A),
@@ -38,7 +38,7 @@ class _HomeBannerWidgetState extends State<HomeBannerWidget> {
     _BannerItem(
       title: 'Chương trình ưu đãi đặc biệt',
       highlight: 'DÀNH CHO NHÂN VIÊN',
-      subtitle: 'Ưu đãi độc quyền cho nhân viên THP\nÁp dụng từ tháng 3/2026',
+      subtitle: 'Ưu đãi độc quyền cho nhân viên My THP\nÁp dụng từ tháng 3/2026',
       gradientStart: Color(0xFFB83232),
       gradientEnd: Color(0xFFFF7043),
       accentColor: Color(0xFFFFF9C4),

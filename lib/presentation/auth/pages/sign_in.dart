@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/data/data_sources/remote/login_api_service.dart';
 import 'package:flutter_core_project/injection_container.dart';
@@ -12,7 +11,6 @@ import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class SigninPage extends StatefulWidget {
   const SigninPage({super.key});
@@ -249,8 +247,8 @@ class _SigninPageState extends State<SigninPage> {
 
                   // Logo
                   Center(
-                    child: SvgPicture.asset(
-                      AppVectors.thp_logo,
+                    child: Image.asset(
+                      'assets/images/app_launcher_icon.png',
                       height: 80,
                       width: 80,
                     ),

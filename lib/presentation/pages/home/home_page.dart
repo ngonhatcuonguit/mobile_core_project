@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: 10),
               SvgPicture.asset(
                 AppVectors.thp_logo_horizontal,
-                height: 42,
+                height: 20,
               ),
             ],
           ),
