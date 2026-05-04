@@ -16,7 +16,7 @@ if (localPropertiesFile.exists()) {
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
+    flutterVersionCode = '3'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
@@ -90,6 +90,15 @@ android {
         release {
             // Release AAB/APK must be signed with your upload/release keystore.
             signingConfig signingConfigs.release
+        }
+    }
+
+    // ─── 16 KB page size support (required by Google Play from Nov 2025) ────────
+    // .so files must NOT be compressed so the OS/Play can verify load segment
+    // alignment at 16 KB boundaries (compiled by NDK 28 which is already set).
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
         }
     }
 }
