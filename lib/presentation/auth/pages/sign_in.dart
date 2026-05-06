@@ -53,7 +53,7 @@ class _SigninPageState extends State<SigninPage> {
     final password = _passwordController.text;
 
     if (username.isEmpty) {
-      _showError(l?.translate('login_error_empty_username') ?? 'Vui lòng nhập mã nhân viên');
+      _showError(l?.translate('login_error_empty_username') ?? 'Vui lòng nhập tên tài khoản');
       return;
     }
     if (password.isEmpty) {
@@ -192,6 +192,11 @@ class _SigninPageState extends State<SigninPage> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
+    final welcomeText = l?.translate('login_welcome') ??
+        'Ung dung ho tro nguoi lao dong quan ly lich lam viec, loi nhac va thong tin cong viec ca nhan.';
+    final welcomeSubText = l?.translate('login_welcome_sub') ?? '';
+    final supportNote = l?.translate('login_support_note') ??
+        'Ket noi doanh nghiep la tuy chon. Lien he ho tro neu ban can cap quyen truy cap.';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
@@ -271,21 +276,17 @@ class _SigninPageState extends State<SigninPage> {
 
                   // Subtitle
                   Center(
-                    child: Text.rich(
-                      TextSpan(
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A1A1A),
-                          height: 1.5,
-                        ),
-                        children: [
-                          TextSpan(text: l?.translate('login_welcome') ?? 'Chào mừng trở lại,'),
-                          const TextSpan(text: '\n'),
-                          TextSpan(text: l?.translate('login_welcome_sub') ?? 'chúng tôi nhớ bạn!'),
-                        ],
-                      ),
+                    child: Text(
+                      welcomeSubText.trim().isEmpty
+                          ? welcomeText
+                          : '$welcomeText\n$welcomeSubText',
                       textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A1A),
+                        height: 1.5,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -295,7 +296,7 @@ class _SigninPageState extends State<SigninPage> {
                     controller: _usernameController,
                     focusNode: _usernameFocus,
                     isFocused: _usernameFocused,
-                    hint: l?.translate('login_msnv') ?? 'Mã nhân viên',
+                    hint: l?.translate('login_msnv') ?? 'Tài khoản',
                     obscure: false,
                   ),
                   const SizedBox(height: 16),
@@ -319,25 +320,8 @@ class _SigninPageState extends State<SigninPage> {
                   const SizedBox(height: 10),
 
                   // ── Forgot password ─────────────────────────────────
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        l?.translate('login_forgot_password') ?? 'Quên mật khẩu?',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // TODO: Ẩn tạm thời — chức năng chưa hoàn thiện
+                  const SizedBox.shrink(),
                   const SizedBox(height: 32),
 
                   // ── Sign in button ──────────────────────────────────
@@ -372,6 +356,19 @@ class _SigninPageState extends State<SigninPage> {
                                 letterSpacing: 0.3,
                               ),
                             ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Text(
+                      supportNote,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF6E7280),
+                        height: 1.45,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 40),
