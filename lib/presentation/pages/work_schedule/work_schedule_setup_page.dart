@@ -18,7 +18,7 @@ const _kRed    = Color(0xFFEF4444);
 const _kViolet = Color(0xFF8B5CF6);
 const _kGray   = Color(0xFF9CA3AF);
 
-enum _SaveStatus { saved, pending, saving }
+enum _SaveStatus { saved, pending, saving, failed }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 class WorkScheduleSetupPage extends StatefulWidget {
@@ -35,6 +35,7 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
   // Auto-save state
   _SaveStatus _saveStatus = _SaveStatus.saved;
   Timer? _saveTimer;
+  int _notificationScheduleGeneration = 0;
 
   // User data
   String? _employeeId;
@@ -91,34 +92,60 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
     if (!mounted) return;
     setState(() => _saveStatus = _SaveStatus.saving);
 
-    final now = DateTime.now();
-    final model = WorkScheduleModel(
-      employeeId:   _employeeId ?? 'EMP001',
-      employeeName: _displayName ?? 'User',
-      department:   _department ?? 'Department',
-      scheduleId:   'SCH_${now.millisecondsSinceEpoch}',
-      scheduleName: 'Lịch làm việc',
-      shifts:       _shifts,
-      reminder:     _reminder,
-      createdAt:    now,
-      updatedAt:    now,
-    );
-    final json = model.toJsonString();
+    try {
+      final now = DateTime.now();
+      final model = WorkScheduleModel(
+        employeeId:   _employeeId ?? 'EMP001',
+        employeeName: _displayName ?? 'User',
+        department:   _department ?? 'Department',
+        scheduleId:   'SCH_${now.millisecondsSinceEpoch}',
+        scheduleName: 'Lịch làm việc',
+        shifts:       List<WorkShiftEntry>.from(_shifts),
+        reminder:     _reminder,
+        createdAt:    now,
+        updatedAt:    now,
+      );
+      final json = model.toJsonString();
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(kWorkScheduleKey, json);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(kWorkScheduleKey, json);
 
-    // Schedule notifications
-    await WorkScheduleNotificationService.instance.scheduleFromWorkSchedule(model);
+      if (mounted) {
+        setState(() => _saveStatus = _SaveStatus.saved);
+      }
 
-    // TODO: when API is ready → call PATCH /api/v1/work-schedules
+      final scheduleGeneration = ++_notificationScheduleGeneration;
+      unawaited(_scheduleNotificationsSafely(model, scheduleGeneration));
 
-    if (mounted) {
-      setState(() => _saveStatus = _SaveStatus.saved);
+      // TODO: when API is ready → call PATCH /api/v1/work-schedules
+    } catch (e, stack) {
+      debugPrint('[WorkSchedule] save failed: $e\n$stack');
+      if (!mounted) return;
+      setState(() => _saveStatus = _SaveStatus.failed);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('ws_save_failed')),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 
-  bool get _hasPendingChanges => _saveStatus != _SaveStatus.saved;
+  Future<void> _scheduleNotificationsSafely(
+    WorkScheduleModel model,
+    int generation,
+  ) async {
+    try {
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+      if (generation != _notificationScheduleGeneration) return;
+      await WorkScheduleNotificationService.instance.scheduleFromWorkSchedule(model);
+    } catch (e, stack) {
+      debugPrint('[WorkSchedule] notification scheduling skipped: $e\n$stack');
+    }
+  }
+
+  bool get _hasPendingChanges =>
+      _saveStatus == _SaveStatus.pending || _saveStatus == _SaveStatus.saving;
 
   // ── Back guard ────────────────────────────────────────────────────────────────
   Future<bool> _onWillPop() async {
@@ -263,6 +290,11 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
                   key: ValueKey('pending'),
                   Icons.circle, size: 8,
                   color: _kAmber,
+                ),
+              _SaveStatus.failed => const Icon(
+                  key: ValueKey('failed'),
+                  Icons.error_outline_rounded, size: 16,
+                  color: _kRed,
                 ),
               _SaveStatus.saved => Row(
                   key: const ValueKey('saved'),

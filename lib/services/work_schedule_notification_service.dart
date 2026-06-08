@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_core_project/data/models/work_schedule/work_schedule_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -86,14 +88,27 @@ class WorkScheduleNotificationService {
   // ─── Schedule all notifications from work schedule ────────────────────────
   /// Gọi hàm này mỗi khi work schedule được save/update
   Future<void> scheduleFromWorkSchedule(WorkScheduleModel schedule) async {
-    if (!_initialized) await initialize();
+    try {
+      if (!_initialized) {
+        await initialize().timeout(const Duration(seconds: 5));
+      }
+    } catch (e, stack) {
+      debugPrint('[WorkScheduleNoti] Initialize failed: $e\n$stack');
+      return;
+    }
 
-    // Cancel all existing notifications trước
-    await cancelAll();
+    // Cancel all existing notifications trước. Nếu cancel lỗi, vẫn thử schedule
+    // notification mới để save flow không bị chặn bởi plugin/platform state.
+    try {
+      await cancelAll().timeout(const Duration(seconds: 5));
+    } catch (e, stack) {
+      debugPrint('[WorkScheduleNoti] cancelAll failed: $e\n$stack');
+    }
 
     final reminder = schedule.reminder;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    var scheduledCount = 0;
 
     // Schedule cho 7 ngày tới
     for (int dayOffset = 0; dayOffset < 7; dayOffset++) {
@@ -134,7 +149,7 @@ class WorkScheduleNotificationService {
         if (reminder.checkInEnabled && checkInTime.isAfter(now)) {
           final reminderTime = checkInTime.subtract(Duration(minutes: reminder.checkInMinutesBefore));
           if (reminderTime.isAfter(now)) {
-            await _scheduleNotification(
+            final scheduled = await _scheduleNotification(
               id: _baseCheckInReminderId + dayOffset * 100 + shiftIndex,
               title: '⏰ Sắp đến giờ làm',
               body: 'Ca ${shift.name}: Check-in lúc ${shift.checkInTime}. Nhớ điểm danh!',
@@ -143,13 +158,14 @@ class WorkScheduleNotificationService {
               channelId: 'work_schedule_alerts',
               isAlert: false,
             );
+            if (scheduled) scheduledCount++;
           }
 
           // 2. Late alert (5 phút sau giờ check-in)
           if (reminder.lateAlertEnabled) {
             final lateAlertTime = checkInTime.add(const Duration(minutes: 5));
             if (lateAlertTime.isAfter(now)) {
-              await _scheduleNotification(
+              final scheduled = await _scheduleNotification(
                 id: _baseLateAlertId + dayOffset * 100 + shiftIndex,
                 title: '⚠️ Cảnh báo đi trễ',
                 body: 'Bạn chưa check-in ca ${shift.name}. Vui lòng điểm danh ngay!',
@@ -158,6 +174,7 @@ class WorkScheduleNotificationService {
                 channelId: 'work_schedule_alerts',
                 isAlert: true,
               );
+              if (scheduled) scheduledCount++;
             }
           }
         }
@@ -166,7 +183,7 @@ class WorkScheduleNotificationService {
         if (reminder.checkOutEnabled && checkOutTime.isAfter(now)) {
           final reminderTime = checkOutTime.subtract(Duration(minutes: reminder.checkOutMinutesBefore));
           if (reminderTime.isAfter(now)) {
-            await _scheduleNotification(
+            final scheduled = await _scheduleNotification(
               id: _baseCheckOutReminderId + dayOffset * 100 + shiftIndex,
               title: '🔔 Sắp hết giờ làm',
               body: 'Ca ${shift.name}: Check-out lúc ${shift.checkOutTime}. Chuẩn bị kết thúc ca!',
@@ -175,6 +192,7 @@ class WorkScheduleNotificationService {
               channelId: 'work_schedule_alerts',
               isAlert: false,
             );
+            if (scheduled) scheduledCount++;
           }
         }
 
@@ -182,7 +200,7 @@ class WorkScheduleNotificationService {
         if (reminder.overtimeAlertEnabled && checkOutTime.isAfter(now)) {
           final overtimeAlertTime = checkOutTime.add(const Duration(minutes: 15));
           if (overtimeAlertTime.isAfter(now)) {
-            await _scheduleNotification(
+            final scheduled = await _scheduleNotification(
               id: _baseOvertimeAlertId + dayOffset * 100 + shiftIndex,
               title: '⏱️ Thông báo tăng ca',
               body: 'Bạn đang làm việc quá giờ ca ${shift.name}. Nhớ check-out!',
@@ -191,16 +209,18 @@ class WorkScheduleNotificationService {
               channelId: 'work_schedule_alerts',
               isAlert: true,
             );
+            if (scheduled) scheduledCount++;
           }
         }
       }
     }
 
-    debugPrint('[WorkScheduleNoti] Scheduled notifications for ${schedule.shifts.length} shift(s)');
+    debugPrint('[WorkScheduleNoti] Scheduled $scheduledCount notification(s) '
+        'for ${schedule.shifts.length} shift(s)');
   }
 
   // ─── Schedule single notification ──────────────────────────────────────────
-  Future<void> _scheduleNotification({
+  Future<bool> _scheduleNotification({
     required int id,
     required String title,
     required String body,
@@ -211,12 +231,75 @@ class WorkScheduleNotificationService {
   }) async {
     final tzScheduledTime = tz.TZDateTime.from(scheduledTime, tz.local);
 
-    await _notifications.zonedSchedule(
-      id,
-      title,
-      body,
-      tzScheduledTime,
-      NotificationDetails(
+    Future<void> schedule({
+      required AndroidScheduleMode mode,
+      required bool customSound,
+    }) {
+      return _notifications
+          .zonedSchedule(
+            id,
+            title,
+            body,
+            tzScheduledTime,
+            _notificationDetails(
+              channelId: channelId,
+              isAlert: isAlert,
+              customSound: customSound,
+            ),
+            payload: payload,
+            androidScheduleMode: mode,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+          )
+          .timeout(const Duration(seconds: 4));
+    }
+
+    try {
+      await schedule(
+        mode: AndroidScheduleMode.exactAllowWhileIdle,
+        customSound: true,
+      );
+      debugPrint('[WorkScheduleNoti] Scheduled #$id at $scheduledTime: $title');
+      return true;
+    } on PlatformException catch (e) {
+      debugPrint('[WorkScheduleNoti] Exact schedule failed #$id: '
+          '${e.code} ${e.message} — retry inexact');
+    } catch (e) {
+      debugPrint('[WorkScheduleNoti] Schedule failed #$id: $e — retry inexact');
+    }
+
+    try {
+      await schedule(
+        mode: AndroidScheduleMode.inexactAllowWhileIdle,
+        customSound: true,
+      );
+      debugPrint('[WorkScheduleNoti] Scheduled #$id inexact at $scheduledTime');
+      return true;
+    } catch (e) {
+      debugPrint('[WorkScheduleNoti] Inexact schedule failed #$id: '
+          '$e — retry without custom sound');
+    }
+
+    try {
+      await schedule(
+        mode: AndroidScheduleMode.inexactAllowWhileIdle,
+        customSound: false,
+      );
+      debugPrint('[WorkScheduleNoti] Scheduled #$id inexact/no-sound at '
+          '$scheduledTime');
+      return true;
+    } catch (e, stack) {
+      debugPrint('[WorkScheduleNoti] Skip notification #$id: $e\n$stack');
+      return false;
+    }
+  }
+
+  NotificationDetails _notificationDetails({
+    required String channelId,
+    required bool isAlert,
+    required bool customSound,
+  }) {
+    return NotificationDetails(
         android: AndroidNotificationDetails(
           channelId,
           'Work Schedule Notifications',
@@ -224,7 +307,7 @@ class WorkScheduleNotificationService {
           importance: isAlert ? Importance.max : Importance.high,
           priority: isAlert ? Priority.max : Priority.high,
           playSound: true,
-          sound: isAlert 
+          sound: isAlert && customSound
               ? const RawResourceAndroidNotificationSound('alert_sound') 
               : null,
           enableVibration: true,
@@ -235,21 +318,14 @@ class WorkScheduleNotificationService {
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
-          sound: isAlert ? 'alert_sound.aiff' : null,
+          sound: isAlert && customSound ? 'alert_sound.aiff' : null,
           interruptionLevel: isAlert 
               ? InterruptionLevel.timeSensitive 
               : InterruptionLevel.active,
         ),
-      ),
-      payload: payload,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-    );
-
-    debugPrint('[WorkScheduleNoti] Scheduled #$id at $scheduledTime: $title');
+      );
   }
 
-  // ─── Ignore check-in reminder (10 phút) ────────────────────────────────────
   Future<void> _markCheckInReminderIgnored() async {
     final prefs = await SharedPreferences.getInstance();
     final ignoreUntil = DateTime.now().add(const Duration(minutes: 10)).toIso8601String();
@@ -308,4 +384,3 @@ class WorkScheduleNotificationService {
     return await _notifications.pendingNotificationRequests();
   }
 }
-

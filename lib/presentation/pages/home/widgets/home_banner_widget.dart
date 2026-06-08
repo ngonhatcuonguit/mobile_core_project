@@ -15,10 +15,10 @@ class _HomeBannerWidgetState extends State<HomeBannerWidget> {
 
   final List<_BannerItem> _banners = const [
     _BannerItem(
-      title: 'Lại gần Sơn Tùng cùng',
-      highlight: 'TRÀ XANH KHÔNG ĐỘ',
+      title: 'Trà xanh không độ',
+      highlight: 'KHÔNG ĐỘ - KHÔNG STRESS',
       subtitle:
-          'Đi khắp 15 tỉnh thành cùng Sơn Tùng và\nTrà Xanh Không Độ. Bạn đã sẵn sàng?',
+          'Thanh mát mỗi ngày, tỉnh táo mỗi ca làm.\nSảng khoái cùng Trà xanh không độ.',
       gradientStart: Color(0xFF1B8C3E),
       gradientEnd: Color(0xFF56C271),
       accentColor: Color(0xFFFFEB3B),
@@ -240,4 +240,3 @@ class _BannerItem {
     required this.decorIcon2,
   });
 }
-

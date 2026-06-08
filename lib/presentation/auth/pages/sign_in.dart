@@ -195,8 +195,8 @@ class _SigninPageState extends State<SigninPage> {
     final welcomeText = l?.translate('login_welcome') ??
         'Ung dung ho tro nguoi lao dong quan ly lich lam viec, loi nhac va thong tin cong viec ca nhan.';
     final welcomeSubText = l?.translate('login_welcome_sub') ?? '';
-    final supportNote = l?.translate('login_support_note') ??
-        'Ket noi doanh nghiep la tuy chon. Lien he ho tro neu ban can cap quyen truy cap.';
+    // final supportNote = l?.translate('login_support_note') ??
+    //     'Ket noi doanh nghiep la tuy chon. Lien he ho tro neu ban can cap quyen truy cap.';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
@@ -359,19 +359,19 @@ class _SigninPageState extends State<SigninPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Center(
-                    child: Text(
-                      supportNote,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF6E7280),
-                        height: 1.45,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
+                  // Center(
+                  //   child: Text(
+                  //     supportNote,
+                  //     textAlign: TextAlign.center,
+                  //     style: const TextStyle(
+                  //       fontSize: 13,
+                  //       fontWeight: FontWeight.w500,
+                  //       color: Color(0xFF6E7280),
+                  //       height: 1.45,
+                  //     ),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 40),
                 ],
               ),
             ),

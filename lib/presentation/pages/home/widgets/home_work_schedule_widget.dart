@@ -26,18 +26,26 @@ class _HomeWorkScheduleWidgetState extends State<HomeWorkScheduleWidget> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(kWorkScheduleKey);
-      if (raw != null) {
-        final model = WorkScheduleModel.fromJsonString(raw);
-        setState(() {
-          _schedule = model;
-          _isLoading = false;
-        });
-      } else {
-        setState(() => _isLoading = false);
-      }
+      final model = raw != null ? WorkScheduleModel.fromJsonString(raw) : null;
+      if (!mounted) return;
+      setState(() {
+        _schedule = model;
+        _isLoading = false;
+      });
     } catch (_) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _openScheduleSetup() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const WorkScheduleSetupPage(),
+      ),
+    );
+    if (!mounted) return;
+    await _loadSchedule();
   }
 
   @override
@@ -49,8 +57,18 @@ class _HomeWorkScheduleWidgetState extends State<HomeWorkScheduleWidget> {
     final subTxt = isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
     final accentColor = const Color(0xFF42C83C);
 
-    if (_isLoading || _schedule == null) {
+    if (_isLoading) {
       return const SizedBox.shrink();
+    }
+
+    if (_schedule == null) {
+      return _buildEmptyScheduleCard(
+        cardBg: cardBg,
+        borderColor: borderColor,
+        txt: txt,
+        subTxt: subTxt,
+        accentColor: accentColor,
+      );
     }
 
     final days = _dayLabels(context);
@@ -85,11 +103,7 @@ class _HomeWorkScheduleWidgetState extends State<HomeWorkScheduleWidget> {
                 ),
                 const Spacer(),
                 GestureDetector(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const WorkScheduleSetupPage(),
-                    ),
-                  ),
+                  onTap: _openScheduleSetup,
                   child: Text(
                     'chỉnh sửa lịch',
                     style: const TextStyle(
@@ -169,6 +183,105 @@ class _HomeWorkScheduleWidgetState extends State<HomeWorkScheduleWidget> {
     );
   }
 
+  Widget _buildEmptyScheduleCard({
+    required Color cardBg,
+    required Color borderColor,
+    required Color txt,
+    required Color subTxt,
+    required Color accentColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: borderColor),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.calendar_view_week_rounded,
+                    color: accentColor, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Lịch làm việc',
+                  style: TextStyle(
+                    color: txt,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            GestureDetector(
+              onTap: _openScheduleSetup,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: accentColor.withOpacity(0.35),
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  color: accentColor.withOpacity(0.04),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.add_circle_outline_rounded,
+                      size: 36,
+                      color: accentColor.withOpacity(0.6),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      context.tr('home_work_schedule_empty'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: subTxt, fontSize: 13),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: accentColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.add, color: Colors.white, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            context.tr('home_create_work_schedule'),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   static List<String> _dayLabels(BuildContext ctx) => [
         ctx.tr('ws_day_mon'),
         ctx.tr('ws_day_tue'),
@@ -210,4 +323,3 @@ class _ShiftPill extends StatelessWidget {
     );
   }
 }
-
