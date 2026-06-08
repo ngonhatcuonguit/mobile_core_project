@@ -252,18 +252,22 @@ class _TimesheetPageState extends State<TimesheetPage> {
 
   /// Nội dung chính của màn hình timesheet — dùng cho cả Loaded và Refreshing
   Widget _buildTimesheetContent(TimesheetLoaded state) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 12),
-          _buildSummaryCards(state),
-          const SizedBox(height: 8),
-          _buildMonthSelector(),
-          _buildCalendar(state),
-          if (state.selectedDate != null) _buildDayDetails(state),
-          _buildActionButtons(selectedDate: state.selectedDate),
-          const SizedBox(height: 16),
-        ],
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) => _removeTooltip(),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            _buildSummaryCards(state),
+            const SizedBox(height: 8),
+            _buildMonthSelector(),
+            _buildCalendar(state),
+            if (state.selectedDate != null) _buildDayDetails(state),
+            _buildActionButtons(selectedDate: state.selectedDate),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
@@ -507,7 +511,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
         children: [
           Expanded(child: _buildSummaryCard('Ngày công', workingDays.toString(), const Color(0xFF42C83C))),
           const SizedBox(width: 8),
-          Expanded(child: _buildSummaryCard('Phép năm', leaveDays.toString(), const Color(0xFF2196F3))),
+          Expanded(child: _buildSummaryCard('Ngày có sd phép', leaveDays.toString(), const Color(0xFF2196F3))),
           const SizedBox(width: 8),
           Expanded(child: _buildSummaryCard('Tăng ca', overtimeStr, const Color(0xFFFF9800))),
         ],
@@ -808,110 +812,101 @@ class _TimesheetPageState extends State<TimesheetPage> {
         .toList();
 
     _tooltipOverlay = OverlayEntry(
-      builder: (_) => Stack(
-        children: [
-          // ── Dismiss on tap outside ───────────────────────────
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: _removeTooltip,
-            ),
-          ),
-          // ── Bubble ──────────────────────────────────────────
-          Positioned(
-            left: tipLeft,
-            // NO width: — let the Row inside shrink to content
-            top:    showAbove ? null : tipTop,
-            bottom: showAbove
-                ? screenSize.height - cellOffset.dy + caretH
-                : null,
-            child: Material(
-              color: Colors.transparent,
-              child: ConstrainedBox(
-                // Hard cap so it never goes full-screen
-                constraints: BoxConstraints(maxWidth: maxWidth),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  // stretch = caret spans same width as card
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // ── Caret DOWN (bubble above cell) ─────────
-                    if (showAbove)
-                      _buildCaret(
-                        arrowOffsetX: arrowOffsetX,
-                        caretH: caretH,
+      builder: (_) => Positioned(
+        left: tipLeft,
+        // NO width: — let the Row inside shrink to content
+        top:    showAbove ? null : tipTop,
+        bottom: showAbove
+            ? screenSize.height - cellOffset.dy + caretH
+            : null,
+        child: IgnorePointer(
+          ignoring: true,
+          child: Material(
+            color: Colors.transparent,
+            child: ConstrainedBox(
+              // Hard cap so it never goes full-screen
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                // stretch = caret spans same width as card
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ── Caret DOWN (bubble above cell) ─────────
+                  if (showAbove)
+                    _buildCaret(
+                      arrowOffsetX: arrowOffsetX,
+                      caretH: caretH,
+                      color: bgColor,
+                      borderColor: borderColor,
+                      pointUp: false,
+                    ),
+                  // ── Card — intrinsic width from Row child ──
+                  IntrinsicWidth(
+                    child: Container(
+                      decoration: BoxDecoration(
                         color: bgColor,
-                        borderColor: borderColor,
-                        pointUp: false,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: borderColor, width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                Colors.black.withOpacity(isDark ? 0.45 : 0.13),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    // ── Card — intrinsic width from Row child ──
-                    IntrinsicWidth(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: bgColor,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: borderColor, width: 1.2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black
-                                  .withOpacity(isDark ? 0.45 : 0.13),
-                              blurRadius: 14,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.fromLTRB(11, 8, 11, 8),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ── Check-in / out ─────────────────
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.access_time_rounded,
-                                    size: 13, color: Color(0xFF42C83C)),
-                                const SizedBox(width: 5),
-                                Text(
-                                  '$timeIn  →  $timeOut',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: (!hasIn && !hasOut)
-                                        ? Colors.grey
-                                        : textPrimary,
-                                  ),
+                      padding: const EdgeInsets.fromLTRB(11, 8, 11, 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // ── Check-in / out ─────────────────
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.access_time_rounded,
+                                  size: 13, color: Color(0xFF42C83C)),
+                              const SizedBox(width: 5),
+                              Text(
+                                '$timeIn  →  $timeOut',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: (!hasIn && !hasOut)
+                                      ? Colors.grey
+                                      : textPrimary,
                                 ),
-                              ],
-                            ),
-                            // ── Chips ──────────────────────────
-                            if (chips.isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              Wrap(
-                                spacing: 4,
-                                runSpacing: 4,
-                                children: chipWidgets(isDark),
                               ),
                             ],
+                          ),
+                          // ── Chips ──────────────────────────
+                          if (chips.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 4,
+                              runSpacing: 4,
+                              children: chipWidgets(isDark),
+                            ),
                           ],
-                        ),
+                        ],
                       ),
                     ),
-                    // ── Caret UP (bubble below cell) ────────────
-                    if (!showAbove)
-                      _buildCaret(
-                        arrowOffsetX: arrowOffsetX,
-                        caretH: caretH,
-                        color: bgColor,
-                        borderColor: borderColor,
-                        pointUp: true,
-                      ),
-                  ],
-                ),
+                  ),
+                  // ── Caret UP (bubble below cell) ────────────
+                  if (!showAbove)
+                    _buildCaret(
+                      arrowOffsetX: arrowOffsetX,
+                      caretH: caretH,
+                      color: bgColor,
+                      borderColor: borderColor,
+                      pointUp: true,
+                    ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
 
