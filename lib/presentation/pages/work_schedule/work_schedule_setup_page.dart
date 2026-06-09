@@ -29,7 +29,9 @@ class WorkScheduleSetupPage extends StatefulWidget {
 
 class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
   List<WorkShiftEntry> _shifts = [];
-  WorkScheduleReminder _reminder = const WorkScheduleReminder();
+  WorkScheduleReminder _reminder = const WorkScheduleReminder(
+    lateAlertEnabled: false,
+  );
   int _shiftIdCounter = 0;
 
   // Auto-save state
@@ -75,7 +77,7 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
       final m = WorkScheduleModel.fromJsonString(raw);
       setState(() {
         _shifts = List.from(m.shifts);
-        _reminder = m.reminder;
+        _reminder = m.reminder.copyWith(lateAlertEnabled: false);
         _shiftIdCounter = _shifts.length;
       });
     } catch (_) {}
@@ -101,7 +103,7 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
         scheduleId:   'SCH_${now.millisecondsSinceEpoch}',
         scheduleName: 'Lịch làm việc',
         shifts:       List<WorkShiftEntry>.from(_shifts),
-        reminder:     _reminder,
+        reminder:     _reminder.copyWith(lateAlertEnabled: false),
         createdAt:    now,
         updatedAt:    now,
       );
@@ -500,8 +502,8 @@ class _WorkScheduleSetupPageState extends State<WorkScheduleSetupPage> {
           isDark: isDark, border: border, txt: txt,
           label: context.tr('ws_alert_late'),
           icon: Icons.warning_amber_rounded, iconColor: _kRed,
-          value: _reminder.lateAlertEnabled,
-          onToggle: (v) { setState(() => _reminder = _reminder.copyWith(lateAlertEnabled: v)); _scheduleAutoSave(); },
+          value: false,
+          onToggle: null,
         ),
         const SizedBox(height: 8),
         _SwitchRow(
@@ -947,7 +949,7 @@ class _SwitchRow extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final bool value;
-  final ValueChanged<bool> onToggle;
+  final ValueChanged<bool>? onToggle;
   const _SwitchRow({
     required this.isDark, required this.border, required this.txt,
     required this.label, required this.icon, required this.iconColor,
@@ -956,14 +958,33 @@ class _SwitchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF9FAFB);
+    final enabled = onToggle != null;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12), border: Border.all(color: border)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: border),
+      ),
       child: Row(children: [
-        Icon(icon, size: 17, color: iconColor),
+        Icon(icon, size: 17, color: enabled ? iconColor : _kGray),
         const SizedBox(width: 8),
-        Expanded(child: Text(label, style: TextStyle(color: txt, fontSize: 13, fontWeight: FontWeight.w500))),
-        Switch(value: value, onChanged: onToggle, activeColor: _kGreen, materialTapTargetSize: MaterialTapTargetSize.shrinkWrap),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: enabled ? txt : _kGray,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onToggle,
+          activeColor: _kGreen,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
       ]),
     );
   }

@@ -259,7 +259,7 @@ class _NotificationPageState extends State<NotificationPage> {
       MaterialPageRoute(
         builder: (_) => BlocProvider<RemoteTimesheetBloc>.value(
           value: sl<RemoteTimesheetBloc>(),
-          child: const TimesheetPage(),
+          child: const TimesheetPage(showBackButton: true),
         ),
       ),
     );
@@ -811,4 +811,3 @@ class _IconConfig {
   final Color bg;
   const _IconConfig({required this.icon, required this.bg});
 }
-

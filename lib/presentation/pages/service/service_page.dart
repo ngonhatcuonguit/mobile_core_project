@@ -70,7 +70,9 @@ class _ServicePageState extends State<ServicePage> {
         action: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const TimesheetPage()),
+            MaterialPageRoute(
+              builder: (_) => const TimesheetPage(showBackButton: true),
+            ),
           );
         },
       ),
@@ -322,4 +324,3 @@ class _ServiceCard extends StatelessWidget {
     );
   }
 }
-

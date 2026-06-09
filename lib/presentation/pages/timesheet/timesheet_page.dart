@@ -11,7 +11,12 @@ import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 class TimesheetPage extends StatefulWidget {
-  const TimesheetPage({super.key});
+  final bool showBackButton;
+
+  const TimesheetPage({
+    super.key,
+    this.showBackButton = false,
+  });
 
   @override
   State<TimesheetPage> createState() => _TimesheetPageState();
@@ -118,134 +123,181 @@ class _TimesheetPageState extends State<TimesheetPage> {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF1C1C1C) : const Color(0xFFF5F5F5),
       body: SafeArea(
-        child: BlocConsumer<RemoteTimesheetBloc, TimesheetState>(
-          // Sync _currentDate khi Bloc load xong (trường hợp restore từ cache)
-          listener: (context, state) {
-            if (state is TimesheetLoaded && state.timesheet != null) {
-              final ts = state.timesheet!;
-              if (ts.year > 0 && ts.month > 0) {
-                final loaded = DateTime(ts.year, ts.month);
-                if (loaded != DateTime(_currentDate.year, _currentDate.month)) {
-                  setState(() => _currentDate = loaded);
-                }
-              }
-            }
-          },
-          builder: (context, state) {
-            // ── Lần đầu chưa có data → shimmer toàn màn hình ──────────────
-            if (state is TimesheetLoading) {
-              return _buildShimmerSkeleton(isDark);
-            }
+        child: Column(
+          children: [
+            if (widget.showBackButton) _buildBackHeader(isDark),
+            Expanded(
+              child: BlocConsumer<RemoteTimesheetBloc, TimesheetState>(
+                // Sync _currentDate khi Bloc load xong (trường hợp restore từ cache)
+                listener: (context, state) {
+                  if (state is TimesheetLoaded && state.timesheet != null) {
+                    final ts = state.timesheet!;
+                    if (ts.year > 0 && ts.month > 0) {
+                      final loaded = DateTime(ts.year, ts.month);
+                      if (loaded != DateTime(_currentDate.year, _currentDate.month)) {
+                        setState(() => _currentDate = loaded);
+                      }
+                    }
+                  }
+                },
+                builder: (context, state) {
+                  // ── Lần đầu chưa có data → shimmer toàn màn hình ──────────────
+                  if (state is TimesheetLoading) {
+                    return _buildShimmerSkeleton(isDark);
+                  }
 
-            // ── Đang refresh nhưng vẫn có data cũ → giữ UI + overlay ──────
-            if (state is TimesheetRefreshing) {
-              return Stack(
-                children: [
-                  // Nội dung cũ vẫn hiển thị
-                  _buildTimesheetContent(
-                    TimesheetLoaded(
-                      timesheet: state.timesheet!,
-                      selectedDate: state.selectedDate,
-                    ),
-                  ),
-                  // Overlay trong suốt khoá tương tác (trừ bottom nav bên ngoài)
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      ignoring: false,
-                      child: Container(
-                        color: Colors.black.withOpacity(0.18),
-                      ),
-                    ),
-                  ),
-                  // Popup loading nhỏ gọn ở giữa
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 28, vertical: 22),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF2A2A2A)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.18),
-                            blurRadius: 24,
-                            offset: const Offset(0, 6),
+                  // ── Đang refresh nhưng vẫn có data cũ → giữ UI + overlay ──────
+                  if (state is TimesheetRefreshing) {
+                    return Stack(
+                      children: [
+                        // Nội dung cũ vẫn hiển thị
+                        _buildTimesheetContent(
+                          TimesheetLoaded(
+                            timesheet: state.timesheet!,
+                            selectedDate: state.selectedDate,
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SizedBox(
-                            width: 36,
-                            height: 36,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3,
-                              color: Color(0xFF42C83C),
+                        ),
+                        // Overlay trong suốt khoá tương tác (trừ bottom nav bên ngoài)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            ignoring: false,
+                            child: Container(
+                              color: Colors.black.withOpacity(0.18),
                             ),
                           ),
-                          const SizedBox(height: 14),
-                          Text(
-                            'Đang tải bảng công...',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                        ),
+                        // Popup loading nhỏ gọn ở giữa
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 28, vertical: 22),
+                            decoration: BoxDecoration(
                               color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF1A1A1A),
+                                  ? const Color(0xFF2A2A2A)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.18),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(
+                                  width: 36,
+                                  height: 36,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    color: Color(0xFF42C83C),
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                Text(
+                                  'Đang tải bảng công...',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1A1A1A),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            }
+                        ),
+                      ],
+                    );
+                  }
 
-            if (state is TimesheetError) {
-              final err = state.error;
-              final errMsg = err?.message?.isNotEmpty == true
-                  ? err!.message!
-                  : err?.error?.toString() ?? 'Unknown error';
-              final statusCode = err?.response?.statusCode;
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Không tải được bảng công',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                        textAlign: TextAlign.center,
+                  if (state is TimesheetError) {
+                    final err = state.error;
+                    final errMsg = err?.message?.isNotEmpty == true
+                        ? err!.message!
+                        : err?.error?.toString() ?? 'Unknown error';
+                    final statusCode = err?.response?.statusCode;
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Không tải được bảng công',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              statusCode != null ? 'HTTP $statusCode – $errMsg' : errMsg,
+                              style: const TextStyle(fontSize: 13, color: Colors.grey),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 20),
+                            ElevatedButton.icon(
+                              onPressed: _loadTimesheet,
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Thử lại'),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        statusCode != null ? 'HTTP $statusCode – $errMsg' : errMsg,
-                        style: const TextStyle(fontSize: 13, color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton.icon(
-                        onPressed: _loadTimesheet,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Thử lại'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            } else if (state is TimesheetLoaded) {
-              return _buildTimesheetContent(state);
-            }
-            return _buildShimmerSkeleton(isDark);
-          },
+                    );
+                  } else if (state is TimesheetLoaded) {
+                    return _buildTimesheetContent(state);
+                  }
+                  return _buildShimmerSkeleton(isDark);
+                },
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBackHeader(bool isDark) {
+    final bgColor = isDark ? const Color(0xFF2A2A2A) : Colors.white;
+    final iconColor = isDark ? Colors.white : const Color(0xFF111827);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 16, 4),
+      child: Row(
+        children: [
+          Material(
+            color: bgColor,
+            shape: const CircleBorder(),
+            elevation: isDark ? 0 : 1,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => Navigator.of(context).maybePop(),
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 18,
+                  color: iconColor,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            context.tr('nav_timesheet'),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: iconColor,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -493,9 +545,11 @@ class _TimesheetPageState extends State<TimesheetPage> {
   }
 
   Widget _buildSummaryCards(TimesheetLoaded state) {
-    final workingDays = state.timesheet?.timeSheetData
-            .where((day) => day.wd > 0)
-            .length ?? 0;
+    final workingDays = state.timesheet?.timeSheetData.fold(
+          0.0,
+          (sum, day) => sum + day.wd,
+        ) ??
+        0.0;
     final leaveDays = state.timesheet?.timeSheetData
             .where((day) => (day.p ?? 0) > 0)
             .length ?? 0;
@@ -509,11 +563,29 @@ class _TimesheetPageState extends State<TimesheetPage> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       child: Row(
         children: [
-          Expanded(child: _buildSummaryCard('Ngày công', workingDays.toString(), const Color(0xFF42C83C))),
+          Expanded(
+            child: _buildSummaryCard(
+              'Ngày công',
+              workingDays.toStringAsFixed(2),
+              const Color(0xFF42C83C),
+            ),
+          ),
           const SizedBox(width: 8),
-          Expanded(child: _buildSummaryCard('Ngày có sd phép', leaveDays.toString(), const Color(0xFF2196F3))),
+          Expanded(
+            child: _buildSummaryCard(
+              'Ngày có sd phép',
+              leaveDays.toString(),
+              const Color(0xFF2196F3),
+            ),
+          ),
           const SizedBox(width: 8),
-          Expanded(child: _buildSummaryCard('Tăng ca', overtimeStr, const Color(0xFFFF9800))),
+          Expanded(
+            child: _buildSummaryCard(
+              'Tăng ca',
+              overtimeStr,
+              const Color(0xFFFF9800),
+            ),
+          ),
         ],
       ),
     );
