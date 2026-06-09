@@ -19,6 +19,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  final _timesheetController = TimesheetPageController();
 
   late final List<Widget> _pages;
 
@@ -29,7 +30,7 @@ class _MainScreenState extends State<MainScreen> {
       const HomePage(),
       BlocProvider<RemoteTimesheetBloc>.value(
         value: sl<RemoteTimesheetBloc>(),
-        child: const TimesheetPage(),
+        child: TimesheetPage(controller: _timesheetController),
       ),
       const ServicePage(),
       const ProfilePage(),
@@ -67,7 +68,12 @@ class _MainScreenState extends State<MainScreen> {
           ),
           child: BottomNavigationBar(
             currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
+            onTap: (index) {
+              if (_currentIndex == 1 && index != 1) {
+                _timesheetController.hideTooltip();
+              }
+              setState(() => _currentIndex = index);
+            },
             type: BottomNavigationBarType.fixed,
             backgroundColor:
                 isDarkMode ? const Color(0xFF1C1C1C) : Colors.white,

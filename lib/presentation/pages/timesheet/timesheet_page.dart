@@ -10,12 +10,28 @@ import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
+class TimesheetPageController {
+  _TimesheetPageState? _state;
+
+  void hideTooltip() => _state?._removeTooltip();
+
+  void _attach(_TimesheetPageState state) {
+    _state = state;
+  }
+
+  void _detach(_TimesheetPageState state) {
+    if (_state == state) _state = null;
+  }
+}
+
 class TimesheetPage extends StatefulWidget {
   final bool showBackButton;
+  final TimesheetPageController? controller;
 
   const TimesheetPage({
     super.key,
     this.showBackButton = false,
+    this.controller,
   });
 
   @override
@@ -28,12 +44,23 @@ class _TimesheetPageState extends State<TimesheetPage> {
   @override
   void initState() {
     super.initState();
+    widget.controller?._attach(this);
     _currentDate = DateTime.now();
     _restoreAndLoad();
   }
 
   @override
+  void didUpdateWidget(covariant TimesheetPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller?._detach(this);
+      widget.controller?._attach(this);
+    }
+  }
+
+  @override
   void dispose() {
+    widget.controller?._detach(this);
     _removeTooltip();
     super.dispose();
   }
@@ -1293,6 +1320,7 @@ class _TimesheetPageState extends State<TimesheetPage> {
           const Color(0xFF2196F3),
           Icons.edit_document,
           () {
+            _removeTooltip();
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => AdjustmentReportPage(
