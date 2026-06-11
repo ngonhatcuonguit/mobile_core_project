@@ -29,12 +29,24 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_isLoggedInKey, true);
     await prefs.setString(_userEmailKey, email);
-    if (name != null) await prefs.setString(_userNameKey, name);
-    if (displayName != null) await prefs.setString(_displayNameKey, displayName);
-    if (token != null) await prefs.setString(_tokenKey, token);
-    if (employeeId != null) await prefs.setString(_employeeIdKey, employeeId);
-    if (position != null) await prefs.setString(_positionKey, position);
-    if (department != null) await prefs.setString(_departmentKey, department);
+    if (name != null) {
+      await prefs.setString(_userNameKey, name);
+    }
+    if (displayName != null) {
+      await prefs.setString(_displayNameKey, displayName);
+    }
+    if (token != null) {
+      await prefs.setString(_tokenKey, token);
+    }
+    if (employeeId != null) {
+      await prefs.setString(_employeeIdKey, employeeId);
+    }
+    if (position != null) {
+      await prefs.setString(_positionKey, position);
+    }
+    if (department != null) {
+      await prefs.setString(_departmentKey, department);
+    }
   }
 
   /// Get auth token
@@ -79,7 +91,16 @@ class AuthService {
     return prefs.getString(_departmentKey);
   }
 
-  /// Logout — clear token và toàn bộ thông tin user
+  /// Session expired — only clear login state and token.
+  ///
+  /// Keep user profile and local settings so re-login does not reset the app.
+  static Future<void> expireSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_isLoggedInKey);
+    await prefs.remove(_tokenKey);
+  }
+
+  /// Logout — clear token và thông tin đăng nhập, không xoá settings/local data.
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_isLoggedInKey);

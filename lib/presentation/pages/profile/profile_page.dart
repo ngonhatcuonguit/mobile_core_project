@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
 import 'package:flutter_core_project/presentation/choose_mode/bloc/locale_cubit.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_core_project/presentation/pages/request_history/request_
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -21,6 +23,13 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  static final Uri _androidStoreUrl = Uri.parse(
+    'https://play.google.com/store/apps/details?id=com.digital.thp.my_thp&pli=1',
+  );
+  static final Uri _iosStoreUrl = Uri.parse(
+    'https://apps.apple.com/us/app/my-thp/id6761755105',
+  );
+
   String? _userName;
   String? _userEmail;
 
@@ -143,6 +152,14 @@ class _ProfilePageState extends State<ProfilePage> {
               },
               isDark: isDark,
             ),
+            _buildMenuItem(
+              context,
+              icon: AppVectors.icTerms,
+              title: context.tr('profile_update'),
+              iconColor: const Color(0xFF42C83C),
+              onTap: _openStoreUpdate,
+              isDark: isDark,
+            ),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -158,47 +175,36 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-            // const SizedBox(height: 12),
-            // _buildMenuItem(
-            //   context,
-            //   icon: AppVectors.icPrivacy,
-            //   title: 'Điều khoản dịch vụ',
-            //   iconColor: const Color(0xFF008BD9),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //         builder: (_) => const TermsOfServicePage(),
-            //       ),
-            //     );
-            //   },
-            //   isDark: isDark,
-            // ),
-            // _buildMenuItem(
-            //   context,
-            //   icon: AppVectors.icTerms,
-            //   title: context.tr('profile_terms'),
-            //   iconColor: const Color(0xFFFFCC47),
-            //   onTap: () {
-            //     // Navigate to Terms & Conditions
-            //   },
-            //   isDark: isDark,
-            // ),
-          _buildMenuItem(
-            context,
-            icon: AppVectors.icTerms,
-            title: context.tr('profile_account'),
-            iconColor: const Color(0xFF6366F1),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const UserInfoPage(),
-                ),
-              );
-            },
-            isDark: isDark,
-          ),
+            _buildMenuItem(
+              context,
+              icon: AppVectors.icTerms,
+              title: context.tr('profile_account'),
+              iconColor: const Color(0xFF6366F1),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const UserInfoPage(),
+                  ),
+                );
+              },
+              isDark: isDark,
+            ),
+            _buildMenuItem(
+              context,
+              icon: AppVectors.icPrivacy,
+              title: context.tr('profile_terms'),
+              iconColor: const Color(0xFF008BD9),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const TermsOfServicePage(),
+                  ),
+                );
+              },
+              isDark: isDark,
+            ),
             _buildMenuItem(
               context,
               icon: AppVectors.icLogout,
@@ -369,6 +375,23 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _openStoreUpdate() async {
+    final uri = defaultTargetPlatform == TargetPlatform.iOS
+        ? _iosStoreUrl
+        : _androidStoreUrl;
+
+    final launched = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('profile_update_open_failed'))),
+      );
+    }
   }
 
   Future<void> _handleLogout(BuildContext context) async {

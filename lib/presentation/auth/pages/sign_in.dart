@@ -305,7 +305,7 @@ class _SigninPageState extends State<SigninPage> {
                     controller: _usernameController,
                     focusNode: _usernameFocus,
                     isFocused: _usernameFocused,
-                    hint: l?.translate('login_msnv') ?? 'Tài khoản',
+                    hint: l?.translate('login_msnv') ?? 'Mã số nhân viên',
                     obscure: false,
                     keyboardType: TextInputType.text,
                     textInputAction: TextInputAction.next,

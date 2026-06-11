@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 
 class TermsOfServicePage extends StatelessWidget {
   const TermsOfServicePage({super.key});
@@ -26,7 +27,7 @@ class TermsOfServicePage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Điều khoản dịch vụ',
+          context.tr('terms_service_title'),
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -61,7 +62,7 @@ class TermsOfServicePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'ĐIỀU KHOẢN VÀ DỊCH VỤ',
+                context.tr('terms_service_heading'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -70,7 +71,7 @@ class TermsOfServicePage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Công ty CÔNG TY TNHH THƯƠNG MẠI - DỊCH VỤ TÂN HIỆP PHÁT thu thập, sử dụng, lưu trữ và xử lý dữ liệu cá nhân của tôi theo Luật Bảo vệ Dữ liệu Cá nhân số 91/2025/QH15, cho các mục đích: tuyển dụng, quản lý nhân sự, lưu trữ hồ sơ nhân sự, thống kê, báo cáo nội bộ và chia sẻ dữ liệu cho bên thứ ba bao gồm nhưng không giới hạn: cơ quan quản lý thuế, ngân hàng, các tổ chức khác…để thực hiện nghĩa vụ của doanh nghiệp đối với người lao động như bảo hiểm, thuế,… và quyền lợi khác cho NLĐ theo quy định của pháp luật và chính sách công ty.',
+                context.tr('terms_service_body_1'),
                 style: TextStyle(
                   fontSize: 13,
                   color: textColor,
@@ -79,7 +80,7 @@ class TermsOfServicePage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Tôi đã được thông báo về quyền của mình đối với dữ liệu cá nhân, bao gồm quyền truy cập, chỉnh sửa, rút lại sự đồng ý, yêu cầu xóa hoặc hạn chế xử lý dữ liệu bằng hình thức gởi yêu cầu bằng văn bản đến Phòng Nhân Sự công ty. Dữ liệu của tôi sẽ được lưu trữ trong thời hạn thực hiện hợp đồng và sau khi chấm dứt hợp đồng cho các mục đích nêu trên cho đến khi Bạn có yêu cầu sửa đổi hoặc xóa bỏ dữ liệu.',
+                context.tr('terms_service_body_2'),
                 style: TextStyle(
                   fontSize: 13,
                   color: textColor,
@@ -93,4 +94,3 @@ class TermsOfServicePage extends StatelessWidget {
     );
   }
 }
-

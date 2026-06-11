@@ -56,6 +56,7 @@ dependencies:
   flutter_native_splash: ^2.4.0
   shimmer: ^3.0.0
   timezone: ^0.9.2
+  url_launcher:
 
 dev_dependencies:
   flutter_test:

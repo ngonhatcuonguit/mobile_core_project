@@ -205,7 +205,7 @@ void setupApiErrorConfigs() {
           foregroundColor: Colors.white,
           onPressed: (ctx) async {
             Navigator.of(ctx).pop(); // đóng dialog
-            await AuthService.logout(); // xoá token + thông tin user
+            await AuthService.expireSession(); // giữ settings/local data
             // Navigate về màn hình đăng nhập, xoá toàn bộ stack
             NavigationService.navigator?.pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const SigninPage()),
