@@ -154,7 +154,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             _buildMenuItem(
               context,
-              icon: AppVectors.icTerms,
+              icon: AppVectors.icUpdate,
               title: context.tr('profile_update'),
               iconColor: const Color(0xFF42C83C),
               onTap: _openStoreUpdate,

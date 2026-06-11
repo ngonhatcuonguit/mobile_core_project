@@ -24,6 +24,7 @@ class AppVectors {
   static const String icSettings = '${basePath}Setting$format';
   static const String icNotification = '${basePath}ic_noti$format';
   static const String icOrderHistory = '${basePath}ic_older_history$format';
+  static const String icUpdate = '${basePath}ic_update$format';
   static const String icPrivacy = '${basePath}ic_policy$format';
   static const String icTerms = '${basePath}ic_term$format';
   static const String icLogout = '${basePath}ic_logout$format';
