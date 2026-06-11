@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -10,7 +11,6 @@ import 'package:flutter_core_project/presentation/pages/main/main_screen.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
-import 'package:get_it/get_it.dart';
 
 class SigninPage extends StatefulWidget {
   const SigninPage({super.key});
@@ -32,10 +32,10 @@ class _SigninPageState extends State<SigninPage> {
   @override
   void initState() {
     super.initState();
-    _usernameFocus.addListener(() =>
-        setState(() => _usernameFocused = _usernameFocus.hasFocus));
-    _passwordFocus.addListener(() =>
-        setState(() => _passwordFocused = _passwordFocus.hasFocus));
+    _usernameFocus.addListener(
+        () => setState(() => _usernameFocused = _usernameFocus.hasFocus));
+    _passwordFocus.addListener(
+        () => setState(() => _passwordFocused = _passwordFocus.hasFocus));
   }
 
   @override
@@ -53,11 +53,13 @@ class _SigninPageState extends State<SigninPage> {
     final password = _passwordController.text;
 
     if (username.isEmpty) {
-      _showError(l?.translate('login_error_empty_username') ?? 'Vui lòng nhập tên tài khoản');
+      _showError(l?.translate('login_error_empty_username') ??
+          'Vui lòng nhập tên tài khoản');
       return;
     }
     if (password.isEmpty) {
-      _showError(l?.translate('login_error_empty_password') ?? 'Vui lòng nhập mật khẩu');
+      _showError(l?.translate('login_error_empty_password') ??
+          'Vui lòng nhập mật khẩu');
       return;
     }
 
@@ -68,7 +70,8 @@ class _SigninPageState extends State<SigninPage> {
       // khởi động), LoginApiService sẽ chưa được đăng ký và GetIt sẽ throw.
       // Thử khởi tạo lại nếu chưa có.
       if (!sl.isRegistered<LoginApiService>()) {
-        debugPrint('[Login] ⚠️ LoginApiService chưa được đăng ký, thử khởi tạo lại...');
+        debugPrint(
+            '[Login] ⚠️ LoginApiService chưa được đăng ký, thử khởi tạo lại...');
         await initializeDependencies();
       }
 
@@ -87,29 +90,35 @@ class _SigninPageState extends State<SigninPage> {
           position: result.position,
           department: result.department,
         );
-        // Gửi FCM token cho account vừa đăng nhập (kể cả khi đổi sang account khác)
-        // fire-and-forget — không cần chờ, không block navigation
-        FirebaseService.instance.registerCurrentDevice();
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const MainScreen()),
         );
+        // Gửi FCM token cho account vừa đăng nhập (kể cả khi đổi sang account khác).
+        // Đây là tác vụ phụ: không được làm fail luồng login.
+        unawaited(FirebaseService.instance.registerCurrentDevice());
       } else {
         _showError(result.message ?? 'Đăng nhập thất bại');
       }
     } on DioException catch (e) {
-      debugPrint('[Login] DioException: type=${e.type} msg=${e.message} error=${e.error?.runtimeType}: ${e.error}');
+      debugPrint(
+          '[Login] DioException: type=${e.type} msg=${e.message} error=${e.error?.runtimeType}: ${e.error}');
       String msg = e.message ?? 'Lỗi kết nối, vui lòng thử lại';
       if (e.type == DioExceptionType.connectionError) {
-        msg = 'Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.';
+        msg =
+            'Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.';
       } else if (e.type == DioExceptionType.connectionTimeout ||
-                 e.type == DioExceptionType.receiveTimeout ||
-                 e.type == DioExceptionType.sendTimeout) {
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
         msg = 'Kết nối hết thời gian, vui lòng thử lại.';
       }
-      if (kDebugMode) msg = '[DioException ${e.type}] ${e.message}\nInner: ${e.error}';
-      if (mounted) _showError(msg);
+      if (kDebugMode) {
+        msg = '[DioException ${e.type}] ${e.message}\nInner: ${e.error}';
+      }
+      if (mounted) {
+        _showError(msg);
+      }
     } on HandshakeException catch (e) {
       // iOS ATS hoặc SSL handshake thất bại
       debugPrint('[Login] HandshakeException: $e');
@@ -298,6 +307,10 @@ class _SigninPageState extends State<SigninPage> {
                     isFocused: _usernameFocused,
                     hint: l?.translate('login_msnv') ?? 'Tài khoản',
                     obscure: false,
+                    keyboardType: TextInputType.text,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.username],
+                    onSubmitted: (_) => _passwordFocus.requestFocus(),
                   ),
                   const SizedBox(height: 16),
 
@@ -308,13 +321,20 @@ class _SigninPageState extends State<SigninPage> {
                     isFocused: _passwordFocused,
                     hint: l?.translate('login_password') ?? 'Mật khẩu',
                     obscure: _obscurePassword,
+                    keyboardType: TextInputType.visiblePassword,
+                    textInputAction: TextInputAction.done,
+                    autofillHints: const [AutofillHints.password],
+                    onSubmitted: (_) => _handleLogin(),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         color: const Color(0xFF9E9E9E),
                         size: 20,
                       ),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -337,7 +357,8 @@ class _SigninPageState extends State<SigninPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                        disabledBackgroundColor:
+                            AppColors.primary.withOpacity(0.6),
                       ),
                       child: _isLoading
                           ? const SizedBox(
@@ -388,6 +409,10 @@ class _SigninPageState extends State<SigninPage> {
     required String hint,
     required bool obscure,
     Widget? suffixIcon,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    Iterable<String>? autofillHints,
+    ValueChanged<String>? onSubmitted,
   }) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -412,6 +437,15 @@ class _SigninPageState extends State<SigninPage> {
         controller: controller,
         focusNode: focusNode,
         obscureText: obscure,
+        keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        autofillHints: autofillHints,
+        autocorrect: false,
+        enableSuggestions: false,
+        smartDashesType: SmartDashesType.disabled,
+        smartQuotesType: SmartQuotesType.disabled,
+        textCapitalization: TextCapitalization.none,
+        onSubmitted: onSubmitted,
         style: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w500,

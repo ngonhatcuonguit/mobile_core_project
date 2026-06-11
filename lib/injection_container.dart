@@ -14,7 +14,8 @@ import 'package:flutter_core_project/data/repositories/request_history/request_h
 import 'package:flutter_core_project/data/repositories/timesheet/timesheet_repository_impl.dart';
 import 'package:flutter_core_project/domain/repository/news/article_repository.dart';
 import 'package:flutter_core_project/domain/repository/notification/notification_repository.dart';
-import 'package:flutter_core_project/data/repositories/request_history/request_history_repository_impl.dart' show RequestHistoryRepository, RequestHistoryRepositoryImpl;
+import 'package:flutter_core_project/data/repositories/request_history/request_history_repository_impl.dart'
+    show RequestHistoryRepository, RequestHistoryRepositoryImpl;
 import 'package:flutter_core_project/domain/repository/timesheet/timesheet_repository.dart';
 import 'package:flutter_core_project/domain/usecases/submit_adjustment_report_usecase.dart';
 import 'package:flutter_core_project/domain/usecases/get_timesheet.dart';
@@ -32,6 +33,13 @@ import 'domain/usecases/get_article.dart';
 
 final sl = GetIt.instance;
 
+T _registerIfAbsent<T extends Object>(T Function() create) {
+  if (sl.isRegistered<T>()) return sl<T>();
+  final instance = create();
+  sl.registerSingleton<T>(instance);
+  return instance;
+}
+
 Dio _buildThpDio() {
   final timeout = Duration(milliseconds: AppConfig.timeoutMs);
   final dio = Dio(
@@ -45,7 +53,8 @@ Dio _buildThpDio() {
       },
     ),
   );
-  debugPrint('[THP_API] 🌐 Base URL = ${AppConfig.baseUrl} | env=${AppConfig.environment}');
+  debugPrint(
+      '[THP_API] 🌐 Base URL = ${AppConfig.baseUrl} | env=${AppConfig.environment}');
 
   dio.interceptors.add(
     InterceptorsWrapper(
@@ -77,8 +86,7 @@ Dio _buildThpDio() {
         }
 
         if (statusCode >= 400) {
-          final skip =
-              response.requestOptions.extra['skipErrorDialog'] == true;
+          final skip = response.requestOptions.extra['skipErrorDialog'] == true;
           if (!skip) {
             // Trích xuất message từ body server (hỗ trợ cả "Message" và "message")
             String? serverMessage;
@@ -116,10 +124,10 @@ Dio _buildThpDio() {
 
       // ── Error: xử lý lỗi mạng / timeout ────────────────────────────────
       onError: (error, handler) {
-        debugPrint('[THP_DIO] ✗ ${error.requestOptions.path} → ${error.message}');
+        debugPrint(
+            '[THP_DIO] ✗ ${error.requestOptions.path} → ${error.message}');
 
-        final skip =
-            error.requestOptions.extra['skipErrorDialog'] == true;
+        final skip = error.requestOptions.extra['skipErrorDialog'] == true;
         if (!skip) {
           final networkErrors = {
             DioExceptionType.connectionTimeout,
@@ -141,32 +149,35 @@ Dio _buildThpDio() {
 }
 
 Future<void> initializeDependencies() async {
-  // Guard: nếu LoginApiService đã được đăng ký (hot restart / reinit), bỏ qua
-  if (sl.isRegistered<LoginApiService>()) {
-    debugPrint('[DI] ⚠️  Đã khởi tạo trước đó — bỏ qua (hot restart guard).');
-    return;
-  }
-
   setupApiErrorConfigs();
 
-  sl.registerSingleton<Dio>(Dio());
+  // initializeDependencies() có thể được gọi lại từ màn login nếu startup trước
+  // đó bị gián đoạn. Vì vậy từng dependency phải tự bỏ qua khi đã tồn tại.
+  _registerIfAbsent<Dio>(() => Dio());
   final thpDio = _buildThpDio();
-  sl.registerSingleton<LoginApiService>(LoginApiService(thpDio));
-  sl.registerSingleton<NewsApiService>(NewsApiService(sl()));
-  sl.registerSingleton<TimesheetApiService>(TimesheetApiService(thpDio));
-  sl.registerSingleton<NotificationApiService>(NotificationApiService(thpDio));
-  sl.registerSingleton<AdjustmentReportApiService>(AdjustmentReportApiService(thpDio));
-  sl.registerSingleton<RequestHistoryApiService>(RequestHistoryApiService(thpDio));
-  sl.registerSingleton<ArticleRepository>(ArticleRepositoryImpl(sl()));
-  sl.registerSingleton<TimesheetRepository>(TimesheetRepositoryImpl(sl()));
-  sl.registerSingleton<NotificationRepository>(NotificationRepositoryImpl(sl()));
-  sl.registerSingleton<RequestHistoryRepository>(RequestHistoryRepositoryImpl(sl()));
-  sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
-  sl.registerSingleton<GetTimesheetUseCase>(GetTimesheetUseCase(sl()));
-  sl.registerSingleton<SubmitAdjustmentReportUseCase>(SubmitAdjustmentReportUseCase(sl()));
-  sl.registerSingleton<RegisterDeviceUseCase>(RegisterDeviceUseCase(sl()));
-  sl.registerSingleton<RemoteArticlesBloc>(RemoteArticlesBloc(sl()));
-  sl.registerSingleton<RemoteTimesheetBloc>(RemoteTimesheetBloc(sl()));
+
+  _registerIfAbsent<LoginApiService>(() => LoginApiService(thpDio));
+  _registerIfAbsent<NewsApiService>(() => NewsApiService(sl()));
+  _registerIfAbsent<TimesheetApiService>(() => TimesheetApiService(thpDio));
+  _registerIfAbsent<NotificationApiService>(
+      () => NotificationApiService(thpDio));
+  _registerIfAbsent<AdjustmentReportApiService>(
+      () => AdjustmentReportApiService(thpDio));
+  _registerIfAbsent<RequestHistoryApiService>(
+      () => RequestHistoryApiService(thpDio));
+  _registerIfAbsent<ArticleRepository>(() => ArticleRepositoryImpl(sl()));
+  _registerIfAbsent<TimesheetRepository>(() => TimesheetRepositoryImpl(sl()));
+  _registerIfAbsent<NotificationRepository>(
+      () => NotificationRepositoryImpl(sl()));
+  _registerIfAbsent<RequestHistoryRepository>(
+      () => RequestHistoryRepositoryImpl(sl()));
+  _registerIfAbsent<GetArticleUseCase>(() => GetArticleUseCase(sl()));
+  _registerIfAbsent<GetTimesheetUseCase>(() => GetTimesheetUseCase(sl()));
+  _registerIfAbsent<SubmitAdjustmentReportUseCase>(
+      () => SubmitAdjustmentReportUseCase(sl()));
+  _registerIfAbsent<RegisterDeviceUseCase>(() => RegisterDeviceUseCase(sl()));
+  _registerIfAbsent<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl()));
+  _registerIfAbsent<RemoteTimesheetBloc>(() => RemoteTimesheetBloc(sl()));
   debugPrint('[DI] ✅ initializeDependencies hoàn tất.');
 }
 
@@ -213,7 +224,8 @@ void setupApiErrorConfigs() {
       icon: Icons.block_rounded,
       iconColor: Color(0xFFE53935),
       title: 'Không có quyền truy cập',
-      defaultMessage: 'Tài khoản của bạn không có quyền thực hiện hành động này.',
+      defaultMessage:
+          'Tài khoản của bạn không có quyền thực hiện hành động này.',
       actions: [
         ApiErrorActionConfig(label: 'Đóng'),
       ],

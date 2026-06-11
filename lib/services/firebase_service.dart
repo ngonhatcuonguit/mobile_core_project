@@ -14,7 +14,8 @@ import 'package:flutter_core_project/firebase_options.dart';
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Guard: chỉ khởi tạo nếu Firebase chưa được init (tránh duplicate-app error)
   if (Firebase.apps.isEmpty) {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
   }
   debugPrint('[FCM Background] message: ${message.messageId}');
 }
@@ -30,6 +31,7 @@ class FirebaseService {
 
   // Guard: tránh gọi initialize() nhiều lần
   bool _initialized = false;
+  bool get isInitialized => _initialized;
 
   // ─── Service injection (set sau khi DI sẵn sàng) ────────────────────────────
   /// Gán sau khi [initializeDependencies()] hoàn tất.
@@ -153,7 +155,8 @@ class FirebaseService {
     debugPrint('[FCM] Badge   : ${settings.badge}');
     debugPrint('[FCM] Sound   : ${settings.sound}');
     if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      debugPrint('[FCM] ⚠️ CẢNH BÁO: User chưa cấp quyền notification! Push sẽ không hoạt động.');
+      debugPrint(
+          '[FCM] ⚠️ CẢNH BÁO: User chưa cấp quyền notification! Push sẽ không hoạt động.');
     }
 
     // Cấu hình local notifications để hiện notification khi app foreground
@@ -199,9 +202,12 @@ class FirebaseService {
         if (apns == null) {
           debugPrint('[FCM] [iOS] ❌ APNs token = NULL');
           debugPrint('[FCM] [iOS]    Nguyên nhân có thể:');
-          debugPrint('[FCM] [iOS]    1. Đang chạy trên Simulator (không hỗ trợ push)');
-          debugPrint('[FCM] [iOS]    2. App chưa có Push Notifications capability trong Apple Developer Portal');
-          debugPrint('[FCM] [iOS]    3. Provisioning profile không có APNs entitlement');
+          debugPrint(
+              '[FCM] [iOS]    1. Đang chạy trên Simulator (không hỗ trợ push)');
+          debugPrint(
+              '[FCM] [iOS]    2. App chưa có Push Notifications capability trong Apple Developer Portal');
+          debugPrint(
+              '[FCM] [iOS]    3. Provisioning profile không có APNs entitlement');
           return;
         }
         debugPrint('[FCM] [iOS] ✅ APNs token = ${apns.substring(0, 10)}...');
@@ -231,35 +237,52 @@ class FirebaseService {
   ///   1. Ngay sau khi DI sẵn sàng (main.dart) — retry startup nếu lần đầu bị bỏ qua
   ///   2. Sau khi user đăng nhập thành công (kể cả đổi sang account khác)
   Future<void> registerCurrentDevice() async {
-    final token = await getFCMToken();
-    if (token != null && token.isNotEmpty) {
-      debugPrint('[FCM] 🔄 Đăng ký device token...');
-      await _sendTokenToServer(token);
-    } else {
-      debugPrint('[FCM] ⚠️ Không lấy được FCM token để đăng ký.');
+    try {
+      if (!_initialized) {
+        debugPrint(
+            '[FCM] ⚠️ Firebase chưa initialized — bỏ qua đăng ký device token.');
+        return;
+      }
+
+      final token = await getFCMToken();
+      if (token != null && token.isNotEmpty) {
+        debugPrint('[FCM] 🔄 Đăng ký device token...');
+        await _sendTokenToServer(token);
+      } else {
+        debugPrint('[FCM] ⚠️ Không lấy được FCM token để đăng ký.');
+      }
+    } catch (e, stack) {
+      debugPrint(
+          '[FCM] ⚠️ registerCurrentDevice lỗi, bỏ qua để không ảnh hưởng login: $e\n$stack');
     }
   }
 
   /// Gửi FCM token lên backend qua [NotificationApiService].
   /// Silent — không throw exception ra ngoài để không làm crash app.
   Future<void> _sendTokenToServer(String token) async {
-    final service = notificationApiService;
-    if (service == null) {
-      debugPrint('[FCM] ⚠️ notificationApiService chưa được inject — bỏ qua gửi token.');
-      return;
-    }
-    final success = await service.registerDevice(deviceRegistrationId: token);
-    if (success) {
-      debugPrint('[FCM] ✅ Device token đã được gửi lên server thành công.');
-    } else {
-      debugPrint('[FCM] ⚠️ Gửi device token thất bại — sẽ thử lại khi token refresh.');
+    try {
+      final service = notificationApiService;
+      if (service == null) {
+        debugPrint(
+            '[FCM] ⚠️ notificationApiService chưa được inject — bỏ qua gửi token.');
+        return;
+      }
+      final success = await service.registerDevice(deviceRegistrationId: token);
+      if (success) {
+        debugPrint('[FCM] ✅ Device token đã được gửi lên server thành công.');
+      } else {
+        debugPrint(
+            '[FCM] ⚠️ Gửi device token thất bại — sẽ thử lại khi token refresh.');
+      }
+    } catch (e, stack) {
+      debugPrint(
+          '[FCM] ⚠️ _sendTokenToServer lỗi, sẽ thử lại lần sau: $e\n$stack');
     }
   }
 
   Future<void> _setupLocalNotifications() async {
     // Android init
-    const androidInit =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
 
     // iOS init
     const iosInit = DarwinInitializationSettings(
@@ -333,7 +356,8 @@ class FirebaseService {
             .getAPNSToken()
             .timeout(const Duration(seconds: 10), onTimeout: () => null);
         if (apns == null) {
-          debugPrint('[FCM] ⚠️ APNS token null (simulator hoặc APNs chưa sẵn sàng) — bỏ qua lấy FCM token.');
+          debugPrint(
+              '[FCM] ⚠️ APNS token null (simulator hoặc APNs chưa sẵn sàng) — bỏ qua lấy FCM token.');
           return null;
         }
       } catch (e) {
@@ -376,4 +400,3 @@ class FirebaseService {
     await messaging.unsubscribeFromTopic(topic);
   }
 }
-
