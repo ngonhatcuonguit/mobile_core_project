@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/presentation/intro/pages/get_started.dart';
+import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/user_info_page.dart';
 import 'package:flutter_core_project/presentation/pages/request_history/request_history_page.dart';
@@ -127,9 +128,8 @@ class _AllMenuSheetState extends State<_AllMenuSheet> {
                       child: Icon(
                         Icons.close_rounded,
                         size: 16,
-                        color: isDark
-                            ? Colors.white60
-                            : const Color(0xFF6B7280),
+                        color:
+                            isDark ? Colors.white60 : const Color(0xFF6B7280),
                       ),
                     ),
                   ),
@@ -144,8 +144,7 @@ class _AllMenuSheetState extends State<_AllMenuSheet> {
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 4,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 6,
@@ -216,11 +215,17 @@ class _AllMenuSheetState extends State<_AllMenuSheet> {
       // ── Chức năng mới ──────────────────────────────────────────
       _SheetItem(
         icon: Icons.event_busy_outlined,
-        label: 'Xin nghỉ phép',
+        label: context.tr('service_leave_request'),
         iconColor: const Color(0xFFEC4899),
         bgLight: const Color(0xFFFDF2F8),
         bgDark: const Color(0xFF500724),
-        isComingSoon: true,
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const LeaveRequestPage()),
+          );
+        },
       ),
       const _SheetItem(
         icon: Icons.folder_outlined,
@@ -299,8 +304,7 @@ class _SheetMenuItem extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
-                      color: item.iconColor
-                          .withOpacity(isDark ? 0.22 : 0.13),
+                      color: item.iconColor.withOpacity(isDark ? 0.22 : 0.13),
                       blurRadius: 7,
                       offset: const Offset(0, 3),
                     ),
@@ -362,9 +366,8 @@ class _SheetMenuItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
-                color: isDark
-                    ? const Color(0xFFBEBEBE)
-                    : const Color(0xFF374151),
+                color:
+                    isDark ? const Color(0xFFBEBEBE) : const Color(0xFF374151),
                 height: 1.3,
               ),
             ),
@@ -397,4 +400,3 @@ class _SheetItem {
     this.onTap,
   });
 }
-

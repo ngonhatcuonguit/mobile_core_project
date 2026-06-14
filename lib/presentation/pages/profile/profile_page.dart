@@ -15,6 +15,13 @@ import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+final Uri _androidStoreUrl = Uri.parse(
+  'https://play.google.com/store/apps/details?id=com.digital.thp.my_thp&pli=1',
+);
+final Uri _iosStoreUrl = Uri.parse(
+  'https://apps.apple.com/us/app/my-thp/id6761755105',
+);
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -23,13 +30,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  static final Uri _androidStoreUrl = Uri.parse(
-    'https://play.google.com/store/apps/details?id=com.digital.thp.my_thp&pli=1',
-  );
-  static final Uri _iosStoreUrl = Uri.parse(
-    'https://apps.apple.com/us/app/my-thp/id6761755105',
-  );
-
   String? _userName;
   String? _userEmail;
 
@@ -496,6 +496,18 @@ class _SettingsPageState extends State<SettingsPage> {
               const SizedBox(height: 12),
               _buildLanguageSelector(isDark),
               const SizedBox(height: 32),
+
+              Text(
+                context.tr('profile_update'),
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildUpdateOption(isDark),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -601,6 +613,71 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildUpdateOption(bool isDark) {
+    return GestureDetector(
+      onTap: _openStoreUpdate,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: const Color(0xFF42C83C).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  AppVectors.icUpdate,
+                  width: 22,
+                  height: 22,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                context.tr('profile_update'),
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: isDark ? Colors.grey[600] : Colors.grey[400],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openStoreUpdate() async {
+    final uri = defaultTargetPlatform == TargetPlatform.iOS
+        ? _iosStoreUrl
+        : _androidStoreUrl;
+
+    final launched = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('profile_update_open_failed'))),
+      );
+    }
   }
 
   Widget _buildLanguageSelector(bool isDark) {

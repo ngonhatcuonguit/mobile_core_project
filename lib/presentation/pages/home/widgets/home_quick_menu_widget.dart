@@ -3,9 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:flutter_core_project/presentation/pages/home/widgets/home_all_menu_sheet.dart';
+import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
 import 'package:flutter_core_project/presentation/pages/work_schedule/work_schedule_setup_page.dart';
 
-import '../../profile/user_info_page.dart';
 import '../../profile/profile_page.dart';
 import '../../request_history/request_history_page.dart';
 
@@ -39,11 +39,11 @@ class HomeQuickMenuWidget extends StatelessWidget {
         bgDark: const Color(0xFF422006),
       ),
       _MenuItem(
-        icon: Icons.info_outline_rounded,
-        label: context.tr('menu_info'),
-        iconColor: const Color(0xFF10B981),
-        bgLight: const Color(0xFFECFDF5),
-        bgDark: const Color(0xFF064E3B),
+        icon: Icons.event_busy_outlined,
+        label: context.tr('service_leave_request'),
+        iconColor: const Color(0xFFEC4899),
+        bgLight: const Color(0xFFFDF2F8),
+        bgDark: const Color(0xFF500724),
       ),
       _MenuItem(
         icon: Icons.apps_rounded,
@@ -57,22 +57,18 @@ class HomeQuickMenuWidget extends StatelessWidget {
     final menuTaps = <VoidCallback?>[
       // settings
       () => Navigator.of(context).push(
-        MaterialPageRoute(
-            builder: (_) => const SettingsPage()),
-      ),
+            MaterialPageRoute(builder: (_) => const SettingsPage()),
+          ),
       // work schedule
       () => Navigator.of(context).push(
-        MaterialPageRoute(
-            builder: (_) => const WorkScheduleSetupPage()),
-      ),
-          () => Navigator.of(context).push(
-        MaterialPageRoute(
-            builder: (_) => const RequestHistoryPage()),
-      ), // request history
-          () => Navigator.of(context).push(
-        MaterialPageRoute(
-            builder: (_) => const UserInfoPage()),
-      ),
+            MaterialPageRoute(builder: (_) => const WorkScheduleSetupPage()),
+          ),
+      () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const RequestHistoryPage()),
+          ), // request history
+      () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const LeaveRequestPage()),
+          ),
       () => showAllMenuSheet(context), // see all
     ];
 
@@ -95,8 +91,7 @@ class _QuickMenuItem extends StatelessWidget {
   final bool isDark;
   final VoidCallback? onTap;
 
-  const _QuickMenuItem(
-      {required this.item, required this.isDark, this.onTap});
+  const _QuickMenuItem({required this.item, required this.isDark, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -160,8 +155,8 @@ class _QuickMenuItem extends StatelessWidget {
                   top: -9,
                   right: -6,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: const Color(0xFF64748B),
                       borderRadius: BorderRadius.circular(6),
@@ -196,7 +191,9 @@ class _QuickMenuItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                      color: isDark ? const Color(0xFFBEBEBE) : const Color(0xFF374151),
+                      color: isDark
+                          ? const Color(0xFFBEBEBE)
+                          : const Color(0xFF374151),
                       height: 1.3,
                     ),
                   ),
