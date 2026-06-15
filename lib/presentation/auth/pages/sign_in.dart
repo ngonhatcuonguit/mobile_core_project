@@ -11,6 +11,14 @@ import 'package:flutter_core_project/presentation/pages/main/main_screen.dart';
 import 'package:flutter_core_project/services/auth_service.dart';
 import 'package:flutter_core_project/services/firebase_service.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+final Uri _androidStoreUrl = Uri.parse(
+  'https://play.google.com/store/apps/details?id=com.digital.thp.my_thp&pli=1',
+);
+final Uri _iosStoreUrl = Uri.parse(
+  'https://apps.apple.com/us/app/my-thp/id6761755105',
+);
 
 class SigninPage extends StatefulWidget {
   const SigninPage({super.key});
@@ -197,6 +205,29 @@ class _SigninPageState extends State<SigninPage> {
     );
   }
 
+  Future<void> _openStoreUpdate() async {
+    final l = AppLocalizations.of(context);
+    final uri = defaultTargetPlatform == TargetPlatform.iOS
+        ? _iosStoreUrl
+        : _androidStoreUrl;
+
+    final launched = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l?.translate('profile_update_open_failed') ??
+                'Không thể mở trang cập nhật',
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -380,6 +411,26 @@ class _SigninPageState extends State<SigninPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: _openStoreUpdate,
+                      icon: const Icon(
+                        Icons.system_update_alt_rounded,
+                        size: 18,
+                      ),
+                      label: Text(
+                        l?.translate('profile_update') ?? 'Cập nhật',
+                      ),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        textStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
                   // Center(
                   //   child: Text(
                   //     supportNote,
