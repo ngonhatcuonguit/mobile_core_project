@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_core_project/data/data_sources/remote/login_api_service.dart';
+import 'package:flutter_core_project/data/data_sources/remote/level_up_api_service.dart';
 import 'package:flutter_core_project/injection_container.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -20,6 +21,7 @@ void main() {
 
     expect(sl.isRegistered<Dio>(), isTrue);
     expect(sl.isRegistered<LoginApiService>(), isTrue);
+    expect(sl.isRegistered<LevelUpApiService>(), isTrue);
   });
 
   test('initializeDependencies can be called more than once', () async {
@@ -28,5 +30,6 @@ void main() {
 
     expect(sl.isRegistered<Dio>(), isTrue);
     expect(sl.isRegistered<LoginApiService>(), isTrue);
+    expect(sl.isRegistered<LevelUpApiService>(), isTrue);
   });
 }

@@ -5,6 +5,7 @@ import 'package:flutter_core_project/core/configs/api_error_config.dart';
 import 'package:flutter_core_project/core/configs/app_config.dart';
 import 'package:flutter_core_project/data/data_sources/remote/adjustment_report_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/login_api_service.dart';
+import 'package:flutter_core_project/data/data_sources/remote/level_up_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/news_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/notification_api_service.dart';
 import 'package:flutter_core_project/data/data_sources/remote/request_history_api_service.dart';
@@ -65,7 +66,10 @@ Dio _buildThpDio() {
           options.headers['Authorization'] = 'Bearer $token';
         }
         if (kDebugMode) {
-          debugPrint('[THP_DIO] → ${options.method} ${options.uri}');
+          final requestTarget = options.extra['redactQueryInLogs'] == true
+              ? options.path
+              : options.uri.toString();
+          debugPrint('[THP_DIO] → ${options.method} $requestTarget');
           debugPrint('[THP_DIO]   headers: ${options.headers.keys.toList()}');
         }
         handler.next(options);
@@ -86,7 +90,11 @@ Dio _buildThpDio() {
         }
 
         if (statusCode >= 400) {
-          final skip = response.requestOptions.extra['skipErrorDialog'] == true;
+          final shouldHandleUnauthorized = statusCode == 401 &&
+              response.requestOptions.extra['handleUnauthorized'] == true;
+          final skip =
+              response.requestOptions.extra['skipErrorDialog'] == true &&
+                  !shouldHandleUnauthorized;
           if (!skip) {
             // Trích xuất message từ body server (hỗ trợ cả "Message" và "message")
             String? serverMessage;
@@ -157,6 +165,7 @@ Future<void> initializeDependencies() async {
   final thpDio = _buildThpDio();
 
   _registerIfAbsent<LoginApiService>(() => LoginApiService(thpDio));
+  _registerIfAbsent<LevelUpApiService>(() => LevelUpApiService(thpDio));
   _registerIfAbsent<NewsApiService>(() => NewsApiService(sl()));
   _registerIfAbsent<TimesheetApiService>(() => TimesheetApiService(thpDio));
   _registerIfAbsent<NotificationApiService>(

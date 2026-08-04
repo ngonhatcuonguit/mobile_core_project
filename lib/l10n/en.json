@@ -148,6 +148,7 @@
   "menu_work_schedule": "Work Schedule",
   "menu_leave": "Leave",
   "menu_payroll": "Payroll",
+  "menu_levelup_grading": "LevelUp Grading",
   "menu_info": "Info",
   "menu_see_all": "See All",
   "dept_bom": "Board of Directors",
@@ -184,6 +185,7 @@
   "service_organization": "Organization",
   "service_timesheet": "Timesheet",
   "service_documents": "Documents",
+  "service_levelup_grading": "LevelUp Grading",
   "service_info_banner": "Update your tax records by the end of this month to ensure accurate payroll processing for the Q3 cycle.",
 
   "ws_title": "Work Schedule Setup",

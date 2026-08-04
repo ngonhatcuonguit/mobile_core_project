@@ -148,6 +148,7 @@
   "menu_leave": "Nghỉ phép",
   "menu_work_schedule": "Lịch làm việc",
   "menu_payroll": "Bảng lương",
+  "menu_levelup_grading": "Chấm điểm LevelUp",
   "menu_info": "Thông tin",
   "menu_see_all": "See All",
   "dept_bom": "Ban Giám Đốc",
@@ -184,6 +185,7 @@
   "service_organization": "Tổ chức",
   "service_timesheet": "Bảng công",
   "service_documents": "Tài liệu",
+  "service_levelup_grading": "Chấm điểm LevelUp",
   "service_info_banner": "Cập nhật hồ sơ thuế của bạn trước cuối tháng này để đảm bảo xử lý lương chính xác cho chu kỳ Q3.",
 
   "ws_title": "Thiết Lập Lịch Làm Việc",

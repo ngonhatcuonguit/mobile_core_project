@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/common/helpers/is_dark_mode.dart';
 import 'package:flutter_core_project/presentation/pages/leave_request/leave_request_page.dart';
+import 'package:flutter_core_project/presentation/pages/level_up/level_up_exam_list_page.dart';
 import 'package:flutter_core_project/presentation/pages/request_history/request_history_page.dart';
 import 'package:flutter_core_project/presentation/pages/timesheet/timesheet_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/user_info_page.dart';
@@ -30,6 +31,19 @@ class _ServicePageState extends State<ServicePage> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const UserInfoPage()),
+          );
+        },
+      ),
+      _ServiceItem(
+        key: 'service_levelup_grading',
+        icon: 'assets/vectors/ic_level_up.svg',
+        bgColor: const Color(0xFFF0FDF4),
+        bgColorDark: const Color(0xFF14351F),
+        accentColor: const Color(0xFF16A34A),
+        action: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const LevelUpExamListPage()),
           );
         },
       ),
@@ -220,10 +234,10 @@ class _ServicePageState extends State<ServicePage> {
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(
+          const Expanded(
             child: Text(
               'Phiên bản app đang trong thời gian thử nghiệm nên một số tính năng và màn hình vẫn còn đang phát triển. Mong quý nhân viên chú ý!',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 color: Color(0xFF1B5E20),
                 height: 1.4,
