@@ -21,7 +21,9 @@ final Uri _iosStoreUrl = Uri.parse(
 );
 
 class SigninPage extends StatefulWidget {
-  const SigninPage({super.key});
+  final LoginApiService? apiService;
+
+  const SigninPage({super.key, this.apiService});
 
   @override
   State<SigninPage> createState() => _SigninPageState();
@@ -56,6 +58,7 @@ class _SigninPageState extends State<SigninPage> {
   }
 
   Future<void> _handleLogin() async {
+    if (_isLoading) return;
     final l = AppLocalizations.of(context);
     final username = _usernameController.text.trim();
     final password = _passwordController.text;
@@ -71,19 +74,21 @@ class _SigninPageState extends State<SigninPage> {
       return;
     }
 
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _isLoading = true);
     try {
       // ── Kiểm tra DI trước khi gọi service ─────────────────────────────────
       // Nếu initializeDependencies() chưa hoàn tất (ví dụ Firebase fail khi
       // khởi động), LoginApiService sẽ chưa được đăng ký và GetIt sẽ throw.
       // Thử khởi tạo lại nếu chưa có.
-      if (!sl.isRegistered<LoginApiService>()) {
+      if (widget.apiService == null && !sl.isRegistered<LoginApiService>()) {
         debugPrint(
             '[Login] ⚠️ LoginApiService chưa được đăng ký, thử khởi tạo lại...');
         await initializeDependencies();
       }
 
-      final result = await sl<LoginApiService>().login(
+      final service = widget.apiService ?? sl<LoginApiService>();
+      final result = await service.login(
         userName: username,
         password: password,
       );
@@ -448,6 +453,47 @@ class _SigninPageState extends State<SigninPage> {
               ),
             ),
           ),
+          if (_isLoading)
+            const Positioned.fill(
+              key: ValueKey('login_loading_overlay'),
+              child: AbsorbPointer(
+                child: ColoredBox(
+                  color: Color(0x52000000),
+                  child: Center(
+                    child: Card(
+                      elevation: 8,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 18,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                                strokeWidth: 3,
+                              ),
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              'Đang đăng nhập...',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

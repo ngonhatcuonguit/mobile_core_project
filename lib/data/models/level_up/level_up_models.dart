@@ -26,6 +26,16 @@ bool _isMeaningful(Object? value) {
   return true;
 }
 
+enum LevelUpExamStatus {
+  registered('REGISTERED', 'Chưa chấm điểm'),
+  submitted('SUBMITTED', 'Đã chấm điểm');
+
+  final String apiValue;
+  final String label;
+
+  const LevelUpExamStatus(this.apiValue, this.label);
+}
+
 String? _readString(Map<String, dynamic> json, Iterable<String> keys) {
   final value = _readValue(json, keys);
   if (value == null) return null;
@@ -375,18 +385,25 @@ class LevelUpScoreCriterion {
 class LevelUpPracticalExam {
   final String id;
   final bool hasStableId;
+  final int? fixedExamPracticalId;
   final String? candidateId;
   final String candidateCode;
   final String candidateName;
   final String title;
+  final String? examNumber;
   final String? examCode;
   final String? examDate;
   final String status;
   final double? score;
+  final double? totalScorePractical;
   final double? maxScore;
+  final int? factoryId;
   final String? factoryName;
+  final int? lineId;
   final String? lineName;
+  final int? machineId;
   final String? machineName;
+  final int? levelId;
   final String? levelName;
   final List<String> imageUrls;
   final List<LevelUpScoreCriterion> criteria;
@@ -402,14 +419,21 @@ class LevelUpPracticalExam {
     required this.imageUrls,
     required this.criteria,
     required this.rawData,
+    this.fixedExamPracticalId,
     this.candidateId,
+    this.examNumber,
     this.examCode,
     this.examDate,
     this.score,
+    this.totalScorePractical,
     this.maxScore,
+    this.factoryId,
     this.factoryName,
+    this.lineId,
     this.lineName,
+    this.machineId,
     this.machineName,
+    this.levelId,
     this.levelName,
   });
 
@@ -469,6 +493,8 @@ class LevelUpPracticalExam {
         ]) ??
         '';
     final directExamId = _readString(json, const [
+      'FixedExamPracticalID',
+      'FixedExamPracticalId',
       'PracticalExamId',
       'PracticalId',
       'CandidateExamId',
@@ -515,6 +541,10 @@ class LevelUpPracticalExam {
     return LevelUpPracticalExam(
       id: examId,
       hasStableId: directExamId != null,
+      fixedExamPracticalId: _readInt(
+        json,
+        const ['FixedExamPracticalID', 'FixedExamPracticalId'],
+      ),
       candidateId: candidateId,
       candidateCode: candidateCode,
       candidateName: _readString(json, const [
@@ -530,6 +560,7 @@ class LevelUpPracticalExam {
           ]) ??
           'Thí sinh chưa có tên',
       title: _readString(json, const [
+            'FixedExamPracticalName',
             'ExamName',
             'ExamTitle',
             'PracticalName',
@@ -542,7 +573,11 @@ class LevelUpPracticalExam {
             'Name',
           ]) ??
           'Bài thi thực hành',
-      examCode: _readString(json, const ['ExamCode', 'PracticalCode']) ??
+      examNumber: _readString(json, const ['ExamNumber']),
+      examCode: _readString(
+            json,
+            const ['ExamNumber', 'ExamCode', 'PracticalCode'],
+          ) ??
           _readString(config, const ['ExamCode', 'ConfigCode', 'Code']),
       examDate: _readString(json, const [
         'ExamDate',
@@ -553,13 +588,20 @@ class LevelUpPracticalExam {
       ]),
       status: explicitStatus ?? (score == null ? 'Chưa chấm' : 'Đã chấm'),
       score: score,
+      totalScorePractical: _readDouble(json, const ['TotalScorePractical']),
       maxScore: maxScore,
+      factoryId:
+          _readInt(json, const ['FactoryId']) ?? fallbackFilter?.factoryId,
       factoryName: _readString(json, const ['FactoryName']) ??
           fallbackFilter?.factoryName,
+      lineId: _readInt(json, const ['LineId']) ?? fallbackFilter?.lineId,
       lineName:
           _readString(json, const ['LineName']) ?? fallbackFilter?.lineName,
+      machineId:
+          _readInt(json, const ['MachineId']) ?? fallbackFilter?.machineId,
       machineName: _readString(json, const ['MachineName']) ??
           fallbackFilter?.machineName,
+      levelId: _readInt(json, const ['LevelId']) ?? fallbackFilter?.levelId,
       levelName:
           _readString(json, const ['LevelName']) ?? fallbackFilter?.levelName,
       imageUrls: _extractImageUrls(json),
@@ -567,6 +609,98 @@ class LevelUpPracticalExam {
       rawData: Map.unmodifiable(json),
     );
   }
+}
+
+class LevelUpPracticalQuestion {
+  final int id;
+  final int practicalId;
+  final String questionContentHtml;
+  final String questionAnswerHtml;
+  final double scoreLimit;
+  final double? score;
+
+  const LevelUpPracticalQuestion({
+    required this.id,
+    required this.practicalId,
+    required this.questionContentHtml,
+    required this.questionAnswerHtml,
+    required this.scoreLimit,
+    this.score,
+  });
+
+  factory LevelUpPracticalQuestion.fromJson(Map<String, dynamic> json) {
+    return LevelUpPracticalQuestion(
+      id: _readInt(json, const ['Id']) ?? 0,
+      practicalId: _readInt(json, const ['PracticalID', 'PracticalId']) ?? 0,
+      questionContentHtml: _readString(json, const ['QuestionContent']) ?? '',
+      questionAnswerHtml: _readString(json, const ['QuestionAnswer']) ?? '',
+      scoreLimit: _readDouble(json, const ['ScoreLimit']) ?? 0,
+      score: _readDouble(json, const ['Score']),
+    );
+  }
+}
+
+class LevelUpPracticalDetail {
+  final int examPracticalId;
+  final LevelUpPracticalExam exam;
+  final int fixedExamId;
+  final String examTitle;
+  final String? descriptionHtml;
+  final List<LevelUpPracticalQuestion> questions;
+
+  const LevelUpPracticalDetail({
+    required this.examPracticalId,
+    required this.exam,
+    required this.fixedExamId,
+    required this.examTitle,
+    required this.questions,
+    this.descriptionHtml,
+  });
+
+  factory LevelUpPracticalDetail.fromJson(
+    Map<String, dynamic> json, {
+    required int examPracticalId,
+  }) {
+    final fixedExam = _readMap(json, const ['FixedExam']) ?? const {};
+    final questionRows = _readMapList(fixedExam, const ['Questions']);
+    final exam = LevelUpPracticalExam.fromJson(json);
+    return LevelUpPracticalDetail(
+      examPracticalId: examPracticalId,
+      exam: exam,
+      fixedExamId:
+          _readInt(fixedExam, const ['Id']) ?? exam.fixedExamPracticalId ?? 0,
+      examTitle: _readString(fixedExam, const ['ExamTitle']) ?? exam.title,
+      descriptionHtml: _readString(fixedExam, const ['Description']),
+      questions: questionRows
+          .map(LevelUpPracticalQuestion.fromJson)
+          .where((question) =>
+              question.id > 0 &&
+              question.practicalId > 0 &&
+              question.scoreLimit >= 0)
+          .toList(growable: false),
+    );
+  }
+}
+
+class LevelUpPracticalScoreRequest {
+  final int examPracticalId;
+  final int fixedExamPracticalId;
+  final int fixedExamPracticalQuestionId;
+  final double score;
+
+  const LevelUpPracticalScoreRequest({
+    required this.examPracticalId,
+    required this.fixedExamPracticalId,
+    required this.fixedExamPracticalQuestionId,
+    required this.score,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'ExamPracticalId': examPracticalId,
+        'FixedExamPracticalId': fixedExamPracticalId,
+        'FixedExamPracticalQuestionId': fixedExamPracticalQuestionId,
+        'Score': score,
+      };
 }
 
 List<Map<String, dynamic>> _findCriteria(Map<String, dynamic> json) {

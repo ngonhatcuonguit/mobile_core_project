@@ -111,6 +111,98 @@ void main() {
   });
 
   group('LevelUpPracticalExam', () {
+    test('parses the live listPractical card contract', () {
+      final exam = LevelUpPracticalExam.fromJson({
+        'FactoryId': 10,
+        'FactoryName': 'Bình Dương',
+        'LevelId': 1,
+        'LevelName': 'Cấp 1',
+        'LineId': 48,
+        'LineName': 'Bao bì thứ cấp',
+        'MachineId': 562,
+        'MachineName': 'Máy in màng',
+        'CandidateId': 777,
+        'CandidateName': 'Lê Văn Tuấn',
+        'ExamNumber': '2SPR',
+        'FixedExamPracticalID': 1,
+        'FixedExamPracticalName': 'ádasdasdasdasd',
+      });
+
+      expect(exam.id, '1');
+      expect(exam.fixedExamPracticalId, 1);
+      expect(exam.candidateId, '777');
+      expect(exam.candidateName, 'Lê Văn Tuấn');
+      expect(exam.examNumber, '2SPR');
+      expect(exam.examCode, '2SPR');
+      expect(exam.title, 'ádasdasdasdasd');
+      expect(exam.factoryId, 10);
+      expect(exam.lineId, 48);
+      expect(exam.machineId, 562);
+      expect(exam.levelId, 1);
+      expect(exam.factoryName, 'Bình Dương');
+      expect(exam.lineName, 'Bao bì thứ cấp');
+      expect(exam.machineName, 'Máy in màng');
+      expect(exam.levelName, 'Cấp 1');
+    });
+
+    test('parses total score and the detailPractical question contract', () {
+      final detail = LevelUpPracticalDetail.fromJson(
+        {
+          'FactoryId': 10,
+          'FactoryName': 'Bình Dương',
+          'CandidateId': 777,
+          'CandidateName': 'Lê Văn Tuấn',
+          'ExamNumber': '2SPR',
+          'FixedExamPracticalID': 1,
+          'FixedExamPracticalName': 'Bài thực hành',
+          'TotalScorePractical': 12.5,
+          'FixedExam': {
+            'Id': 1,
+            'ExamTitle': 'Bài thực hành',
+            'Description': '<p>Mô tả</p>',
+            'Questions': [
+              {
+                'Id': 6,
+                'PracticalID': 1,
+                'QuestionContent': '<p>Câu hỏi 1</p>',
+                'QuestionAnswer': '<p>Đáp án 1</p>',
+                'ScoreLimit': 100,
+                'Score': 8.5,
+              },
+            ],
+          },
+        },
+        examPracticalId: 99,
+      );
+
+      expect(detail.examPracticalId, 99);
+      expect(detail.exam.totalScorePractical, 12.5);
+      expect(detail.examTitle, 'Bài thực hành');
+      expect(detail.descriptionHtml, '<p>Mô tả</p>');
+      expect(detail.questions.single.id, 6);
+      expect(detail.questions.single.practicalId, 1);
+      expect(detail.questions.single.questionContentHtml, '<p>Câu hỏi 1</p>');
+      expect(detail.questions.single.questionAnswerHtml, '<p>Đáp án 1</p>');
+      expect(detail.questions.single.scoreLimit, 100);
+      expect(detail.questions.single.score, 8.5);
+    });
+
+    test('builds the submitPractical payload with backend field names', () {
+      const payload = LevelUpPracticalScoreRequest(
+        examPracticalId: 99,
+        fixedExamPracticalId: 1,
+        fixedExamPracticalQuestionId: 6,
+        score: 0,
+      );
+
+      expect(payload.toJson(), {
+        'ExamPracticalId': 99,
+        'FixedExamPracticalId': 1,
+        'FixedExamPracticalQuestionId': 6,
+        'Score': 0.0,
+      });
+    });
+
     test('parses nested candidate, config, criteria, and image data', () {
       const fallbackFilter = LevelUpFilter(
         factoryId: 10,

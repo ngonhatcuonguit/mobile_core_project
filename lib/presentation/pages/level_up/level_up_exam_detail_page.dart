@@ -12,12 +12,14 @@ class LevelUpExamDetailPage extends StatefulWidget {
   final LevelUpPracticalExam exam;
   final String examinerEmail;
   final LevelUpLocalStore localStore;
+  final bool detailApiAvailable;
 
   const LevelUpExamDetailPage({
     super.key,
     required this.exam,
     required this.examinerEmail,
     required this.localStore,
+    this.detailApiAvailable = true,
   });
 
   @override
@@ -64,6 +66,10 @@ class _LevelUpExamDetailPageState extends State<LevelUpExamDetailPage> {
       item.noteController.addListener(_onFieldChanged);
     }
     _overallNoteController.addListener(_onFieldChanged);
+    if (!widget.detailApiAvailable) {
+      _loadingDraft = false;
+      return;
+    }
     _loadDraft();
   }
 
@@ -284,6 +290,9 @@ class _LevelUpExamDetailPageState extends State<LevelUpExamDetailPage> {
     final isDark = context.isDarkMode;
     final background =
         isDark ? const Color(0xFF121212) : const Color(0xFFF5F7F6);
+    if (!widget.detailApiAvailable) {
+      return _buildPendingDetailPage(isDark, background);
+    }
     return PopScope(
       canPop: !_isDirty && !_savingDraft,
       onPopInvoked: (didPop) {
@@ -381,6 +390,121 @@ class _LevelUpExamDetailPageState extends State<LevelUpExamDetailPage> {
                   ],
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildPendingDetailPage(bool isDark, Color background) {
+    final candidateId = widget.exam.candidateCode.isNotEmpty
+        ? widget.exam.candidateCode
+        : widget.exam.candidateId;
+    return Scaffold(
+      backgroundColor: background,
+      appBar: AppBar(
+        backgroundColor: background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Chi tiết bài thi',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        ),
+      ),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF14532D), Color(0xFF22A447)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'BÀI THI #${widget.exam.examNumber ?? widget.exam.examCode ?? '--'}',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    widget.exam.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.person_outline_rounded,
+                        color: Colors.white70,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          candidateId?.isNotEmpty == true
+                              ? '${widget.exam.candidateName} • $candidateId'
+                              : widget.exam.candidateName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            _buildExamInformation(isDark),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color:
+                    isDark ? const Color(0xFF332C18) : const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF7C5B16)
+                      : const Color(0xFFFDE68A),
+                ),
+              ),
+              child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    color: Color(0xFFD97706),
+                  ),
+                  SizedBox(width: 11),
+                  Expanded(
+                    child: Text(
+                      'API chi tiết bài thi chưa khả dụng. Hiện tại bạn chỉ có thể xem thông tin từ danh sách; chức năng chấm điểm sẽ được mở sau khi API hoàn tất.',
+                      style: TextStyle(fontSize: 12, height: 1.45),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

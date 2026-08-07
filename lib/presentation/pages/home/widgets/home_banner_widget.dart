@@ -15,6 +15,18 @@ class _HomeBannerWidgetState extends State<HomeBannerWidget> {
 
   final List<_BannerItem> _banners = const [
     _BannerItem(
+      title: 'Thi đánh bậc năng lực chuyên môn',
+      highlight: 'HƯỚNG TỚI OEE ≥ 95%',
+      subtitle:
+          'Know-how Dr. Thanh: Phương pháp đúng + Kỹ năng đúng.\nĐánh giá đúng đội ngũ Vận hành & Bảo trì.',
+      footerLabel: 'Con người là tài sản quý giá',
+      gradientStart: Color(0xFF0F4C5C),
+      gradientEnd: Color(0xFF168B68),
+      accentColor: Color(0xFFFFD166),
+      decorIcon1: Icons.workspace_premium_outlined,
+      decorIcon2: Icons.precision_manufacturing_outlined,
+    ),
+    _BannerItem(
       title: 'Trà xanh không độ',
       highlight: 'KHÔNG ĐỘ - KHÔNG STRESS',
       subtitle:
@@ -38,7 +50,8 @@ class _HomeBannerWidgetState extends State<HomeBannerWidget> {
     _BannerItem(
       title: 'Chương trình ưu đãi đặc biệt',
       highlight: 'DÀNH CHO NHÂN VIÊN',
-      subtitle: 'Ưu đãi độc quyền cho nhân viên My THP\nÁp dụng từ tháng 3/2026',
+      subtitle:
+          'Ưu đãi độc quyền cho nhân viên My THP\nÁp dụng từ tháng 3/2026',
       gradientStart: Color(0xFFB83232),
       gradientEnd: Color(0xFFFF7043),
       accentColor: Color(0xFFFFF9C4),
@@ -76,18 +89,18 @@ class _HomeBannerWidgetState extends State<HomeBannerWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-          SizedBox(
-            height: 170,
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (i) => setState(() => _currentPage = i),
-              itemCount: _banners.length,
-              itemBuilder: (_, i) => _BannerCard(
-                item: _banners[i],
-                onTap: null,
-              ),
+        SizedBox(
+          height: 170,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            itemCount: _banners.length,
+            itemBuilder: (_, i) => _BannerCard(
+              item: _banners[i],
+              onTap: null,
             ),
           ),
+        ),
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -122,6 +135,7 @@ class _BannerCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        key: ValueKey('home_banner_${item.highlight}'),
         margin: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -167,18 +181,22 @@ class _BannerCard extends StatelessWidget {
                 children: [
                   Text(
                     item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     item.highlight,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: item.accentColor,
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 0.5,
                     ),
@@ -186,25 +204,33 @@ class _BannerCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     item.subtitle,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white70,
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: FontWeight.w400,
+                      height: 1.25,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.25),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.white38, width: 1),
                     ),
-                    child: const Text(
-                      'Xem thêm',
-                      style: TextStyle(
+                    child: Text(
+                      item.footerLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -228,6 +254,7 @@ class _BannerItem {
   final Color accentColor;
   final IconData decorIcon1;
   final IconData decorIcon2;
+  final String footerLabel;
 
   const _BannerItem({
     required this.title,
@@ -238,5 +265,6 @@ class _BannerItem {
     required this.accentColor,
     required this.decorIcon1,
     required this.decorIcon2,
+    this.footerLabel = 'Xem thêm',
   });
 }

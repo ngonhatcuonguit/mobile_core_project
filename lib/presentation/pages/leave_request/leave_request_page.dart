@@ -30,11 +30,61 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
   void initState() {
     super.initState();
     _loadUserData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _showUnavailableWarning();
+    });
+  }
+
+  Future<void> _showUnavailableWarning() async {
+    final shouldLeave = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        final isDark = dialogContext.isDarkMode;
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            backgroundColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            icon: const Icon(
+              Icons.warning_amber_rounded,
+              color: Color(0xFFF59E0B),
+              size: 42,
+            ),
+            title: const Text(
+              'Chức năng chưa khả dụng',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+            content: const Text(
+              'Tính năng tạo yêu cầu nghỉ phép mới hiện chưa sẵn sàng. Bạn chưa thể thao tác tại trang này, vui lòng quay lại sau.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, height: 1.5),
+            ),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              FilledButton.icon(
+                key: const ValueKey('leave_unavailable_go_back'),
+                onPressed: () => Navigator.pop(dialogContext, true),
+                icon: const Icon(Icons.arrow_back_rounded),
+                label: const Text('Quay lại'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (shouldLeave == true && mounted) {
+      await Navigator.of(context).maybePop();
+    }
   }
 
   Future<void> _loadUserData() async {
     final displayName = await AuthService.getDisplayName();
     final department = await AuthService.getDepartment();
+    if (!mounted) return;
     setState(() {
       _displayName = displayName;
       _department = department;
@@ -55,7 +105,6 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
     // Set default selected index
     _selectedLeaveTypeIndex ??= 0;
   }
-
 
   int get _totalDays {
     if (_fromDate == null || _toDate == null) return 0;
@@ -120,101 +169,107 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
     final isDark = context.isDarkMode;
 
     // Theme colors
-    final scaffoldBg = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF5F5F5);
+    final scaffoldBg =
+        isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF5F5F5);
     final cardBg = isDark ? const Color(0xFF242424) : Colors.white;
     final inputBg = isDark ? const Color(0xFF2C2C2C) : Colors.white;
-    final borderColor = isDark ? const Color(0xFF3A3A3A) : const Color(0xFFE5E7EB);
-    final labelColor = isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+    final borderColor =
+        isDark ? const Color(0xFF3A3A3A) : const Color(0xFFE5E7EB);
+    final labelColor =
+        isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
     final textColor = isDark ? Colors.white : const Color(0xFF111827);
     final sectionTitleColor = isDark ? Colors.white : const Color(0xFF111827);
-    final subtitleColor = isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+    final subtitleColor =
+        isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
 
     return Scaffold(
       backgroundColor: scaffoldBg,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ─── Inline TopBar ────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).maybePop(),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF2C2C2C)
-                              : Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black
-                                  .withOpacity(isDark ? 0.3 : 0.08),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+      body: AbsorbPointer(
+        absorbing: true,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ─── Inline TopBar ────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).maybePop(),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color:
+                                isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black
+                                    .withOpacity(isDark ? 0.3 : 0.08),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 16,
+                            color: textColor,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 16,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        context.tr('leave_request_title'),
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
                           color: textColor,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      context.tr('leave_request_title'),
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              // ─── Employee Info Card ───────────────────────────────
-              _buildEmployeeCard(isDark, cardBg, subtitleColor),
-              const SizedBox(height: 16),
+                // ─── Employee Info Card ───────────────────────────────
+                _buildEmployeeCard(isDark, cardBg, subtitleColor),
+                const SizedBox(height: 16),
 
-              // ─── Thông tin nghỉ Section ───────────────────────────
-              _buildLeaveInfoSection(
-                isDark,
-                cardBg,
-                inputBg,
-                borderColor,
-                labelColor,
-                textColor,
-                sectionTitleColor,
-                subtitleColor,
-              ),
-              const SizedBox(height: 16),
+                // ─── Thông tin nghỉ Section ───────────────────────────
+                _buildLeaveInfoSection(
+                  isDark,
+                  cardBg,
+                  inputBg,
+                  borderColor,
+                  labelColor,
+                  textColor,
+                  sectionTitleColor,
+                  subtitleColor,
+                ),
+                const SizedBox(height: 16),
 
-              // ─── Bàn giao công việc Section ───────────────────────
-              _buildHandoverSection(
-                isDark,
-                cardBg,
-                inputBg,
-                borderColor,
-                labelColor,
-                textColor,
-                sectionTitleColor,
-              ),
-              const SizedBox(height: 24),
+                // ─── Bàn giao công việc Section ───────────────────────
+                _buildHandoverSection(
+                  isDark,
+                  cardBg,
+                  inputBg,
+                  borderColor,
+                  labelColor,
+                  textColor,
+                  sectionTitleColor,
+                ),
+                const SizedBox(height: 24),
 
-              // ─── Footer Buttons (cuộn theo trang) ─────────────────
-              _buildFooterButtons(isDark),
-              const SizedBox(height: 16),
-            ],
+                // ─── Footer Buttons (cuộn theo trang) ─────────────────
+                _buildFooterButtons(isDark),
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
@@ -404,7 +459,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 const Text(
-                  '1.05',//load ngày từ api
+                  '1.05', //load ngày từ api
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 32,
@@ -426,8 +481,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color: Colors.white.withOpacity(0.4)),
+                    border: Border.all(color: Colors.white.withOpacity(0.4)),
                   ),
                   child: Text(
                     context.tr('leave_year_label'),
@@ -492,7 +546,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           const SizedBox(height: 16),
 
           // Loại phép
-          _buildFieldLabel(context.tr('leave_type_label'), isRequired: true, labelColor: labelColor),
+          _buildFieldLabel(context.tr('leave_type_label'),
+              isRequired: true, labelColor: labelColor),
           const SizedBox(height: 6),
           _buildDropdown(isDark, inputBg, borderColor, textColor),
           const SizedBox(height: 14),
@@ -504,11 +559,16 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildFieldLabel(context.tr('leave_from_date'), isRequired: true, labelColor: labelColor),
+                    _buildFieldLabel(context.tr('leave_from_date'),
+                        isRequired: true, labelColor: labelColor),
                     const SizedBox(height: 6),
                     _buildDateField(
-                      isDark, inputBg, borderColor, textColor,
-                      _formatDate(_fromDate), () => _pickDate(true),
+                      isDark,
+                      inputBg,
+                      borderColor,
+                      textColor,
+                      _formatDate(_fromDate),
+                      () => _pickDate(true),
                     ),
                   ],
                 ),
@@ -518,11 +578,16 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildFieldLabel(context.tr('leave_to_date'), isRequired: true, labelColor: labelColor),
+                    _buildFieldLabel(context.tr('leave_to_date'),
+                        isRequired: true, labelColor: labelColor),
                     const SizedBox(height: 6),
                     _buildDateField(
-                      isDark, inputBg, borderColor, textColor,
-                      _formatDate(_toDate), () => _pickDate(false),
+                      isDark,
+                      inputBg,
+                      borderColor,
+                      textColor,
+                      _formatDate(_toDate),
+                      () => _pickDate(false),
                     ),
                   ],
                 ),
@@ -533,8 +598,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
 
           // Tổng cộng
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: inputBg,
               borderRadius: BorderRadius.circular(10),
@@ -572,7 +636,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           const SizedBox(height: 14),
 
           // Lý do nghỉ
-          _buildFieldLabel(context.tr('leave_reason'), isRequired: true, labelColor: labelColor),
+          _buildFieldLabel(context.tr('leave_reason'),
+              isRequired: true, labelColor: labelColor),
           const SizedBox(height: 6),
           TextField(
             controller: _reasonController,
@@ -581,9 +646,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
             decoration: InputDecoration(
               hintText: context.tr('leave_hint_reason'),
               hintStyle: TextStyle(
-                color: isDark
-                    ? const Color(0xFF4B5563)
-                    : const Color(0xFF9CA3AF),
+                color:
+                    isDark ? const Color(0xFF4B5563) : const Color(0xFF9CA3AF),
                 fontSize: 14,
               ),
               filled: true,
@@ -653,7 +717,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           const SizedBox(height: 16),
 
           // Người nhận bàn giao
-          _buildFieldLabel(context.tr('leave_handover_person'), labelColor: labelColor),
+          _buildFieldLabel(context.tr('leave_handover_person'),
+              labelColor: labelColor),
           const SizedBox(height: 6),
           TextField(
             controller: _handoverPersonController,
@@ -661,16 +726,14 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
             decoration: InputDecoration(
               hintText: context.tr('leave_hint_search'),
               hintStyle: TextStyle(
-                color: isDark
-                    ? const Color(0xFF4B5563)
-                    : const Color(0xFF9CA3AF),
+                color:
+                    isDark ? const Color(0xFF4B5563) : const Color(0xFF9CA3AF),
                 fontSize: 14,
               ),
               prefixIcon: Icon(
                 Icons.search,
-                color: isDark
-                    ? const Color(0xFF4B5563)
-                    : const Color(0xFF9CA3AF),
+                color:
+                    isDark ? const Color(0xFF4B5563) : const Color(0xFF9CA3AF),
                 size: 20,
               ),
               filled: true,
@@ -694,7 +757,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           const SizedBox(height: 14),
 
           // Nội dung công việc
-          _buildFieldLabel(context.tr('leave_work_content'), labelColor: labelColor),
+          _buildFieldLabel(context.tr('leave_work_content'),
+              labelColor: labelColor),
           const SizedBox(height: 6),
           TextField(
             controller: _handoverContentController,
@@ -703,9 +767,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
             decoration: InputDecoration(
               hintText: context.tr('leave_hint_work'),
               hintStyle: TextStyle(
-                color: isDark
-                    ? const Color(0xFF4B5563)
-                    : const Color(0xFF9CA3AF),
+                color:
+                    isDark ? const Color(0xFF4B5563) : const Color(0xFF9CA3AF),
                 fontSize: 14,
               ),
               filled: true,
@@ -731,8 +794,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           GestureDetector(
             onTap: () {},
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
               decoration: BoxDecoration(
                 color: inputBg,
                 borderRadius: BorderRadius.circular(10),
@@ -772,65 +834,64 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
   Widget _buildFooterButtons(bool isDark) {
     return Row(
       children: [
-          // Lưu Nháp
-          Expanded(
-            child: GestureDetector(
-              onTap: () => showUnderDevelopmentDialog(context),
-              child: Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF2C2C2C)
-                      : const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(12),
-                  border: isDark
-                      ? Border.all(color: const Color(0xFF3A3A3A))
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    context.tr('leave_save_draft'),
-                    style: TextStyle(
-                      color: isDark ? Colors.white : const Color(0xFF374151),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+        // Lưu Nháp
+        Expanded(
+          child: GestureDetector(
+            onTap: () => showUnderDevelopmentDialog(context),
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                color:
+                    isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(12),
+                border:
+                    isDark ? Border.all(color: const Color(0xFF3A3A3A)) : null,
+              ),
+              child: Center(
+                child: Text(
+                  context.tr('leave_save_draft'),
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF374151),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          // Gửi Yêu Cầu
-          Expanded(
-            flex: 2,
-            child: GestureDetector(
-              onTap: () => showUnderDevelopmentDialog(context),
-              child: Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF42C83C),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      context.tr('leave_submit'),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+        ),
+        const SizedBox(width: 12),
+        // Gửi Yêu Cầu
+        Expanded(
+          flex: 2,
+          child: GestureDetector(
+            onTap: () => showUnderDevelopmentDialog(context),
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                color: const Color(0xFF42C83C),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    context.tr('leave_submit'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.send_outlined, color: Colors.white, size: 18),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.send_outlined,
+                      color: Colors.white, size: 18),
+                ],
               ),
             ),
           ),
-        ],
+        ),
+      ],
     );
   }
 
@@ -923,9 +984,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
           dateText,
           style: TextStyle(
             color: isPlaceholder
-                ? (isDark
-                    ? const Color(0xFF4B5563)
-                    : const Color(0xFF9CA3AF))
+                ? (isDark ? const Color(0xFF4B5563) : const Color(0xFF9CA3AF))
                 : textColor,
             fontSize: 14,
           ),
@@ -934,4 +993,3 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
     );
   }
 }
-

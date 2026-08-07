@@ -54,24 +54,28 @@ class LevelUpApiService {
     );
     return data
         .map(LevelUpMachine.fromJson)
-        .where((item) => item.id > 0 && item.isActive)
+        // listPractical vẫn có thể trả bài thi cho máy Active = 0
+        // (ví dụ MachineId 562), nên client không được tự loại máy này.
+        .where((item) => item.id > 0)
         .toList(growable: false);
   }
 
   Future<List<LevelUpPracticalExam>> getPracticalExams({
     required LevelUpFilter filter,
+    required LevelUpExamStatus status,
   }) async {
     if (!filter.canLoadExams) {
       throw const LevelUpApiException(
-        'Vui lòng chọn đủ nhà máy, cấp bậc, line và máy trước khi xem bài thi.',
+        'Vui lòng chọn đủ nhà máy, line, máy và cấp bậc trước khi xem bài thi.',
       );
     }
 
     final query = <String, dynamic>{
       'FactoryId': filter.factoryId,
-      'LevelId': filter.levelId,
       'LineId': filter.lineId,
       'MachineId': filter.machineId,
+      'LevelId': filter.levelId,
+      'Status': status.apiValue,
     };
     final data = await _getList(
       '/api/exam/listPractical',
@@ -95,18 +99,75 @@ class LevelUpApiService {
     ];
   }
 
+  Future<LevelUpPracticalDetail> getPracticalDetail({
+    required int practicalId,
+  }) async {
+    if (practicalId <= 0) {
+      throw const LevelUpApiException('ID bài thi không hợp lệ.');
+    }
+    final root = await _requestJson(
+      '/api/exam/detailPractical',
+      queryParameters: {'practicalId': practicalId},
+    );
+    final rawData = _readCaseInsensitive(root, 'data');
+    if (rawData is! Map) {
+      throw const LevelUpApiException(
+        'Chi tiết bài thi trả về không đúng định dạng.',
+      );
+    }
+    return LevelUpPracticalDetail.fromJson(
+      Map<String, dynamic>.from(rawData),
+      examPracticalId: practicalId,
+    );
+  }
+
+  Future<void> submitPracticalScores({
+    required List<LevelUpPracticalScoreRequest> scores,
+  }) async {
+    if (scores.isEmpty) {
+      throw const LevelUpApiException('Bài thi không có câu hỏi để gửi điểm.');
+    }
+    await _requestJson(
+      '/api/exam/submitPractical',
+      method: 'POST',
+      data: [for (final score in scores) score.toJson()],
+      allowEmptyResponse: true,
+    );
+  }
+
   Future<List<Map<String, dynamic>>> _getList(
     String path, {
     Map<String, dynamic>? queryParameters,
     List<String> preferredListKeys = const ['Items', 'Results'],
   }) async {
-    if (kDebugMode) debugPrint('$_kTag ▶ GET $path');
+    final root = await _requestJson(
+      path,
+      queryParameters: queryParameters,
+    );
+    final result = _extractMapList(root, preferredListKeys);
+    if (kDebugMode) {
+      debugPrint('$_kTag ◀ $path – ${result.length} items');
+    }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> _requestJson(
+    String path, {
+    String method = 'GET',
+    Map<String, dynamic>? queryParameters,
+    Object? data,
+    bool allowEmptyResponse = false,
+  }) async {
+    if (kDebugMode) debugPrint('$_kTag ▶ $method $path');
 
     try {
-      final response = await _dio.get<dynamic>(
+      final response = await _dio.request<dynamic>(
         path,
+        data: data,
         queryParameters: queryParameters,
         options: Options(
+          method: method,
+          contentType: data == null ? null : Headers.jsonContentType,
           validateStatus: (status) => status != null && status < 500,
           extra: {
             'skipErrorDialog': true,
@@ -125,6 +186,20 @@ class LevelUpApiService {
         );
       }
 
+      if (allowEmptyResponse) {
+        final responseData = response.data;
+        if (responseData == null) return const {};
+        if (responseData is String) {
+          final responseText = responseData.trim();
+          if (responseText.isEmpty ||
+              (!responseText.startsWith('{') &&
+                  !responseText.startsWith('['))) {
+            return const {};
+          }
+        } else if (responseData is! Map && responseData is! List) {
+          return const {};
+        }
+      }
       final root = _asJson(response.data);
       final apiStatus = _readCaseInsensitive(root, 'status')?.toString();
       if (apiStatus != null &&
@@ -135,12 +210,8 @@ class LevelUpApiService {
           _extractMessage(root) ?? 'Hệ thống trả về trạng thái $apiStatus.',
         );
       }
-
-      final result = _extractMapList(root, preferredListKeys);
-      if (kDebugMode) {
-        debugPrint('$_kTag ◀ $statusCode $path – ${result.length} items');
-      }
-      return result;
+      if (kDebugMode) debugPrint('$_kTag ◀ $statusCode $method $path');
+      return root;
     } on LevelUpApiException {
       rethrow;
     } on DioException catch (error) {

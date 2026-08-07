@@ -4,6 +4,136 @@ import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/data/data_sources/remote/level_up_api_service.dart';
 import 'package:flutter_core_project/data/models/level_up/level_up_models.dart';
 
+enum LevelUpFilterStep { factory, line, machine, level }
+
+Future<LevelUpFilter?> showLevelUpFilterFlow({
+  required BuildContext context,
+  required LevelUpApiService api,
+  required String email,
+  required LevelUpFilter initialFilter,
+  required LevelUpFilterStep startStep,
+}) async {
+  var filter = initialFilter;
+
+  if (startStep.index <= LevelUpFilterStep.factory.index) {
+    final factories = await api.getFactories(email: email);
+    if (!context.mounted) return null;
+    final selected = await _showLevelUpOptionPicker<LevelUpFactory>(
+      context: context,
+      title: 'Chọn nhà máy',
+      options: factories,
+      selectedId: filter.factoryId,
+      idOf: (item) => item.id,
+      labelOf: (item) => item.name,
+      subtitleOf: (item) => item.code,
+    );
+    if (selected == null || !context.mounted) return null;
+    if (selected.id != filter.factoryId) {
+      filter = LevelUpFilter(
+        factoryId: selected.id,
+        factoryName: selected.name,
+      );
+    }
+  }
+
+  final factoryId = filter.factoryId;
+  if (factoryId == null) return null;
+  if (startStep.index <= LevelUpFilterStep.line.index) {
+    final lines = await api.getLines(factoryId: factoryId);
+    if (!context.mounted) return null;
+    final selected = await _showLevelUpOptionPicker<LevelUpLine>(
+      context: context,
+      title: 'Chọn line',
+      options: lines,
+      selectedId: filter.lineId,
+      idOf: (item) => item.id,
+      labelOf: (item) => item.name,
+      subtitleOf: (item) => item.code,
+    );
+    if (selected == null || !context.mounted) return null;
+    if (selected.id != filter.lineId) {
+      filter = filter.copyWith(
+        lineId: selected.id,
+        lineName: selected.name,
+        clearMachine: true,
+        clearLevel: true,
+      );
+    }
+  }
+
+  final lineId = filter.lineId;
+  if (lineId == null) return null;
+  if (startStep.index <= LevelUpFilterStep.machine.index) {
+    final machines = await api.getMachines(lineId: lineId);
+    if (!context.mounted) return null;
+    final selected = await _showLevelUpOptionPicker<LevelUpMachine>(
+      context: context,
+      title: 'Chọn máy',
+      options: machines,
+      selectedId: filter.machineId,
+      idOf: (item) => item.id,
+      labelOf: (item) => item.name,
+      subtitleOf: (item) => item.code,
+    );
+    if (selected == null || !context.mounted) return null;
+    if (selected.id != filter.machineId) {
+      filter = filter.copyWith(
+        machineId: selected.id,
+        machineName: selected.name,
+        clearLevel: true,
+      );
+    }
+  }
+
+  if (filter.machineId == null) return null;
+  final levels = await api.getLevels();
+  if (!context.mounted) return null;
+  final selected = await _showLevelUpOptionPicker<LevelUpLevel>(
+    context: context,
+    title: 'Chọn cấp bậc',
+    options: levels,
+    selectedId: filter.levelId,
+    idOf: (item) => item.id,
+    labelOf: (item) => item.name,
+    subtitleOf: (item) => item.description ?? item.code,
+  );
+  if (selected == null) return null;
+  filter = filter.copyWith(
+    levelId: selected.id,
+    levelCode: selected.code,
+    levelName: selected.name,
+  );
+  return filter.canLoadExams ? filter : null;
+}
+
+Future<T?> _showLevelUpOptionPicker<T>({
+  required BuildContext context,
+  required String title,
+  required List<T> options,
+  required int? selectedId,
+  required int Function(T) idOf,
+  required String Function(T) labelOf,
+  required String Function(T) subtitleOf,
+}) {
+  if (options.isEmpty) {
+    throw LevelUpApiException('$title: không có dữ liệu để lựa chọn.');
+  }
+  return showModalBottomSheet<T>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => _OptionPickerSheet<T>(
+      title: title,
+      options: options,
+      selectedId: selectedId,
+      idOf: idOf,
+      labelOf: labelOf,
+      subtitleOf: subtitleOf,
+    ),
+  );
+}
+
 enum _FilterLoadStage { initial, lines, machines }
 
 class LevelUpFilterPage extends StatefulWidget {
@@ -26,7 +156,6 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
   List<LevelUpFactory> _factories = const [];
   List<LevelUpLevel> _levels = const [];
   List<LevelUpLine> _lines = const [];
-  List<LevelUpMachine> _allMachines = const [];
   List<LevelUpMachine> _machines = const [];
 
   late LevelUpFilter _filter;
@@ -112,7 +241,6 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
       _isLoadingLines = true;
       _isLoadingMachines = false;
       _lines = const [];
-      _allMachines = const [];
       _machines = const [];
       _error = null;
     });
@@ -157,7 +285,6 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
     final request = ++_machineRequest;
     setState(() {
       _isLoadingMachines = true;
-      _allMachines = const [];
       _machines = const [];
       _error = null;
     });
@@ -166,18 +293,13 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
       if (!mounted || request != _machineRequest || _filter.lineId != lineId) {
         return;
       }
-      final compatibleMachines = _compatibleMachines(
-        machines,
-        _filter.levelCode,
-      );
       final selected = _findById(
-        compatibleMachines,
+        machines,
         preferredMachineId,
         (item) => item.id,
       );
       setState(() {
-        _allMachines = machines;
-        _machines = compatibleMachines;
+        _machines = machines;
         _isLoadingMachines = false;
         _filter = _filter.copyWith(
           machineId: selected?.id,
@@ -247,20 +369,18 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
         if (item.rolePermission?.isNotEmpty == true) item.rolePermission!,
       ].join(' • '),
     );
-    if (!mounted || selected == null || selected.id == _filter.factoryId) {
-      return;
+    if (!mounted || selected == null) return;
+    if (selected.id != _filter.factoryId) {
+      setState(() {
+        _error = null;
+        _filter = LevelUpFilter(
+          factoryId: selected.id,
+          factoryName: selected.name,
+        );
+      });
+      await _loadLines(selected.id);
     }
-    setState(() {
-      _error = null;
-      _filter = LevelUpFilter(
-        factoryId: selected.id,
-        factoryName: selected.name,
-        levelId: _filter.levelId,
-        levelCode: _filter.levelCode,
-        levelName: _filter.levelName,
-      );
-    });
-    await _loadLines(selected.id);
+    if (mounted && _lines.isNotEmpty) await _selectLine();
   }
 
   Future<void> _selectLevel() async {
@@ -274,23 +394,15 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
     );
     if (!mounted || selected == null) return;
     setState(() {
-      final compatibleMachines = _compatibleMachines(
-        _allMachines,
-        selected.code,
-      );
-      final selectedMachine = _findById(
-        compatibleMachines,
-        _filter.machineId,
-        (item) => item.id,
-      );
-      _machines = compatibleMachines;
       _filter = _filter.copyWith(
         levelId: selected.id,
         levelCode: selected.code,
         levelName: selected.name,
-        clearMachine: selectedMachine == null,
       );
     });
+    if (_filter.canLoadExams && Navigator.of(context).canPop()) {
+      Navigator.pop(context, _filter);
+    }
   }
 
   Future<void> _selectLine() async {
@@ -302,23 +414,25 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
       labelOf: (item) => item.name,
       subtitleOf: (item) => item.code,
     );
-    if (!mounted || selected == null || selected.id == _filter.lineId) {
-      return;
+    if (!mounted || selected == null) return;
+    if (selected.id != _filter.lineId) {
+      setState(() {
+        _error = null;
+        _filter = _filter.copyWith(
+          lineId: selected.id,
+          lineName: selected.name,
+          clearMachine: true,
+          clearLevel: true,
+        );
+      });
+      await _loadMachines(selected.id);
     }
-    setState(() {
-      _error = null;
-      _filter = _filter.copyWith(
-        lineId: selected.id,
-        lineName: selected.name,
-        clearMachine: true,
-      );
-    });
-    await _loadMachines(selected.id);
+    if (mounted && _machines.isNotEmpty) await _selectMachine();
   }
 
   Future<void> _selectMachine() async {
     final selected = await _showOptionPicker<LevelUpMachine>(
-      title: 'Chọn máy phù hợp cấp bậc',
+      title: 'Chọn máy',
       options: _machines,
       selectedId: _filter.machineId,
       idOf: (item) => item.id,
@@ -330,19 +444,10 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
       _filter = _filter.copyWith(
         machineId: selected.id,
         machineName: selected.name,
+        clearLevel: selected.id != _filter.machineId,
       );
     });
-  }
-
-  List<LevelUpMachine> _compatibleMachines(
-    List<LevelUpMachine> machines,
-    String? levelCode,
-  ) {
-    final normalizedLevel = levelCode?.trim().toLowerCase();
-    if (normalizedLevel == null || normalizedLevel.isEmpty) return machines;
-    return machines
-        .where((machine) => machine.appliesToLevelCode(normalizedLevel))
-        .toList(growable: false);
+    if (mounted && _levels.isNotEmpty) await _selectLevel();
   }
 
   Future<T?> _showOptionPicker<T>({
@@ -424,15 +529,6 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
                             const SizedBox(height: 12),
                             _FilterField(
                               step: 2,
-                              icon: Icons.military_tech_outlined,
-                              label: 'Cấp bậc',
-                              value: _filter.levelName,
-                              placeholder: 'Chọn cấp bậc cần chấm',
-                              onTap: _levels.isEmpty ? null : _selectLevel,
-                            ),
-                            const SizedBox(height: 12),
-                            _FilterField(
-                              step: 3,
                               icon: Icons.account_tree_outlined,
                               label: 'Line',
                               value: _filter.lineName,
@@ -458,13 +554,13 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
                             ],
                             const SizedBox(height: 12),
                             _FilterField(
-                              step: 4,
+                              step: 3,
                               icon: Icons.precision_manufacturing_outlined,
                               label: 'Máy',
                               value: _filter.machineName,
                               placeholder: _filter.lineId == null
                                   ? 'Chọn line trước'
-                                  : 'Chọn máy đang hoạt động',
+                                  : 'Chọn máy',
                               isLoading: _isLoadingMachines,
                               onTap: _filter.lineId != null &&
                                       !_isLoadingMachines &&
@@ -478,10 +574,23 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
                                 _machines.isEmpty) ...[
                               const SizedBox(height: 8),
                               const _SelectionNotice(
-                                message:
-                                    'Line này không có máy đang hoạt động phù hợp cấp bậc đã chọn.',
+                                message: 'Line này chưa có máy được cấu hình.',
                               ),
                             ],
+                            const SizedBox(height: 12),
+                            _FilterField(
+                              step: 4,
+                              icon: Icons.military_tech_outlined,
+                              label: 'Cấp bậc',
+                              value: _filter.levelName,
+                              placeholder: _filter.machineId == null
+                                  ? 'Chọn máy trước'
+                                  : 'Chọn cấp bậc cần chấm',
+                              onTap: _filter.machineId != null &&
+                                      _levels.isNotEmpty
+                                  ? _selectLevel
+                                  : null,
+                            ),
                             if (_error != null) ...[
                               const SizedBox(height: 16),
                               _InlineError(
@@ -567,7 +676,7 @@ class _LevelUpFilterPageState extends State<LevelUpFilterPage> {
                 ),
                 SizedBox(height: 5),
                 Text(
-                  'Chọn lần lượt 4 điều kiện. Bộ lọc sẽ được ghi nhớ cho lần truy cập sau.',
+                  'Chọn Nhà máy → Line → Máy → Cấp bậc. Mỗi bước sẽ tự mở ngay sau khi hoàn tất bước trước.',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 12,

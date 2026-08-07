@@ -92,6 +92,30 @@ void main() {
                 ],
               },
             });
+          case '/api/exam/detailPractical':
+            return _jsonResponse({
+              'status': 'success',
+              'data': {
+                'FixedExamPracticalID': 1,
+                'CandidateName': 'Nguyễn Văn A',
+                'FixedExam': {
+                  'Id': 1,
+                  'ExamTitle': 'Bài thực hành',
+                  'Questions': [
+                    {
+                      'Id': 6,
+                      'PracticalID': 1,
+                      'QuestionContent': '<p>Câu hỏi</p>',
+                      'QuestionAnswer': '<p>Đáp án</p>',
+                      'ScoreLimit': 10,
+                      'Score': null,
+                    },
+                  ],
+                },
+              },
+            });
+          case '/api/exam/submitPractical':
+            return _jsonResponse({'status': 'success', 'data': true});
           default:
             throw StateError('Unexpected request: ${request.uri}');
         }
@@ -105,6 +129,7 @@ void main() {
       final lines = await harness.service.getLines(factoryId: 10);
       final machines = await harness.service.getMachines(lineId: 50);
       final exams = await harness.service.getPracticalExams(
+        status: LevelUpExamStatus.registered,
         filter: const LevelUpFilter(
           factoryId: 10,
           factoryName: 'Bình Dương',
@@ -116,14 +141,33 @@ void main() {
           machineName: 'Máy active mặc định',
         ),
       );
+      final detail =
+          await harness.service.getPracticalDetail(practicalId: 9001);
+      await harness.service.submitPracticalScores(
+        scores: const [
+          LevelUpPracticalScoreRequest(
+            examPracticalId: 9001,
+            fixedExamPracticalId: 1,
+            fixedExamPracticalQuestionId: 6,
+            score: 8,
+          ),
+          LevelUpPracticalScoreRequest(
+            examPracticalId: 9001,
+            fixedExamPracticalId: 1,
+            fixedExamPracticalQuestionId: 7,
+            score: 0,
+          ),
+        ],
+      );
 
       expect(factories.single.id, 10);
       expect(levels.single.id, 3);
       expect(lines.single.id, 50);
-      expect(machines.map((machine) => machine.id), [71, 73]);
+      expect(machines.map((machine) => machine.id), [71, 72, 73]);
       expect(exams.single.id, '9001');
+      expect(detail.questions.single.id, 6);
 
-      expect(harness.adapter.requests, hasLength(5));
+      expect(harness.adapter.requests, hasLength(7));
       _expectRequest(
         harness.adapter.requests[0],
         path: '/api/exam/listFactorys',
@@ -149,11 +193,37 @@ void main() {
         path: '/api/exam/listPractical',
         query: const {
           'FactoryId': 10,
-          'LevelId': 3,
           'LineId': 50,
           'MachineId': 73,
+          'LevelId': 3,
+          'Status': 'REGISTERED',
         },
       );
+      _expectRequest(
+        harness.adapter.requests[5],
+        path: '/api/exam/detailPractical',
+        query: const {'practicalId': 9001},
+      );
+      expect(harness.adapter.requests[6].method, 'POST');
+      expect(harness.adapter.requests[6].uri.path, '/api/exam/submitPractical');
+      expect(
+        harness.adapter.requests[6].contentType,
+        Headers.jsonContentType,
+      );
+      expect(harness.adapter.requests[6].data, [
+        {
+          'ExamPracticalId': 9001,
+          'FixedExamPracticalId': 1,
+          'FixedExamPracticalQuestionId': 6,
+          'Score': 8.0,
+        },
+        {
+          'ExamPracticalId': 9001,
+          'FixedExamPracticalId': 1,
+          'FixedExamPracticalQuestionId': 7,
+          'Score': 0.0,
+        },
+      ]);
     });
   });
 
@@ -176,6 +246,7 @@ void main() {
       addTearDown(harness.close);
 
       final exams = await harness.service.getPracticalExams(
+        status: LevelUpExamStatus.registered,
         filter: const LevelUpFilter(
           factoryId: 10,
           levelId: 1,
@@ -226,7 +297,10 @@ void main() {
 
       for (final filter in incompleteFilters) {
         await expectLater(
-          harness.service.getPracticalExams(filter: filter),
+          harness.service.getPracticalExams(
+            filter: filter,
+            status: LevelUpExamStatus.registered,
+          ),
           throwsA(
             isA<LevelUpApiException>().having(
               (error) => error.message,

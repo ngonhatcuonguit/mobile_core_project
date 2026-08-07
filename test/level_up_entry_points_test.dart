@@ -206,6 +206,7 @@ class _EntryPointApi extends LevelUpApiService {
   @override
   Future<List<LevelUpPracticalExam>> getPracticalExams({
     required LevelUpFilter filter,
+    required LevelUpExamStatus status,
   }) async =>
       const [];
 }

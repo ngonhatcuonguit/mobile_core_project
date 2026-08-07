@@ -44,6 +44,8 @@ dependencies:
   flutter_hooks:
   #cached image
   cached_network_image:
+  #Render exam question/answer HTML
+  flutter_html: ^3.0.0-beta.2
   #Network connectivity
   connectivity_plus: ^5.0.0
 
