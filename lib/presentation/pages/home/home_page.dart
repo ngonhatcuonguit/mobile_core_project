@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/core/configs/app_config.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
@@ -11,7 +13,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final PageController _pageController = PageController(viewportFraction: 0.86);
+  static const int _initialPage = 300;
+  static const Duration _autoScrollDelay = Duration(seconds: 5);
+  static const Duration _autoScrollDuration = Duration(milliseconds: 650);
+
+  final PageController _pageController = PageController(
+    viewportFraction: 0.78,
+    initialPage: _initialPage,
+  );
+  Timer? _autoScrollTimer;
+  int _rawPage = _initialPage;
   int _currentProject = 0;
 
   static const _projects = [
@@ -62,9 +73,36 @@ class _HomePageState extends State<HomePage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scheduleAutoScroll());
+  }
+
+  @override
   void dispose() {
+    _autoScrollTimer?.cancel();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _scheduleAutoScroll() {
+    _autoScrollTimer?.cancel();
+    _autoScrollTimer = Timer(_autoScrollDelay, () {
+      if (!mounted || !_pageController.hasClients) return;
+      _pageController.animateToPage(
+        _rawPage + 1,
+        duration: _autoScrollDuration,
+        curve: Curves.easeInOutCubic,
+      );
+    });
+  }
+
+  void _onProjectChanged(int page) {
+    setState(() {
+      _rawPage = page;
+      _currentProject = page % _projects.length;
+    });
+    _scheduleAutoScroll();
   }
 
   void _showComingSoon() {
@@ -155,16 +193,41 @@ class _HomePageState extends State<HomePage> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
         child: SizedBox(
-          height: 376,
+          height: 360,
           child: PageView.builder(
             key: const Key('projectCarousel'),
             controller: _pageController,
-            itemCount: _projects.length,
-            onPageChanged: (index) => setState(() => _currentProject = index),
-            itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-              child: _ProjectCard(project: _projects[index]),
-            ),
+            clipBehavior: Clip.none,
+            physics: const BouncingScrollPhysics(),
+            onPageChanged: _onProjectChanged,
+            itemBuilder: (context, index) {
+              return AnimatedBuilder(
+                animation: _pageController,
+                builder: (context, child) {
+                  var page = _rawPage.toDouble();
+                  if (_pageController.hasClients &&
+                      _pageController.position.hasContentDimensions) {
+                    page = _pageController.page ?? page;
+                  }
+                  final distance =
+                      (page - index).abs().clamp(0.0, 1.0).toDouble();
+                  final scale = 1 - (distance * 0.13);
+                  final opacity = 1 - (distance * 0.24);
+                  return Transform.scale(
+                    scale: scale,
+                    alignment: Alignment.center,
+                    child: Opacity(opacity: opacity, child: child),
+                  );
+                },
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  child: _ProjectCard(
+                    project: _projects[index % _projects.length],
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -225,14 +288,14 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildServices(BuildContext context) {
     return SizedBox(
-      height: 164,
+      height: 140,
       child: ListView.separated(
         key: const Key('serviceList'),
         padding: const EdgeInsets.symmetric(horizontal: 22),
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: _services.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, index) => _ServiceCard(
           service: _services[index],
           onPressed: _showComingSoon,
@@ -356,7 +419,7 @@ class _ServiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
-      width: 124,
+      width: 106,
       child: Material(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
@@ -364,7 +427,7 @@ class _ServiceCard extends StatelessWidget {
           onTap: onPressed,
           borderRadius: BorderRadius.circular(20),
           child: Container(
-            padding: const EdgeInsets.fromLTRB(10, 15, 10, 12),
+            padding: const EdgeInsets.fromLTRB(8, 11, 8, 9),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
@@ -375,17 +438,17 @@ class _ServiceCard extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                  width: 66,
-                  height: 66,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
                     color: isDark
                         ? service.color.withOpacity(0.16)
                         : service.background,
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  child: Icon(service.icon, color: service.color, size: 38),
+                  child: Icon(service.icon, color: service.color, size: 30),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 7),
                 Expanded(
                   child: Center(
                     child: Text(

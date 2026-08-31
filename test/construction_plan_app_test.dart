@@ -21,6 +21,12 @@ void main() {
     expect(find.text('Đăng nhập'), findsNothing);
     expect(find.byKey(const Key('projectCarousel')), findsOneWidget);
     expect(find.byKey(const Key('serviceList')), findsOneWidget);
+    expect(find.byKey(const Key('materialsNavigationButton')), findsOneWidget);
+    expect(find.byKey(const Key('quantityNavigationButton')), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(find.text('Biệt thự vườn xanh'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('addProjectButton')));
     await tester.pump();
@@ -28,6 +34,14 @@ void main() {
       find.text('Tính năng đang được hoàn thiện cho phiên bản tiếp theo.'),
       findsOneWidget,
     );
+
+    await tester.tap(find.byKey(const Key('materialsNavigationButton')));
+    await tester.pumpAndSettle();
+    expect(find.text('Vật liệu xây dựng'), findsWidgets);
+
+    await tester.tap(find.byKey(const Key('quantityNavigationButton')));
+    await tester.pumpAndSettle();
+    expect(find.text('Tính khối lượng'), findsWidgets);
 
     await tester.tap(find.byKey(const Key('profileNavigationButton')));
     await tester.pumpAndSettle();

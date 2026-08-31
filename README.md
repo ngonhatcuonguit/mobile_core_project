@@ -4,7 +4,8 @@
 
 ## Tính năng hiện tại
 
-- Home với carousel dự án và danh sách dịch vụ xây dựng.
+- Home với carousel dự án có hiệu ứng focus và tự chuyển, cùng danh sách dịch vụ xây dựng.
+- Tab Vật liệu và Tính khối lượng dùng dữ liệu cục bộ, sẵn sàng mở rộng cho dự án mới.
 - Profile với tùy chọn tiếng Việt/English và Light/Dark mode.
 - Logo, launcher icon và splash screen của Construction Plan.
 - Dữ liệu minh họa được đóng gói cục bộ; không đăng nhập, không gọi API, không Firebase.
