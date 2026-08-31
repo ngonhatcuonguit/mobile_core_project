@@ -298,7 +298,7 @@ class _SigninPageState extends State<SigninPage> {
                   // Logo
                   Center(
                     child: Image.asset(
-                      'assets/images/app_launcher_icon.png',
+                      'assets/images/app_logo.png',
                       height: 80,
                       width: 80,
                     ),

@@ -93,10 +93,10 @@ check_xcode() {
         XCODE_VERSION=$(xcodebuild -version | head -n 1)
         echo "$XCODE_VERSION"
 
-        if echo "$XCODE_VERSION" | grep -qE "14\.[1-9]|1[5-9]\.|[2-9][0-9]\."; then
-            print_success "Xcode 14.1 or later installed"
+        if echo "$XCODE_VERSION" | grep -qE "1[5-9]\.|[2-9][0-9]\."; then
+            print_success "Xcode 15 or later installed"
         else
-            print_warn "Xcode version is $(echo $XCODE_VERSION | awk '{print $2}'), minimum 14.1 required"
+            print_warn "Xcode version is $(echo $XCODE_VERSION | awk '{print $2}'), minimum 15 required for iOS 17"
         fi
     else
         print_fail "Xcode not found. Install via App Store or: xcode-select --install"
@@ -304,4 +304,3 @@ main() {
 
 # Run main function
 main
-

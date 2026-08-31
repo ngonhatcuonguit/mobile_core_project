@@ -56,6 +56,17 @@ fi
 # Change to project directory
 cd "$PROJECT_DIR"
 
+# Android debug/release intermediates can temporarily consume several GB.
+# Fail early with a clear message instead of Gradle's misleading package/copy errors.
+AVAILABLE_KB=$(df -Pk "$PROJECT_DIR" | awk 'NR == 2 {print $4}')
+MIN_FREE_KB=$((4 * 1024 * 1024))
+if [ "$AVAILABLE_KB" -lt "$MIN_FREE_KB" ]; then
+    AVAILABLE_GB=$(awk -v kb="$AVAILABLE_KB" 'BEGIN {printf "%.1f", kb / 1024 / 1024}')
+    echo -e "${RED}❌ Not enough disk space: ${AVAILABLE_GB} GB available; at least 4 GB is required.${NC}"
+    echo -e "${YELLOW}   Remove old generated builds with: flutter clean${NC}"
+    exit 1
+fi
+
 # Get dependencies
 echo -e "${YELLOW}📥 Getting dependencies...${NC}"
 flutter pub get
@@ -95,4 +106,3 @@ else
 fi
 
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
-
