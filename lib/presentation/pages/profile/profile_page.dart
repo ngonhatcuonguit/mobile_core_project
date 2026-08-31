@@ -99,7 +99,7 @@ class _ProfileHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.13),
+                  color: AppColors.primary.withValues(alpha: 0.13),
                   blurRadius: 18,
                   offset: const Offset(0, 7),
                 ),
@@ -154,7 +154,7 @@ class _PreferencesCard extends StatelessWidget {
                 key: const Key('themeSwitch'),
                 value: isDark,
                 onChanged: (_) => context.read<ThemeCubit>().toggleTheme(),
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
                 secondary: _SettingIcon(
                   icon: isDark
                       ? Icons.dark_mode_rounded
@@ -175,7 +175,7 @@ class _PreferencesCard extends StatelessWidget {
                 key: const Key('languageSwitch'),
                 value: isVietnamese,
                 onChanged: (_) => context.read<LocaleCubit>().toggleLanguage(),
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
                 secondary: const _SettingIcon(icon: Icons.language_rounded),
                 title: Text(context.tr('language')),
                 subtitle: Text(
@@ -201,7 +201,7 @@ class _SettingIcon extends StatelessWidget {
       width: 42,
       height: 42,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.11),
+        color: AppColors.primary.withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(13),
       ),
       child: Icon(icon, color: AppColors.primary, size: 22),

@@ -30,7 +30,7 @@ void main() {
     final carousel = tester.widget<PageView>(
       find.byKey(const Key('projectCarousel')),
     );
-    expect(carousel.controller.viewportFraction, 0.76);
+    expect(carousel.controller!.viewportFraction, 0.76);
     expect(
       tester.getSize(
         find.byKey(const Key('serviceCardSurface_service_architecture')),

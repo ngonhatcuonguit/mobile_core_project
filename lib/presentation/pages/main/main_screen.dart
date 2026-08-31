@@ -103,7 +103,7 @@ class _NavigationPanel extends StatelessWidget {
         painter: _NavigationPanelPainter(
           color: surface,
           borderColor: border,
-          shadowColor: Colors.black.withOpacity(isDark ? 0.25 : 0.075),
+          shadowColor: Colors.black.withValues(alpha: isDark ? 0.25 : 0.075),
         ),
         child: ClipPath(
           clipper: const _NavigationPanelClipper(),
@@ -298,7 +298,7 @@ class _AddProjectButton extends StatelessWidget {
         children: [
           Material(
             elevation: 10,
-            shadowColor: AppColors.primary.withOpacity(0.42),
+            shadowColor: AppColors.primary.withValues(alpha: 0.42),
             shape: const CircleBorder(),
             clipBehavior: Clip.antiAlias,
             child: Ink(
@@ -378,7 +378,7 @@ class _LocalToolPage extends StatelessWidget {
                       width: 76,
                       height: 76,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.11),
+                        color: AppColors.primary.withValues(alpha: 0.11),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(icon, color: AppColors.primary, size: 36),

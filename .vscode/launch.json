@@ -6,6 +6,9 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main_dev.dart",
+      "env": {
+        "TMPDIR": "${workspaceFolder}/.tmp"
+      },
       "args": [
         "--flavor",
         "dev"
@@ -16,6 +19,9 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main_prod.dart",
+      "env": {
+        "TMPDIR": "${workspaceFolder}/.tmp"
+      },
       "args": [
         "--flavor",
         "prod"
@@ -26,6 +32,9 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main_dev.dart",
+      "env": {
+        "TMPDIR": "${workspaceFolder}/.tmp"
+      },
       "args": [
         "--flavor",
         "dev",
@@ -37,6 +46,9 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main_prod.dart",
+      "env": {
+        "TMPDIR": "${workspaceFolder}/.tmp"
+      },
       "args": [
         "--flavor",
         "prod",

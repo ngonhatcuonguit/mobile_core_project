@@ -15,7 +15,8 @@
 
 ```bash
 flutter pub get
-flutter run --flavor dev -t lib/main_dev.dart
+mkdir -p .tmp
+TMPDIR="$PWD/.tmp" flutter run --flavor dev -t lib/main_dev.dart
 ```
 
 Build APK production:

@@ -34,7 +34,7 @@ class AppTheme {
         backgroundColor: background,
         foregroundColor: isLight ? AppColors.lightText : AppColors.darkText,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surface,
         elevation: 0,
         margin: EdgeInsets.zero,

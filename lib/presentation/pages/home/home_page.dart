@@ -145,7 +145,7 @@ class _HomePageState extends State<HomePage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 14,
                   offset: const Offset(0, 4),
                 ),
@@ -249,7 +249,7 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               color: selected
                   ? AppColors.primary
-                  : AppColors.lightGrey.withOpacity(0.8),
+                  : AppColors.lightGrey.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(8),
             ),
           );
@@ -321,7 +321,7 @@ class _ProjectCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(isDark ? 0.13 : 0.10),
+            color: AppColors.primary.withValues(alpha: isDark ? 0.13 : 0.10),
             blurRadius: 24,
             offset: const Offset(0, 13),
           ),
@@ -355,7 +355,7 @@ class _ProjectCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -436,7 +436,7 @@ class _ServiceCard extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.18 : 0.075),
+                color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.075),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -457,7 +457,7 @@ class _ServiceCard extends StatelessWidget {
                       height: 43,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? service.color.withOpacity(0.16)
+                            ? service.color.withValues(alpha: 0.16)
                             : service.background,
                         borderRadius: BorderRadius.circular(13),
                       ),

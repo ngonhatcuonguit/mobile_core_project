@@ -260,7 +260,7 @@ class _LibraryGroup extends StatelessWidget {
                   width: 34,
                   height: 34,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.13),
+                    color: color.withValues(alpha: 0.13),
                     borderRadius: BorderRadius.circular(11),
                   ),
                   child: Icon(icon, size: 19, color: color),
@@ -278,7 +278,7 @@ class _LibraryGroup extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.11),
+                    color: color.withValues(alpha: 0.11),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -342,7 +342,7 @@ class _LibraryItemCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.16 : 0.055),
+            color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.055),
             blurRadius: 18,
             offset: const Offset(0, 7),
           ),
@@ -362,7 +362,7 @@ class _LibraryItemCard extends StatelessWidget {
                   width: 45,
                   height: 45,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
@@ -493,7 +493,7 @@ class _LibraryMessage extends StatelessWidget {
               width: 82,
               height: 82,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.11),
+                color: AppColors.primary.withValues(alpha: 0.11),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: AppColors.primary, size: 37),
@@ -552,7 +552,7 @@ class _ItemDetailsSheet extends StatelessWidget {
                   width: 54,
                   height: 54,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.13),
+                    color: color.withValues(alpha: 0.13),
                     borderRadius: BorderRadius.circular(17),
                   ),
                   child: Icon(
@@ -935,10 +935,10 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.07),
+                      color: AppColors.primary.withValues(alpha: 0.07),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.18),
+                        color: AppColors.primary.withValues(alpha: 0.18),
                       ),
                     ),
                     child: Column(
@@ -1130,7 +1130,7 @@ class _UnitPickerSheet extends StatelessWidget {
                   final selected = unit == selectedUnit;
                   return Material(
                     color: selected
-                        ? AppColors.primary.withOpacity(0.12)
+                        ? AppColors.primary.withValues(alpha: 0.12)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(15),
                     child: ListTile(

@@ -13,7 +13,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_bloc: ^8.1.6
   hydrated_bloc: ^9.1.5
-  path_provider: ^2.1.4
+  path_provider: ^2.1.6
   flutter_native_splash: ^2.4.0
   sqflite: ^2.3.3+1
   path: ^1.9.0

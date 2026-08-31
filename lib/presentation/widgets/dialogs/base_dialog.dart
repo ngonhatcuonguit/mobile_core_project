@@ -45,7 +45,6 @@ class BaseDialog extends StatelessWidget {
       case DialogType.success:
         return Icons.check_circle_outline;
       case DialogType.info:
-      default:
         return Icons.info_outline;
     }
   }
@@ -60,7 +59,6 @@ class BaseDialog extends StatelessWidget {
       case DialogType.success:
         return Colors.green.shade600;
       case DialogType.info:
-      default:
         return Theme.of(context).primaryColor;
     }
   }
