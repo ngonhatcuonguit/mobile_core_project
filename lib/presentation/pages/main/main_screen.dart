@@ -94,69 +94,143 @@ class _NavigationPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    final surface = isDark ? AppColors.darkSurface : Colors.white;
+    final border = isDark ? const Color(0xFF353141) : const Color(0xFFF0EDF5);
+    return SizedBox(
       height: 84,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : Colors.white,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: isDark ? const Color(0xFF353141) : const Color(0xFFF0EDF5),
+      child: CustomPaint(
+        key: const Key('notchedNavigationPanel'),
+        painter: _NavigationPanelPainter(
+          color: surface,
+          borderColor: border,
+          shadowColor: Colors.black.withOpacity(isDark ? 0.25 : 0.075),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.22 : 0.065),
-            blurRadius: 24,
-            offset: const Offset(0, 9),
+        child: ClipPath(
+          clipper: const _NavigationPanelClipper(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: _buildItems(context),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _NavigationItem(
-              key: const Key('homeNavigationButton'),
-              icon: Icons.home_work_outlined,
-              selectedIcon: Icons.home_work_rounded,
-              label: context.tr('nav_home'),
-              selected: currentIndex == 0,
-              onPressed: () => onSelected(0),
-            ),
-          ),
-          Expanded(
-            child: _NavigationItem(
-              key: const Key('materialsNavigationButton'),
-              icon: Icons.inventory_2_outlined,
-              selectedIcon: Icons.inventory_2_rounded,
-              label: context.tr('nav_materials'),
-              selected: currentIndex == 1,
-              onPressed: () => onSelected(1),
-            ),
-          ),
-          const SizedBox(width: 76),
-          Expanded(
-            child: _NavigationItem(
-              key: const Key('quantityNavigationButton'),
-              icon: Icons.calculate_outlined,
-              selectedIcon: Icons.calculate_rounded,
-              label: context.tr('nav_quantity'),
-              selected: currentIndex == 2,
-              onPressed: () => onSelected(2),
-            ),
-          ),
-          Expanded(
-            child: _NavigationItem(
-              key: const Key('profileNavigationButton'),
-              icon: Icons.person_outline_rounded,
-              selectedIcon: Icons.person_rounded,
-              label: context.tr('nav_profile'),
-              selected: currentIndex == 3,
-              onPressed: () => onSelected(3),
-            ),
-          ),
-        ],
+        ),
       ),
     );
+  }
+
+  Widget _buildItems(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _NavigationItem(
+            key: const Key('homeNavigationButton'),
+            icon: Icons.home_work_outlined,
+            selectedIcon: Icons.home_work_rounded,
+            label: context.tr('nav_home'),
+            selected: currentIndex == 0,
+            onPressed: () => onSelected(0),
+          ),
+        ),
+        Expanded(
+          child: _NavigationItem(
+            key: const Key('materialsNavigationButton'),
+            icon: Icons.inventory_2_outlined,
+            selectedIcon: Icons.inventory_2_rounded,
+            label: context.tr('nav_materials'),
+            selected: currentIndex == 1,
+            onPressed: () => onSelected(1),
+          ),
+        ),
+        const SizedBox(width: 76),
+        Expanded(
+          child: _NavigationItem(
+            key: const Key('quantityNavigationButton'),
+            icon: Icons.calculate_outlined,
+            selectedIcon: Icons.calculate_rounded,
+            label: context.tr('nav_quantity'),
+            selected: currentIndex == 2,
+            onPressed: () => onSelected(2),
+          ),
+        ),
+        Expanded(
+          child: _NavigationItem(
+            key: const Key('profileNavigationButton'),
+            icon: Icons.person_outline_rounded,
+            selectedIcon: Icons.person_rounded,
+            label: context.tr('nav_profile'),
+            selected: currentIndex == 3,
+            onPressed: () => onSelected(3),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+Path _navigationPanelPath(Size size) {
+  const radius = 30.0;
+  final center = size.width / 2;
+  return Path()
+    ..moveTo(radius, 0)
+    ..lineTo(center - 47, 0)
+    ..cubicTo(center - 40, 0, center - 39, 8, center - 36, 17)
+    ..cubicTo(center - 30, 36, center - 17, 45, center, 45)
+    ..cubicTo(center + 17, 45, center + 30, 36, center + 36, 17)
+    ..cubicTo(center + 39, 8, center + 40, 0, center + 47, 0)
+    ..lineTo(size.width - radius, 0)
+    ..quadraticBezierTo(size.width, 0, size.width, radius)
+    ..lineTo(size.width, size.height - radius)
+    ..quadraticBezierTo(
+      size.width,
+      size.height,
+      size.width - radius,
+      size.height,
+    )
+    ..lineTo(radius, size.height)
+    ..quadraticBezierTo(0, size.height, 0, size.height - radius)
+    ..lineTo(0, radius)
+    ..quadraticBezierTo(0, 0, radius, 0)
+    ..close();
+}
+
+class _NavigationPanelClipper extends CustomClipper<Path> {
+  const _NavigationPanelClipper();
+
+  @override
+  Path getClip(Size size) => _navigationPanelPath(size);
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _NavigationPanelPainter extends CustomPainter {
+  const _NavigationPanelPainter({
+    required this.color,
+    required this.borderColor,
+    required this.shadowColor,
+  });
+
+  final Color color;
+  final Color borderColor;
+  final Color shadowColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = _navigationPanelPath(size);
+    canvas.drawShadow(path, shadowColor, 13, false);
+    canvas.drawPath(path, Paint()..color = color);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = borderColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _NavigationPanelPainter oldDelegate) {
+    return color != oldDelegate.color ||
+        borderColor != oldDelegate.borderColor ||
+        shadowColor != oldDelegate.shadowColor;
   }
 }
 

@@ -27,6 +27,17 @@ void main() {
     expect(find.byKey(const Key('serviceList')), findsOneWidget);
     expect(find.byKey(const Key('materialsNavigationButton')), findsOneWidget);
     expect(find.byKey(const Key('quantityNavigationButton')), findsOneWidget);
+    final carousel = tester.widget<PageView>(
+      find.byKey(const Key('projectCarousel')),
+    );
+    expect(carousel.controller.viewportFraction, 0.76);
+    expect(
+      tester.getSize(
+        find.byKey(const Key('serviceCardSurface_service_architecture')),
+      ),
+      const Size(104, 104),
+    );
+    expect(find.byKey(const Key('notchedNavigationPanel')), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 5));
     await tester.pump(const Duration(milliseconds: 700));
@@ -43,10 +54,21 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Thư viện vật liệu & nhân công'), findsOneWidget);
     expect(find.text('Thư viện đang trống'), findsOneWidget);
+    expect(find.byType(BackButton), findsNothing);
+    expect(
+      tester.getBottomLeft(find.byKey(const Key('addLibraryItemButton'))).dy,
+      lessThan(
+        tester.getTopLeft(find.byKey(const Key('notchedNavigationPanel'))).dy,
+      ),
+    );
 
     await tester.tap(find.byKey(const Key('addLibraryItemButton')));
     await tester.pumpAndSettle();
     expect(find.text('Thêm vật liệu / nhân công'), findsOneWidget);
+    expect(find.byKey(const Key('bottomSheetSafeArea')), findsOneWidget);
+    expect(find.byKey(const Key('libraryLengthField')), findsOneWidget);
+    expect(find.byKey(const Key('libraryWidthField')), findsOneWidget);
+    expect(find.byKey(const Key('libraryHeightField')), findsOneWidget);
 
     await tester.enterText(
       find.byKey(const Key('libraryNameField')),
@@ -56,8 +78,16 @@ void main() {
       find.byKey(const Key('libraryPriceField')),
       '1250',
     );
+    await tester.tap(find.byKey(const Key('libraryType_labor')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('libraryLengthField')), findsNothing);
     await tester.tap(find.byKey(const Key('libraryUnitField')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('selectedUnitIndicator')), findsOneWidget);
+    final squareMeterOption = tester.widget<ListTile>(
+      find.byKey(const Key('unitOption_m2')),
+    );
+    expect(squareMeterOption.selected, isTrue);
     await tester.tap(find.text('Tùy chỉnh...').last);
     await tester.pumpAndSettle();
     await tester.enterText(
@@ -70,7 +100,7 @@ void main() {
 
     expect(find.text('Gạch xây'), findsOneWidget);
     expect(find.textContaining('1.250 ₫'), findsOneWidget);
-    expect(find.text('Vật liệu'), findsWidgets);
+    expect(find.text('Nhân công'), findsOneWidget);
 
     await tester.tap(find.text('Gạch xây'));
     await tester.pumpAndSettle();

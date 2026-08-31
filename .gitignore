@@ -44,4 +44,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/app/android/
+/android/key.properties
+*.jks
+*.keystore
 .hotswan/

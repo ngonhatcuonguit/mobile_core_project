@@ -17,27 +17,3 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
-
-// ─── Auto-patch flutter_local_notifications for API 35 ───────────────────────
-// bigPictureStyle.bigLargeIcon(null) is ambiguous when compiled against API 35
-// because both bigLargeIcon(Bitmap) and bigLargeIcon(Icon) match null.
-// This patch adds an explicit (Bitmap) cast to resolve the ambiguity.
-// Safe to remove when upgrading flutter_local_notifications to 17+.
-gradle.projectsEvaluated {
-    def flnProject = rootProject.findProject(':flutter_local_notifications')
-    if (flnProject != null) {
-        flnProject.tasks.matching { it.name =~ /compile.*JavaWithJavac/ }.configureEach { task ->
-            task.doFirst {
-                def pluginFile = file("${flnProject.projectDir}/src/main/java/com/dexterous/flutterlocalnotifications/FlutterLocalNotificationsPlugin.java")
-                if (pluginFile.exists()) {
-                    def content = pluginFile.text
-                    if (content.contains('.bigLargeIcon(null)')) {
-                        content = content.replace('.bigLargeIcon(null)', '.bigLargeIcon((android.graphics.Bitmap) null)')
-                        pluginFile.text = content
-                        println "[auto-patch] Patched FlutterLocalNotificationsPlugin.java for API 35 compatibility"
-                    }
-                }
-            }
-        }
-    }
-}

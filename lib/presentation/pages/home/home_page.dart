@@ -18,7 +18,7 @@ class _HomePageState extends State<HomePage> {
   static const Duration _autoScrollDuration = Duration(milliseconds: 650);
 
   final PageController _pageController = PageController(
-    viewportFraction: 0.78,
+    viewportFraction: 0.76,
     initialPage: _initialPage,
   );
   Timer? _autoScrollTimer;
@@ -211,8 +211,8 @@ class _HomePageState extends State<HomePage> {
                   }
                   final distance =
                       (page - index).abs().clamp(0.0, 1.0).toDouble();
-                  final scale = 1 - (distance * 0.13);
-                  final opacity = 1 - (distance * 0.24);
+                  final scale = 1 - (distance * 0.09);
+                  final opacity = 1 - (distance * 0.20);
                   return Transform.scale(
                     scale: scale,
                     alignment: Alignment.center,
@@ -221,7 +221,7 @@ class _HomePageState extends State<HomePage> {
                 },
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
                   child: _ProjectCard(
                     project: _projects[index % _projects.length],
                   ),
@@ -288,14 +288,15 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildServices(BuildContext context) {
     return SizedBox(
-      height: 140,
+      height: 112,
       child: ListView.separated(
         key: const Key('serviceList'),
+        clipBehavior: Clip.none,
         padding: const EdgeInsets.symmetric(horizontal: 22),
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: _services.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, __) => const SizedBox(width: 9),
         itemBuilder: (context, index) => _ServiceCard(
           service: _services[index],
           onPressed: _showComingSoon,
@@ -410,7 +411,10 @@ class _ProjectCard extends StatelessWidget {
 }
 
 class _ServiceCard extends StatelessWidget {
-  const _ServiceCard({required this.service, required this.onPressed});
+  const _ServiceCard({
+    required this.service,
+    required this.onPressed,
+  });
 
   final _ServiceData service;
   final VoidCallback onPressed;
@@ -418,52 +422,67 @@ class _ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return SizedBox(
-      width: 106,
-      child: Material(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(8, 11, 8, 9),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color:
-                    isDark ? const Color(0xFF353141) : const Color(0xFFF0EDF4),
-              ),
+    return Center(
+      child: SizedBox(
+        key: Key('serviceCardSurface_${service.titleKey}'),
+        width: 104,
+        height: 104,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: isDark ? const Color(0xFF353141) : const Color(0xFFF0EDF4),
             ),
-            child: Column(
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? service.color.withOpacity(0.16)
-                        : service.background,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Icon(service.icon, color: service.color, size: 30),
-                ),
-                const SizedBox(height: 7),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      context.tr(service.titleKey),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            height: 1.25,
-                          ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.18 : 0.075),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onPressed,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(7, 7, 7, 6),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 43,
+                      height: 43,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? service.color.withOpacity(0.16)
+                            : service.background,
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: Icon(service.icon, color: service.color, size: 25),
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          context.tr(service.titleKey),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.18,
+                                  ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

@@ -86,8 +86,11 @@ android {
 
     buildTypes {
         release {
-            // Release AAB/APK must be signed with your upload/release keystore.
-            signingConfig signingConfigs.release
+            // Configure a private Construction Plan key locally when needed.
+            // Without key.properties Gradle creates an unsigned release artifact.
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 

@@ -79,6 +79,7 @@ class _MaterialLibraryPageState extends State<MaterialLibraryPage> {
     final editRequested = await showModalBottomSheet<bool>(
       context: context,
       useSafeArea: true,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _ItemDetailsSheet(item: item),
     );
@@ -133,108 +134,93 @@ class _MaterialLibraryPageState extends State<MaterialLibraryPage> {
         _items.where((item) => item.type == LibraryItemType.labor).toList();
 
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
-          children: [
-            RefreshIndicator(
-              onRefresh: _loadItems,
-              child: CustomScrollView(
-                key: const Key('materialLibraryList'),
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
-                    sliver: SliverToBoxAdapter(child: _buildHeader()),
-                  ),
-                  if (_isLoading)
-                    const SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  else if (_hasLoadError)
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: _LibraryMessage(
-                        icon: Icons.storage_rounded,
-                        title: context.tr('library_load_error'),
-                        description: context.tr('library_load_error_detail'),
-                        actionLabel: context.tr('retry'),
-                        onAction: _loadItems,
-                      ),
-                    )
-                  else if (_items.isEmpty)
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: _LibraryMessage(
-                        icon: Icons.inventory_2_outlined,
-                        title: context.tr('library_empty_title'),
-                        description: context.tr('library_empty_description'),
-                        actionLabel: context.tr('library_add'),
-                        onAction: _openEditor,
-                      ),
-                    )
-                  else ...[
-                    _LibraryGroup(
-                      title: context.tr('library_material_group'),
-                      icon: Icons.inventory_2_rounded,
-                      color: const Color(0xFFEF9B36),
-                      items: materials,
-                      onTap: _openDetails,
-                      onEdit: _openEditor,
-                      onDelete: _confirmDelete,
-                    ),
-                    _LibraryGroup(
-                      title: context.tr('library_labor_group'),
-                      icon: Icons.engineering_rounded,
-                      color: const Color(0xFF4B91F1),
-                      items: labor,
-                      onTap: _openDetails,
-                      onEdit: _openEditor,
-                      onDelete: _confirmDelete,
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 210)),
-                  ],
-                ],
-              ),
-            ),
-            Positioned(
-              right: 20,
-              bottom: 126,
-              child: FloatingActionButton.extended(
-                key: const Key('addLibraryItemButton'),
-                heroTag: 'add-library-item',
-                onPressed: _openEditor,
-                elevation: 5,
-                icon: const Icon(Icons.add_rounded),
-                label: Text(context.tr('library_add_short')),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+        toolbarHeight: 60,
+        title: Text(
           context.tr('materials_title'),
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          key: const Key('materialLibraryAppBarTitle'),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
         ),
-        const SizedBox(height: 7),
-        Text(
-          context.tr('materials_description'),
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color,
-                height: 1.45,
-              ),
-        ),
-      ],
+      ),
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: _loadItems,
+            child: CustomScrollView(
+              key: const Key('materialLibraryList'),
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                if (_isLoading)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_hasLoadError)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _LibraryMessage(
+                      icon: Icons.storage_rounded,
+                      title: context.tr('library_load_error'),
+                      description: context.tr('library_load_error_detail'),
+                      actionLabel: context.tr('retry'),
+                      onAction: _loadItems,
+                    ),
+                  )
+                else if (_items.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _LibraryMessage(
+                      icon: Icons.inventory_2_outlined,
+                      title: context.tr('library_empty_title'),
+                      description: context.tr('library_empty_description'),
+                      actionLabel: context.tr('library_add'),
+                      onAction: _openEditor,
+                    ),
+                  )
+                else ...[
+                  _LibraryGroup(
+                    title: context.tr('library_material_group'),
+                    icon: Icons.inventory_2_rounded,
+                    color: const Color(0xFFEF9B36),
+                    items: materials,
+                    onTap: _openDetails,
+                    onEdit: _openEditor,
+                    onDelete: _confirmDelete,
+                  ),
+                  _LibraryGroup(
+                    title: context.tr('library_labor_group'),
+                    icon: Icons.engineering_rounded,
+                    color: const Color(0xFF4B91F1),
+                    items: labor,
+                    onTap: _openDetails,
+                    onEdit: _openEditor,
+                    onDelete: _confirmDelete,
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 230)),
+                ],
+              ],
+            ),
+          ),
+          Positioned(
+            right: 20,
+            bottom: MediaQuery.paddingOf(context).bottom + 136,
+            child: FloatingActionButton.extended(
+              key: const Key('addLibraryItemButton'),
+              heroTag: 'add-library-item',
+              onPressed: _openEditor,
+              elevation: 5,
+              icon: const Icon(Icons.add_rounded),
+              label: Text(context.tr('library_add_short')),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -614,6 +600,13 @@ class _ItemDetailsSheet extends StatelessWidget {
               label: context.tr('library_unit'),
               value: _localizedUnit(context, item.unit),
             ),
+            if (item.hasPieceDimensions)
+              _DetailRow(
+                label: context.tr('library_dimensions'),
+                value: '${_formatDimension(item.length!)} × '
+                    '${_formatDimension(item.width!)} × '
+                    '${_formatDimension(item.height!)} m',
+              ),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
@@ -692,6 +685,9 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
   late final TextEditingController _nameController;
   late final TextEditingController _priceController;
   late final TextEditingController _customUnitController;
+  late final TextEditingController _lengthController;
+  late final TextEditingController _widthController;
+  late final TextEditingController _heightController;
   late LibraryItemType _type;
   late String _selectedUnit;
   bool _isSaving = false;
@@ -710,6 +706,15 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
     _customUnitController = TextEditingController(
       text: _selectedUnit == 'custom' ? unit : '',
     );
+    _lengthController = TextEditingController(
+      text: _dimensionInput(item?.length),
+    );
+    _widthController = TextEditingController(
+      text: _dimensionInput(item?.width),
+    );
+    _heightController = TextEditingController(
+      text: _dimensionInput(item?.height),
+    );
   }
 
   @override
@@ -717,7 +722,34 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
     _nameController.dispose();
     _priceController.dispose();
     _customUnitController.dispose();
+    _lengthController.dispose();
+    _widthController.dispose();
+    _heightController.dispose();
     super.dispose();
+  }
+
+  void _selectType(LibraryItemType type) {
+    setState(() {
+      _type = type;
+      if (type == LibraryItemType.labor) _selectedUnit = 'm2';
+    });
+  }
+
+  Future<void> _chooseUnit() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _UnitPickerSheet(
+        units: const [..._presetUnits, 'custom'],
+        selectedUnit: _selectedUnit,
+      ),
+    );
+    if (selected != null && mounted) {
+      setState(() => _selectedUnit = selected);
+    }
   }
 
   Future<void> _submit() async {
@@ -731,6 +763,15 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
           ? _customUnitController.text.trim()
           : _selectedUnit,
       type: _type,
+      length: _selectedUnit == 'piece'
+          ? _parseDimension(_lengthController.text)
+          : null,
+      width: _selectedUnit == 'piece'
+          ? _parseDimension(_widthController.text)
+          : null,
+      height: _selectedUnit == 'piece'
+          ? _parseDimension(_heightController.text)
+          : null,
     );
     try {
       await widget.onSubmit(item);
@@ -813,7 +854,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
                             color: selected ? Colors.white : null,
                             fontWeight: FontWeight.w700,
                           ),
-                          onSelected: (_) => setState(() => _type = type),
+                          onSelected: (_) => _selectType(type),
                         ),
                       ),
                     );
@@ -862,33 +903,95 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
                   },
                 ),
                 const SizedBox(height: 14),
-                DropdownButtonFormField<String>(
+                InkWell(
                   key: const Key('libraryUnitField'),
-                  value: _selectedUnit,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    labelText: context.tr('library_unit'),
-                    prefixIcon: const Icon(Icons.straighten_rounded),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  items: [
-                    ..._presetUnits.map(
-                      (unit) => DropdownMenuItem(
-                        value: unit,
-                        child: Text(_localizedUnit(context, unit)),
+                  onTap: _chooseUnit,
+                  borderRadius: BorderRadius.circular(16),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: context.tr('library_unit'),
+                      prefixIcon: const Icon(Icons.straighten_rounded),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    DropdownMenuItem(
-                      value: 'custom',
-                      child: Text(context.tr('unit_custom')),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _selectedUnit == 'custom'
+                                ? context.tr('unit_custom')
+                                : _localizedUnit(context, _selectedUnit),
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        ),
+                        const Icon(Icons.keyboard_arrow_down_rounded),
+                      ],
                     ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) setState(() => _selectedUnit = value);
-                  },
+                  ),
                 ),
+                if (_selectedUnit == 'piece') ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.07),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.18),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          context.tr('library_piece_dimensions'),
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          context.tr('library_piece_dimensions_hint'),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    height: 1.4,
+                                  ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _DimensionField(
+                                key: const Key('libraryLengthField'),
+                                controller: _lengthController,
+                                label: context.tr('library_length'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _DimensionField(
+                                key: const Key('libraryWidthField'),
+                                controller: _widthController,
+                                label: context.tr('library_width'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _DimensionField(
+                                key: const Key('libraryHeightField'),
+                                controller: _heightController,
+                                label: context.tr('library_height'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 if (_selectedUnit == 'custom') ...[
                   const SizedBox(height: 14),
                   TextFormField(
@@ -945,6 +1048,129 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
   }
 }
 
+class _DimensionField extends StatelessWidget {
+  const _DimensionField({
+    super.key,
+    required this.controller,
+    required this.label,
+  });
+
+  final TextEditingController controller;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      textInputAction: TextInputAction.next,
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+      ],
+      decoration: InputDecoration(
+        labelText: label,
+        suffixText: 'm',
+        isDense: true,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+        errorMaxLines: 2,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(13)),
+      ),
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return context.tr('library_dimension_required');
+        }
+        final dimension = _parseDimension(value);
+        if (dimension == null || dimension <= 0) {
+          return context.tr('library_dimension_invalid');
+        }
+        return null;
+      },
+    );
+  }
+}
+
+class _UnitPickerSheet extends StatelessWidget {
+  const _UnitPickerSheet({
+    required this.units,
+    required this.selectedUnit,
+  });
+
+  final List<String> units;
+  final String selectedUnit;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SheetSurface(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.72,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(22, 8, 22, 0),
+              child: _SheetHandle(),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 0, 22, 12),
+              child: Text(
+                context.tr('library_choose_unit'),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+            ),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                itemCount: units.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 4),
+                itemBuilder: (context, index) {
+                  final unit = units[index];
+                  final selected = unit == selectedUnit;
+                  return Material(
+                    color: selected
+                        ? AppColors.primary.withOpacity(0.12)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(15),
+                    child: ListTile(
+                      key: Key('unitOption_$unit'),
+                      selected: selected,
+                      selectedColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      leading: Icon(
+                        unit == 'custom'
+                            ? Icons.edit_note_rounded
+                            : Icons.straighten_rounded,
+                      ),
+                      title: Text(
+                        unit == 'custom'
+                            ? context.tr('unit_custom')
+                            : _localizedUnit(context, unit),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      trailing: selected
+                          ? const Icon(
+                              Icons.check_circle_rounded,
+                              key: Key('selectedUnitIndicator'),
+                              color: AppColors.primary,
+                            )
+                          : null,
+                      onTap: () => Navigator.pop(context, unit),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SheetSurface extends StatelessWidget {
   const _SheetSurface({required this.child});
 
@@ -958,7 +1184,12 @@ class _SheetSurface extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      child: child,
+      child: SafeArea(
+        key: const Key('bottomSheetSafeArea'),
+        top: false,
+        minimum: const EdgeInsets.only(bottom: 12),
+        child: child,
+      ),
     );
   }
 }
@@ -1005,4 +1236,21 @@ String _formatPrice(BuildContext context, double value) {
     RegExp(r'\B(?=(\d{3})+(?!\d))'),
     (_) => separator,
   );
+}
+
+double? _parseDimension(String value) {
+  return double.tryParse(value.trim().replaceAll(',', '.'));
+}
+
+String _dimensionInput(double? value) {
+  if (value == null) return '';
+  return _formatDimension(value);
+}
+
+String _formatDimension(double value) {
+  if (value == value.roundToDouble()) return value.toInt().toString();
+  return value.toStringAsFixed(3).replaceFirst(RegExp(r'0+$'), '').replaceFirst(
+        RegExp(r'\.$'),
+        '',
+      );
 }

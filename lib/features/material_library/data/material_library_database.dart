@@ -13,7 +13,7 @@ class MaterialLibraryDatabase implements MaterialLibraryStore {
   static final MaterialLibraryDatabase instance = MaterialLibraryDatabase();
 
   static const _databaseName = 'construction_plan.db';
-  static const _databaseVersion = 1;
+  static const _databaseVersion = 2;
   static const _tableName = 'material_library_items';
 
   final DatabaseFactory _databaseFactory;
@@ -38,13 +38,29 @@ class MaterialLibraryDatabase implements MaterialLibraryStore {
               name TEXT NOT NULL,
               price REAL NOT NULL CHECK(price >= 0),
               unit TEXT NOT NULL,
-              type TEXT NOT NULL CHECK(type IN ('material', 'labor'))
+              type TEXT NOT NULL CHECK(type IN ('material', 'labor')),
+              length REAL,
+              width REAL,
+              height REAL
             )
           ''');
           await database.execute(
             'CREATE INDEX idx_${_tableName}_type_name '
             'ON $_tableName(type, name COLLATE NOCASE)',
           );
+        },
+        onUpgrade: (database, oldVersion, newVersion) async {
+          if (oldVersion < 2) {
+            await database.execute(
+              'ALTER TABLE $_tableName ADD COLUMN length REAL',
+            );
+            await database.execute(
+              'ALTER TABLE $_tableName ADD COLUMN width REAL',
+            );
+            await database.execute(
+              'ALTER TABLE $_tableName ADD COLUMN height REAL',
+            );
+          }
         },
       ),
     );

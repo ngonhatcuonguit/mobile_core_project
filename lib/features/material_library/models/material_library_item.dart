@@ -19,6 +19,9 @@ class MaterialLibraryItem {
     required this.price,
     required this.unit,
     required this.type,
+    this.length,
+    this.width,
+    this.height,
   });
 
   final int? id;
@@ -26,6 +29,12 @@ class MaterialLibraryItem {
   final double price;
   final String unit;
   final LibraryItemType type;
+  final double? length;
+  final double? width;
+  final double? height;
+
+  bool get hasPieceDimensions =>
+      unit == 'piece' && length != null && width != null && height != null;
 
   MaterialLibraryItem copyWith({
     int? id,
@@ -33,6 +42,9 @@ class MaterialLibraryItem {
     double? price,
     String? unit,
     LibraryItemType? type,
+    double? length,
+    double? width,
+    double? height,
   }) {
     return MaterialLibraryItem(
       id: id ?? this.id,
@@ -40,6 +52,9 @@ class MaterialLibraryItem {
       price: price ?? this.price,
       unit: unit ?? this.unit,
       type: type ?? this.type,
+      length: length ?? this.length,
+      width: width ?? this.width,
+      height: height ?? this.height,
     );
   }
 
@@ -50,6 +65,9 @@ class MaterialLibraryItem {
       'price': price,
       'unit': unit.trim(),
       'type': type.databaseValue,
+      'length': unit == 'piece' ? length : null,
+      'width': unit == 'piece' ? width : null,
+      'height': unit == 'piece' ? height : null,
     };
   }
 
@@ -60,6 +78,9 @@ class MaterialLibraryItem {
       price: (map['price'] as num).toDouble(),
       unit: map['unit'] as String,
       type: LibraryItemType.fromDatabaseValue(map['type'] as String),
+      length: (map['length'] as num?)?.toDouble(),
+      width: (map['width'] as num?)?.toDouble(),
+      height: (map['height'] as num?)?.toDouble(),
     );
   }
 }

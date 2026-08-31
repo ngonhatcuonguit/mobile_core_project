@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 12+ splash background: nền trắng + icon THP ở giữa -->
+<!-- Android 12+ splash background for Construction Plan. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@android:color/white" />
     <item>
@@ -8,4 +8,3 @@
             android:src="@mipmap/ic_launcher" />
     </item>
 </layer-list>
-
