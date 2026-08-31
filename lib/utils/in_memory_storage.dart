@@ -31,4 +31,3 @@ class InMemoryStorage implements Storage {
     _data.clear();
   }
 }
-

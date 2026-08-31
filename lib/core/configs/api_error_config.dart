@@ -111,4 +111,3 @@ class ApiErrorConfigs {
   /// Xoá tất cả config đã đăng ký (dùng cho testing).
   static void clear() => _configs.clear();
 }
-

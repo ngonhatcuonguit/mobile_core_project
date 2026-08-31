@@ -16,17 +16,20 @@ class AppLocalizations {
   Future<void> load() async {
     String jsonString = await rootBundle.loadString('lib/l10n/$locale.json');
     Map<String, dynamic> jsonMap = json.decode(jsonString);
-    _localizedStrings = jsonMap.map((key, value) => MapEntry(key, value.toString()));
+    _localizedStrings =
+        jsonMap.map((key, value) => MapEntry(key, value.toString()));
   }
 
   String translate(String key) {
     return _localizedStrings[key] ?? key;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -40,7 +43,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool shouldReload(covariant LocalizationsDelegate<AppLocalizations> old) => false;
+  bool shouldReload(covariant LocalizationsDelegate<AppLocalizations> old) =>
+      false;
 }
 
 /// Convenience extension: `context.tr('key')`

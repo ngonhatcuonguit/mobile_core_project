@@ -1,16 +1,40 @@
-# flutter_core_project
+# Construction Plan
 
-A new Flutter project.
+Ứng dụng Flutter hỗ trợ lập kế hoạch xây dựng, được tái cấu trúc từ phần core dùng chung của dự án cũ.
 
-## Getting Started
+## Tính năng hiện tại
 
-This project is a starting point for a Flutter application.
+- Home với carousel dự án và danh sách dịch vụ xây dựng.
+- Profile với tùy chọn tiếng Việt/English và Light/Dark mode.
+- Logo, launcher icon và splash screen của Construction Plan.
+- Dữ liệu minh họa được đóng gói cục bộ; không đăng nhập, không gọi API, không Firebase.
+- State ngôn ngữ và giao diện được lưu bằng `hydrated_bloc`.
 
-A few resources to get you started if this is your first Flutter project:
+## Chạy dự án
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+flutter pub get
+flutter run --flavor dev -t lib/main_dev.dart
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Build APK production:
+
+```bash
+./build-apk.sh prod release
+```
+
+Kiểm tra source:
+
+```bash
+flutter analyze
+flutter test
+```
+
+## Entry points
+
+- `lib/main.dart`: mặc định
+- `lib/main_dev.dart`: flavor dev, hiển thị debug banner
+- `lib/main_prod.dart`: flavor prod
+
+Android application ID: `com.constructionplan.app`  
+iOS bundle ID: `com.constructionplan.app`

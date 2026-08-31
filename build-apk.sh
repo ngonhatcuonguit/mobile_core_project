@@ -72,7 +72,6 @@ echo -e "${YELLOW}📥 Getting dependencies...${NC}"
 flutter pub get
 
 # Build APK
-# --dart-define=FLAVOR=dev/prod → firebase_options.dart chọn Firebase credentials đúng
 echo ""
 echo -e "${YELLOW}🏗️  Building APK...${NC}"
 echo -e "${YELLOW}Flavor: $FLAVOR | Build Type: $BUILD_TYPE${NC}"
@@ -81,7 +80,6 @@ echo ""
 flutter build apk \
     --flavor "$FLAVOR" \
     --"$BUILD_TYPE" \
-    --dart-define=FLAVOR="$FLAVOR" \
     -t "$ENTRY_POINT"
 
 # Show result

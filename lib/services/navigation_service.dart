@@ -17,4 +17,3 @@ class NavigationService {
   /// [BuildContext] của root navigator — dùng để show dialog toàn cục.
   static BuildContext? get context => navigatorKey.currentContext;
 }
-

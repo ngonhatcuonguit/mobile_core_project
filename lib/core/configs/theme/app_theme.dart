@@ -3,77 +3,72 @@ import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/core/configs/theme/app_text_styles.dart';
 
 class AppTheme {
-  static final lightTheme = ThemeData(
-    primaryColor: AppColors.primary,
-    scaffoldBackgroundColor: AppColors.lightBackground,
-    brightness: Brightness.light,
-    fontFamily: AppTextStyles.fontFamily,
+  AppTheme._();
 
-    textTheme: _buildTextTheme(Brightness.light),
+  static final lightTheme = _buildTheme(Brightness.light);
+  static final darkTheme = _buildTheme(Brightness.dark);
 
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: Colors.transparent,
-      contentPadding: const EdgeInsets.all(30),
-      hintStyle: AppTextStyles.hint.copyWith(color: AppColors.lightGrey),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: const BorderSide(color: Colors.white, width: 0.4),
+  static ThemeData _buildTheme(Brightness brightness) {
+    final isLight = brightness == Brightness.light;
+    final background =
+        isLight ? AppColors.lightBackground : AppColors.darkBackground;
+    final surface = isLight ? AppColors.lightSurface : AppColors.darkSurface;
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      fontFamily: AppTextStyles.fontFamily,
+      scaffoldBackgroundColor: background,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primary,
+        brightness: brightness,
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        surface: surface,
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: const BorderSide(color: Colors.black, width: 0.4),
-      ),
-    ),
-
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
+      textTheme: _buildTextTheme(brightness),
+      appBarTheme: AppBarTheme(
+        centerTitle: false,
         elevation: 0,
-        textStyle: AppTextStyles.button,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        scrolledUnderElevation: 0,
+        backgroundColor: background,
+        foregroundColor: isLight ? AppColors.lightText : AppColors.darkText,
       ),
-    ),
-  );
-
-  static final darkTheme = ThemeData(
-    primaryColor: AppColors.primary,
-    scaffoldBackgroundColor: AppColors.darkBackground,
-    brightness: Brightness.dark,
-    fontFamily: AppTextStyles.fontFamily,
-
-    textTheme: _buildTextTheme(Brightness.dark),
-
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: Colors.transparent,
-      contentPadding: const EdgeInsets.all(30),
-      hintStyle: AppTextStyles.hint.copyWith(color: AppColors.lightGrey),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: const BorderSide(color: Colors.white, width: 0.4),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: const BorderSide(color: Colors.white, width: 0.4),
-      ),
-    ),
-
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
+      cardTheme: CardTheme(
+        color: surface,
         elevation: 0,
-        textStyle: AppTextStyles.button,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
-    ),
-  );
+      dividerColor: isLight ? const Color(0xFFECEAF1) : const Color(0xFF34313F),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor:
+            isLight ? const Color(0xFF252337) : const Color(0xFFF2EEFF),
+        contentTextStyle: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          color: isLight ? Colors.white : AppColors.lightText,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          textStyle: AppTextStyles.button,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        ),
+      ),
+    );
+  }
 
   // ── TextTheme đầy đủ theo Material 3 naming ─────────────────────────────────
   static TextTheme _buildTextTheme(Brightness brightness) {
     final isLight = brightness == Brightness.light;
-    final defaultColor = isLight ? const Color(0xFF1A1A1A) : Colors.white;
-    final subtleColor = isLight ? const Color(0xFF6B7280) : const Color(0xFFB0B0B0);
+    final defaultColor = isLight ? AppColors.lightText : AppColors.darkText;
+    final subtleColor = isLight ? AppColors.muted : const Color(0xFFAAA7B8);
 
     return TextTheme(
       displayLarge: AppTextStyles.h1.copyWith(color: defaultColor),

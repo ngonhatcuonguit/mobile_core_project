@@ -1,4 +1,4 @@
-package com.digital.thp.my_thp
+package com.constructionplan.app
 
 import io.flutter.embedding.android.FlutterActivity
 

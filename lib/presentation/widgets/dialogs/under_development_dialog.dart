@@ -21,7 +21,8 @@ class _UnderDevelopmentDialog extends StatelessWidget {
       backgroundColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
       title: Row(
         children: [
-          const Icon(Icons.construction_rounded, color: Color(0xFFFFA500), size: 24),
+          const Icon(Icons.construction_rounded,
+              color: Color(0xFFFFA500), size: 24),
           const SizedBox(width: 12),
           Text(
             'Chức năng đang được phát triển',
@@ -57,4 +58,3 @@ class _UnderDevelopmentDialog extends StatelessWidget {
     );
   }
 }
-

@@ -2,8 +2,6 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id "com.google.gms.google-services"
-    id "com.google.firebase.crashlytics"
 }
 
 def localProperties = new Properties()
@@ -31,7 +29,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace "com.digital.thp.my_thp"
+    namespace "com.constructionplan.app"
     compileSdk 36
     ndkVersion "28.2.13676358"
 
@@ -51,7 +49,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.digital.thp.my_thp"
+        applicationId "com.constructionplan.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
@@ -67,11 +65,11 @@ android {
             dimension "environment"
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
-            resValue "string", "app_name", "My THP (DEV)"
+            resValue "string", "app_name", "Construction Plan DEV"
         }
         prod {
             dimension "environment"
-            resValue "string", "app_name", "My THP"
+            resValue "string", "app_name", "Construction Plan"
         }
     }
 

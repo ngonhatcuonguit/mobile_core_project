@@ -1,8 +1,9 @@
 class AppImages {
+  AppImages._();
+
   static const String basePath = 'assets/images/';
-
-  static const String introBG = '${basePath}intro_bg.png';
-  static const String chooseModeBG = '${basePath}choose_mode.png';
-  static const String auth_BG = '${basePath}authBG.png';
-
+  static const String logo = '${basePath}app_logo.png';
+  static const String launcherIcon = '${basePath}app_launcher_icon.png';
+  static const String modernTownhouse =
+      '${basePath}projects/modern_townhouse.jpg';
 }

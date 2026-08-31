@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_core_project/core/configs/assets/app_vectors.dart';
-import 'package:flutter_core_project/services/localization_service.dart';
-import 'package:flutter_core_project/injection_container.dart';
-import 'package:flutter_core_project/presentation/bloc/timesheet/remote/remote_timesheet_bloc.dart';
+import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/presentation/pages/home/home_page.dart';
-import 'package:flutter_core_project/presentation/pages/service/service_page.dart';
-import 'package:flutter_core_project/presentation/pages/timesheet/timesheet_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
+import 'package:flutter_core_project/services/localization_service.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -19,106 +13,37 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-  final _timesheetController = TimesheetPageController();
 
-  late final List<Widget> _pages;
+  static const _pages = [HomePage(), ProfilePage()];
 
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      const HomePage(),
-      BlocProvider<RemoteTimesheetBloc>.value(
-        value: sl<RemoteTimesheetBloc>(),
-        child: TimesheetPage(controller: _timesheetController),
-      ),
-      const ServicePage(),
-      const ProfilePage(),
-    ];
+  void _showComingSoon() {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(context.tr('coming_soon'))));
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: isDarkMode ? const Color(0xFF1C1C1C) : Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              if (_currentIndex == 1 && index != 1) {
-                _timesheetController.hideTooltip();
-              }
-              setState(() => _currentIndex = index);
-            },
-            type: BottomNavigationBarType.fixed,
-            backgroundColor:
-                isDarkMode ? const Color(0xFF1C1C1C) : Colors.white,
-            selectedItemColor: const Color(0xFF42C83C),
-            unselectedItemColor:
-                isDarkMode ? Colors.grey[600] : Colors.grey[400],
-            showSelectedLabels: true,
-            showUnselectedLabels: true,
-            selectedLabelStyle: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-            ),
-            elevation: 0,
-            items: [
-              _buildNavItem(
-                activeIcon: AppVectors.icHomeActive,
-                inactiveIcon: AppVectors.icHome,
-                label: context.tr('nav_home'),
-                isActive: _currentIndex == 0,
-                isDark: isDarkMode,
+      extendBody: true,
+      body: IndexedStack(index: _currentIndex, children: _pages),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+        child: SizedBox(
+          height: 104,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.bottomCenter,
+            children: [
+              _NavigationPanel(
+                currentIndex: _currentIndex,
+                onHomePressed: () => setState(() => _currentIndex = 0),
+                onProfilePressed: () => setState(() => _currentIndex = 1),
               ),
-              _buildNavItem(
-                activeIcon: AppVectors.icDelivery,
-                inactiveIcon: AppVectors.icDelivery,
-                label: context.tr('nav_timesheet'),
-                isActive: _currentIndex == 1,
-                isDark: isDarkMode,
-              ),
-              _buildNavItem(
-                activeIcon: 'assets/vectors/ic_edit_document.svg',
-                inactiveIcon: 'assets/vectors/ic_edit_document.svg',
-                label: context.tr('nav_service'),
-                isActive: _currentIndex == 2,
-                isDark: isDarkMode,
-              ),
-              _buildNavItem(
-                activeIcon: AppVectors.icProfileActive,
-                inactiveIcon: AppVectors.icProfile,
-                label: context.tr('nav_profile'),
-                isActive: _currentIndex == 3,
-                isDark: isDarkMode,
+              Positioned(
+                top: 0,
+                child: _AddProjectButton(onPressed: _showComingSoon),
               ),
             ],
           ),
@@ -126,25 +51,166 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
+}
 
-  BottomNavigationBarItem _buildNavItem({
-    required String activeIcon,
-    required String inactiveIcon,
-    required String label,
-    required bool isActive,
-    required bool isDark,
-  }) {
-    return BottomNavigationBarItem(
-      icon: SvgPicture.asset(
-        isActive ? activeIcon : inactiveIcon,
-        width: 26,
-        height: 26,
-        // ignore: deprecated_member_use
-        color: isActive
-            ? const Color(0xFF42C83C)
-            : (isDark ? Colors.grey[600]! : Colors.grey[400]!),
+class _NavigationPanel extends StatelessWidget {
+  const _NavigationPanel({
+    required this.currentIndex,
+    required this.onHomePressed,
+    required this.onProfilePressed,
+  });
+
+  final int currentIndex;
+  final VoidCallback onHomePressed;
+  final VoidCallback onProfilePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      height: 82,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: isDark ? const Color(0xFF353141) : const Color(0xFFF0EDF5),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.28 : 0.08),
+            blurRadius: 28,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      label: label,
+      child: Row(
+        children: [
+          Expanded(
+            child: _NavigationItem(
+              key: const Key('homeNavigationButton'),
+              icon: Icons.home_work_outlined,
+              selectedIcon: Icons.home_work_rounded,
+              label: context.tr('nav_home'),
+              selected: currentIndex == 0,
+              onPressed: onHomePressed,
+            ),
+          ),
+          const SizedBox(width: 92),
+          Expanded(
+            child: _NavigationItem(
+              key: const Key('profileNavigationButton'),
+              icon: Icons.person_outline_rounded,
+              selectedIcon: Icons.person_rounded,
+              label: context.tr('nav_profile'),
+              selected: currentIndex == 1,
+              onPressed: onProfilePressed,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NavigationItem extends StatelessWidget {
+  const _NavigationItem({
+    super.key,
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected
+        ? AppColors.primary
+        : Theme.of(context).textTheme.bodySmall?.color;
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(selected ? selectedIcon : icon, color: color, size: 25),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: color,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AddProjectButton extends StatelessWidget {
+  const _AddProjectButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: context.tr('nav_add_project'),
+      child: Column(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              key: const Key('addProjectButton'),
+              onTap: onPressed,
+              customBorder: const CircleBorder(),
+              child: Ink(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF9B75FF), AppColors.primary],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.34),
+                      blurRadius: 22,
+                      offset: const Offset(0, 9),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.add_rounded,
+                    color: Colors.white, size: 40),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            context.tr('nav_add_project'),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }

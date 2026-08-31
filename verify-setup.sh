@@ -197,30 +197,10 @@ check_project_files() {
         print_warn "pubspec.lock not found (will be created by flutter pub get)"
     fi
 
-    # Check env files
-    if [ -f ".env.dev" ]; then
-        print_success ".env.dev found"
+    if [ -f "assets/images/projects/modern_townhouse.jpg" ]; then
+        print_success "Local project artwork found"
     else
-        print_warn ".env.dev not found"
-    fi
-
-    if [ -f ".env.prod" ]; then
-        print_success ".env.prod found"
-    else
-        print_warn ".env.prod not found"
-    fi
-
-    # Check Firebase files
-    if [ -f "android/app/google-services.json" ]; then
-        print_success "android/app/google-services.json found"
-    else
-        print_warn "android/app/google-services.json NOT found (download from Firebase Console)"
-    fi
-
-    if [ -f "ios/Runner/GoogleService-Info.plist" ]; then
-        print_success "ios/Runner/GoogleService-Info.plist found"
-    else
-        print_warn "ios/Runner/GoogleService-Info.plist NOT found (download from Firebase Console)"
+        print_error "Local project artwork is missing"
     fi
 }
 
@@ -249,7 +229,7 @@ main() {
     echo -e "${BLUE}"
     echo "╔═══════════════════════════════════════════════════════════════╗"
     echo "║   Flutter Project Setup Verification                          ║"
-    echo "║   Project: Flutter Core Project - My THP                       ║"
+    echo "║   Project: Construction Plan                                  ║"
     echo "║   Date: $(date '+%Y-%m-%d %H:%M:%S')                                      ║"
     echo "╚═══════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"

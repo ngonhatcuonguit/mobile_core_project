@@ -25,7 +25,7 @@ class ThemeCubit extends HydratedCubit<ThemeMode> {
       case 'system':
         return ThemeMode.system;
       default:
-        return ThemeMode.light;  // mặc định light mode
+        return ThemeMode.light; // mặc định light mode
     }
   }
 

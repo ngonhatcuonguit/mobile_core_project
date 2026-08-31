@@ -1,5 +1,5 @@
 name: flutter_core_project
-description: A new Flutter project.
+description: Construction Plan mobile application.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.5+1
 
@@ -10,63 +10,16 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-
-  #State Management
-  bloc: ^8.1.1
-  #comparing dart objects
-  equatable: ^2.0.5
-  repository:
-
   cupertino_icons: ^1.0.2
-  http: ^0.13.5
-  shared_preferences: ^2.0.6
-  flutter_svg: ^2.0.9
-  flutter_bloc:
-  hydrated_bloc:
-  path_provider:
-  dio:
-  #make request to api
-  retrofit:
-
-  json_annotation:
-  json_serializable:
-
-  flutter_dotenv:
-
-  pretty_dio_logger:
-  #Service locator
-  get_it:
-  #Date format
-  intl:
-  #Database
-  floor:
-  #Hooks
-  flutter_hooks:
-  #cached image
-  cached_network_image:
-  #Render exam question/answer HTML
-  flutter_html: ^3.0.0-beta.2
-  #Network connectivity
-  connectivity_plus: ^5.0.0
-
-  # Firebase — versions compatible with Flutter 3.19 / Dart 3.3
-  firebase_core: ^2.32.0
-  firebase_messaging: ^14.9.4
-  firebase_analytics: ^10.10.7
-  firebase_crashlytics: ^3.5.7
-  flutter_local_notifications: ^16.3.3
+  flutter_bloc: ^8.1.6
+  hydrated_bloc: ^9.1.5
+  path_provider: ^2.1.4
   flutter_native_splash: ^2.4.0
-  shimmer: ^3.0.0
-  timezone: ^0.9.2
-  url_launcher:
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-  json_serializable:
-  build_runner:
-  retrofit_generator:
 
 flutter:
 
@@ -74,11 +27,10 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/projects/
     - assets/vectors/
     - assets/fonts/
     - lib/l10n/
-    - .env.dev
-    - .env.prod
 
   fonts:
     # Be Vietnam Pro — hỗ trợ đầy đủ tiếng Việt & tiếng Anh
