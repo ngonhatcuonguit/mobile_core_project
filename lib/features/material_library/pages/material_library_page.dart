@@ -1,54 +1,24 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
-import 'package:flutter_core_project/features/material_library/data/material_library_store.dart';
-import 'package:flutter_core_project/features/material_library/models/material_library_item.dart';
+import 'package:flutter_core_project/features/material_library/domain/entities/material_library_item.dart';
+import 'package:flutter_core_project/features/material_library/presentation/bloc/material_library_cubit.dart';
+import 'package:flutter_core_project/features/material_library/presentation/bloc/material_library_state.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
 class MaterialLibraryPage extends StatefulWidget {
-  const MaterialLibraryPage({
-    super.key,
-    required this.store,
-  });
-
-  final MaterialLibraryStore store;
+  const MaterialLibraryPage({super.key});
 
   @override
   State<MaterialLibraryPage> createState() => _MaterialLibraryPageState();
 }
 
 class _MaterialLibraryPageState extends State<MaterialLibraryPage> {
-  List<MaterialLibraryItem> _items = const [];
-  bool _isLoading = true;
-  bool _hasLoadError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadItems();
-  }
-
   Future<void> _loadItems() async {
-    if (mounted) {
-      setState(() {
-        _isLoading = true;
-        _hasLoadError = false;
-      });
-    }
-    try {
-      final items = await widget.store.getAll();
-      if (!mounted) return;
-      setState(() {
-        _items = items;
-        _isLoading = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _hasLoadError = true;
-      });
-    }
+    await context.read<MaterialLibraryCubit>().load();
   }
 
   Future<void> _openEditor([MaterialLibraryItem? item]) async {
@@ -61,17 +31,14 @@ class _MaterialLibraryPageState extends State<MaterialLibraryPage> {
       builder: (sheetContext) => _ItemEditorSheet(
         initialItem: item,
         onSubmit: (draft) async {
-          if (isEditing) {
-            await widget.store.update(draft.copyWith(id: item.id));
-          } else {
-            await widget.store.create(draft);
-          }
+          await context.read<MaterialLibraryCubit>().save(
+                isEditing ? draft.copyWith(id: item.id) : draft,
+                isEditing: isEditing,
+              );
         },
       ),
     );
     if (saved != true || !mounted) return;
-    await _loadItems();
-    if (!mounted) return;
     _showMessage(isEditing ? 'library_updated' : 'library_created');
   }
 
@@ -110,10 +77,9 @@ class _MaterialLibraryPageState extends State<MaterialLibraryPage> {
         ],
       ),
     );
-    if (confirmed != true || item.id == null) return;
+    if (confirmed != true || item.id == null || !mounted) return;
     try {
-      await widget.store.delete(item.id!);
-      await _loadItems();
+      await context.read<MaterialLibraryCubit>().delete(item.id!);
       if (mounted) _showMessage('library_deleted');
     } catch (_) {
       if (mounted) _showMessage('library_save_error');
@@ -128,99 +94,112 @@ class _MaterialLibraryPageState extends State<MaterialLibraryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final materials =
-        _items.where((item) => item.type == LibraryItemType.material).toList();
-    final labor =
-        _items.where((item) => item.type == LibraryItemType.labor).toList();
+    return BlocBuilder<MaterialLibraryCubit, MaterialLibraryState>(
+      builder: (context, state) {
+        final items = state.items;
+        final isLoading = state.status == MaterialLibraryStatus.loading &&
+            state.items.isEmpty;
+        final hasLoadError = state.status == MaterialLibraryStatus.failure &&
+            state.items.isEmpty;
+        final materials = items
+            .where((item) => item.type == LibraryItemType.material)
+            .toList();
+        final labor =
+            items.where((item) => item.type == LibraryItemType.labor).toList();
 
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        toolbarHeight: 60,
-        title: Text(
-          context.tr('materials_title'),
-          key: const Key('materialLibraryAppBarTitle'),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
+        return Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            centerTitle: true,
+            toolbarHeight: 60,
+            title: Text(
+              context.tr('materials_title'),
+              key: const Key('materialLibraryAppBarTitle'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+          ),
+          body: Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: _loadItems,
+                child: CustomScrollView(
+                  key: const Key('materialLibraryList'),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    if (isLoading)
+                      const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (hasLoadError)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _LibraryMessage(
+                          icon: Icons.storage_rounded,
+                          title: context.tr('library_load_error'),
+                          description: context.tr('library_load_error_detail'),
+                          actionLabel: context.tr('retry'),
+                          onAction: _loadItems,
+                        ),
+                      )
+                    else if (items.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _LibraryMessage(
+                          icon: Icons.inventory_2_outlined,
+                          title: context.tr('library_empty_title'),
+                          description: context.tr('library_empty_description'),
+                          actionLabel: context.tr('library_add'),
+                          onAction: _openEditor,
+                        ),
+                      )
+                    else ...[
+                      _LibraryGroup(
+                        title: context.tr('library_material_group'),
+                        icon: Icons.inventory_2_rounded,
+                        color: const Color(0xFFEF9B36),
+                        items: materials,
+                        onTap: _openDetails,
+                        onEdit: _openEditor,
+                        onDelete: _confirmDelete,
+                      ),
+                      _LibraryGroup(
+                        title: context.tr('library_labor_group'),
+                        icon: Icons.engineering_rounded,
+                        color: const Color(0xFF4B91F1),
+                        items: labor,
+                        onTap: _openDetails,
+                        onEdit: _openEditor,
+                        onDelete: _confirmDelete,
+                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 230)),
+                    ],
+                  ],
+                ),
               ),
-        ),
-      ),
-      body: Stack(
-        children: [
-          RefreshIndicator(
-            onRefresh: _loadItems,
-            child: CustomScrollView(
-              key: const Key('materialLibraryList'),
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                if (_isLoading)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (_hasLoadError)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: _LibraryMessage(
-                      icon: Icons.storage_rounded,
-                      title: context.tr('library_load_error'),
-                      description: context.tr('library_load_error_detail'),
-                      actionLabel: context.tr('retry'),
-                      onAction: _loadItems,
-                    ),
-                  )
-                else if (_items.isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: _LibraryMessage(
-                      icon: Icons.inventory_2_outlined,
-                      title: context.tr('library_empty_title'),
-                      description: context.tr('library_empty_description'),
-                      actionLabel: context.tr('library_add'),
-                      onAction: _openEditor,
-                    ),
-                  )
-                else ...[
-                  _LibraryGroup(
-                    title: context.tr('library_material_group'),
-                    icon: Icons.inventory_2_rounded,
-                    color: const Color(0xFFEF9B36),
-                    items: materials,
-                    onTap: _openDetails,
-                    onEdit: _openEditor,
-                    onDelete: _confirmDelete,
-                  ),
-                  _LibraryGroup(
-                    title: context.tr('library_labor_group'),
-                    icon: Icons.engineering_rounded,
-                    color: const Color(0xFF4B91F1),
-                    items: labor,
-                    onTap: _openDetails,
-                    onEdit: _openEditor,
-                    onDelete: _confirmDelete,
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 230)),
-                ],
-              ],
-            ),
+              Positioned(
+                right: 20,
+                bottom: math.max(
+                  12,
+                  MediaQuery.paddingOf(context).bottom - 12,
+                ),
+                child: FloatingActionButton.extended(
+                  key: const Key('addLibraryItemButton'),
+                  heroTag: 'add-library-item',
+                  onPressed: _openEditor,
+                  elevation: 5,
+                  icon: const Icon(Icons.add_rounded),
+                  label: Text(context.tr('library_add_short')),
+                ),
+              ),
+            ],
           ),
-          Positioned(
-            right: 20,
-            bottom: MediaQuery.paddingOf(context).bottom + 136,
-            child: FloatingActionButton.extended(
-              key: const Key('addLibraryItemButton'),
-              heroTag: 'add-library-item',
-              onPressed: _openEditor,
-              elevation: 5,
-              icon: const Icon(Icons.add_rounded),
-              label: Text(context.tr('library_add_short')),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

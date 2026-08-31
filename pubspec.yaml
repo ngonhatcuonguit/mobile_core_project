@@ -17,12 +17,22 @@ dependencies:
   flutter_native_splash: ^2.4.0
   sqflite: ^2.3.3+1
   path: ^1.9.0
+  dio: ^5.11.0
+  equatable: ^2.1.0
+  get_it: ^9.2.1
+  shared_preferences: ^2.5.5
+  pretty_dio_logger: ^1.4.0
+  firebase_core: ^4.14.0
+  firebase_messaging: ^16.6.0
+  flutter_local_notifications: ^22.3.0
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
   sqflite_common_ffi: ^2.3.3
+  bloc_test: ^9.1.7
 
 flutter:
 
@@ -34,6 +44,8 @@ flutter:
     - assets/vectors/
     - assets/fonts/
     - lib/l10n/
+    - .env.dev
+    - .env.prod
 
   fonts:
     # Be Vietnam Pro — hỗ trợ đầy đủ tiếng Việt & tiếng Anh

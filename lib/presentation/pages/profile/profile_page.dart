@@ -84,8 +84,8 @@ class _ProfileHeader extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? const [Color(0xFF2E2850), Color(0xFF1F1C2B)]
-              : const [Color(0xFFEDE7FF), Color(0xFFF9F7FF)],
+              ? const [Color(0xFF123D42), Color(0xFF1A282D)]
+              : const [Color(0xFFDDF8F6), Color(0xFFF6FCFC)],
         ),
       ),
       child: Row(

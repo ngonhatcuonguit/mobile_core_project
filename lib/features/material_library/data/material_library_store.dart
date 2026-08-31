@@ -1,4 +1,4 @@
-import 'package:flutter_core_project/features/material_library/models/material_library_item.dart';
+import 'package:flutter_core_project/features/material_library/domain/entities/material_library_item.dart';
 
 abstract class MaterialLibraryStore {
   Future<List<MaterialLibraryItem>> getAll();

@@ -112,3 +112,14 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
     implementation 'androidx.multidex:multidex:2.0.1'
 }
+
+// Firebase credentials are environment-specific and intentionally not committed.
+// Apply Google Services only when a matching file has been provided locally.
+def firebaseConfigFiles = [
+    "google-services.json",
+    "src/dev/google-services.json",
+    "src/prod/google-services.json"
+]
+if (firebaseConfigFiles.any { file(it).exists() }) {
+    apply plugin: "com.google.gms.google-services"
+}

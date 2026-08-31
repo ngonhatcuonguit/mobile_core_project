@@ -1,15 +1,20 @@
-class BaseResponse {
-  BaseResponse({this.success, this.message, this.data});
+class BaseResponse<T> {
+  const BaseResponse({this.success, this.message, this.data});
 
   final bool? success;
   final String? message;
-  final dynamic data;
+  final T? data;
 
-  factory BaseResponse.fromJson(Map<String, dynamic> json) => BaseResponse(
-        success: json['success'],
-        message: json['message'],
-        data: json['data'],
-      );
+  factory BaseResponse.fromJson(
+    Map<String, dynamic> json,
+    T Function(Object? json) decode,
+  ) {
+    return BaseResponse<T>(
+      success: json['success'] as bool?,
+      message: json['message']?.toString(),
+      data: json['data'] == null ? null : decode(json['data']),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'success': success,

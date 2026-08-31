@@ -33,6 +33,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 .tmp/
+.project_pub_cache/
+.project_cocoapods/
 /build/
 
 # Symbolication related
@@ -47,6 +49,10 @@ app.*.map.json
 /android/app/release
 /android/app/android/
 /android/key.properties
+/android/app/google-services.json
+/android/app/src/dev/google-services.json
+/android/app/src/prod/google-services.json
+/ios/Runner/GoogleService-Info.plist
 *.jks
 *.keystore
 .hotswan/

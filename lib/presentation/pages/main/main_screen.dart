@@ -1,52 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
-import 'package:flutter_core_project/features/material_library/data/material_library_store.dart';
-import 'package:flutter_core_project/features/material_library/data/material_library_store_factory.dart';
 import 'package:flutter_core_project/features/material_library/pages/material_library_page.dart';
 import 'package:flutter_core_project/presentation/pages/home/home_page.dart';
+import 'package:flutter_core_project/presentation/pages/main/bloc/main_navigation_cubit.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({
-    super.key,
-    this.materialLibraryStore,
-  });
+class MainScreen extends StatelessWidget {
+  const MainScreen({super.key});
 
-  final MaterialLibraryStore? materialLibraryStore;
+  static const List<Widget> _pages = [
+    HomePage(),
+    MaterialLibraryPage(),
+    _LocalToolPage(
+      titleKey: 'quantity_title',
+      descriptionKey: 'quantity_description',
+      icon: Icons.calculate_outlined,
+    ),
+    ProfilePage(),
+  ];
 
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      const HomePage(),
-      MaterialLibraryPage(
-        store:
-            widget.materialLibraryStore ?? MaterialLibraryStoreFactory.create(),
-      ),
-      const _LocalToolPage(
-        titleKey: 'quantity_title',
-        descriptionKey: 'quantity_description',
-        icon: Icons.calculate_outlined,
-      ),
-      const ProfilePage(),
-    ];
-  }
-
-  void _selectPage(int index) {
+  void _selectPage(BuildContext context, int index) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    setState(() => _currentIndex = index);
+    context.read<MainNavigationCubit>().select(index);
   }
 
-  void _showComingSoon() {
+  void _showComingSoon(BuildContext context) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(context.tr('coming_soon'))));
@@ -54,30 +34,36 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        minimum: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-        child: SizedBox(
-          height: 106,
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.bottomCenter,
-            children: [
-              _NavigationPanel(
-                currentIndex: _currentIndex,
-                onSelected: _selectPage,
+    return BlocBuilder<MainNavigationCubit, int>(
+      builder: (context, currentIndex) {
+        return Scaffold(
+          extendBody: true,
+          body: IndexedStack(index: currentIndex, children: _pages),
+          bottomNavigationBar: SafeArea(
+            top: false,
+            minimum: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+            child: SizedBox(
+              height: 106,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.bottomCenter,
+                children: [
+                  _NavigationPanel(
+                    currentIndex: currentIndex,
+                    onSelected: (index) => _selectPage(context, index),
+                  ),
+                  Positioned(
+                    top: 0,
+                    child: _AddProjectButton(
+                      onPressed: () => _showComingSoon(context),
+                    ),
+                  ),
+                ],
               ),
-              Positioned(
-                top: 0,
-                child: _AddProjectButton(onPressed: _showComingSoon),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -309,7 +295,7 @@ class _AddProjectButton extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF9B75FF), AppColors.primary],
+                  colors: [Color(0xFF45D4CF), AppColors.primary],
                 ),
               ),
               child: InkWell(

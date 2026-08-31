@@ -1,5 +1,6 @@
 import 'package:flutter_core_project/features/material_library/data/material_library_store.dart';
-import 'package:flutter_core_project/features/material_library/models/material_library_item.dart';
+import 'package:flutter_core_project/features/material_library/data/models/material_library_item_model.dart';
+import 'package:flutter_core_project/features/material_library/domain/entities/material_library_item.dart';
 import 'package:path/path.dart' as path_util;
 import 'package:sqflite/sqflite.dart';
 
@@ -74,14 +75,14 @@ class MaterialLibraryDatabase implements MaterialLibraryStore {
       _tableName,
       orderBy: 'type ASC, name COLLATE NOCASE ASC',
     );
-    return rows.map(MaterialLibraryItem.fromDatabaseMap).toList();
+    return rows.map(MaterialLibraryItemModel.fromDatabaseMap).toList();
   }
 
   @override
   Future<MaterialLibraryItem> create(MaterialLibraryItem item) async {
     final id = await (await _db).insert(
       _tableName,
-      item.toDatabaseMap(),
+      MaterialLibraryItemModel.fromEntity(item).toDatabaseMap(),
       conflictAlgorithm: ConflictAlgorithm.abort,
     );
     return item.copyWith(id: id);
@@ -95,7 +96,7 @@ class MaterialLibraryDatabase implements MaterialLibraryStore {
     }
     final changed = await (await _db).update(
       _tableName,
-      item.toDatabaseMap(),
+      MaterialLibraryItemModel.fromEntity(item).toDatabaseMap(),
       where: 'id = ?',
       whereArgs: [id],
       conflictAlgorithm: ConflictAlgorithm.abort,

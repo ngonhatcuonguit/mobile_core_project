@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/app/construction_plan_app.dart';
+import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/features/material_library/data/material_library_store.dart';
+import 'package:flutter_core_project/features/material_library/presentation/bloc/material_library_cubit.dart';
+import 'package:flutter_core_project/features/material_library/presentation/bloc/material_library_state.dart';
+import 'package:flutter_core_project/presentation/pages/main/bloc/main_navigation_cubit.dart';
 import 'package:flutter_core_project/utils/in_memory_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -38,6 +43,13 @@ void main() {
       const Size(104, 104),
     );
     expect(find.byKey(const Key('notchedNavigationPanel')), findsOneWidget);
+    expect(AppColors.primary, const Color(0xFF18C0C1));
+
+    final appContext = tester.element(find.byType(IndexedStack));
+    final navigationCubit = appContext.read<MainNavigationCubit>();
+    final materialCubit = appContext.read<MaterialLibraryCubit>();
+    expect(navigationCubit.state, 0);
+    expect(materialCubit.state.status, MaterialLibraryStatus.success);
 
     await tester.pump(const Duration(seconds: 5));
     await tester.pump(const Duration(milliseconds: 700));
@@ -52,15 +64,15 @@ void main() {
 
     await tester.tap(find.byKey(const Key('materialsNavigationButton')));
     await tester.pumpAndSettle();
+    expect(navigationCubit.state, 1);
     expect(find.text('Thư viện vật liệu & nhân công'), findsOneWidget);
     expect(find.text('Thư viện đang trống'), findsOneWidget);
     expect(find.byType(BackButton), findsNothing);
-    expect(
-      tester.getBottomLeft(find.byKey(const Key('addLibraryItemButton'))).dy,
-      lessThan(
-        tester.getTopLeft(find.byKey(const Key('notchedNavigationPanel'))).dy,
-      ),
-    );
+    final fabBottom =
+        tester.getBottomLeft(find.byKey(const Key('addLibraryItemButton'))).dy;
+    final navigationTop =
+        tester.getTopLeft(find.byKey(const Key('notchedNavigationPanel'))).dy;
+    expect(navigationTop - fabBottom, inInclusiveRange(0, 12));
 
     await tester.tap(find.byKey(const Key('addLibraryItemButton')));
     await tester.pumpAndSettle();

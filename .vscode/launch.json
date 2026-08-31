@@ -7,7 +7,9 @@
       "type": "dart",
       "program": "lib/main_dev.dart",
       "env": {
-        "TMPDIR": "${workspaceFolder}/.tmp"
+        "TMPDIR": "${workspaceFolder}/.tmp",
+        "PUB_CACHE": "${workspaceFolder}/.project_pub_cache",
+        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods"
       },
       "args": [
         "--flavor",
@@ -20,7 +22,9 @@
       "type": "dart",
       "program": "lib/main_prod.dart",
       "env": {
-        "TMPDIR": "${workspaceFolder}/.tmp"
+        "TMPDIR": "${workspaceFolder}/.tmp",
+        "PUB_CACHE": "${workspaceFolder}/.project_pub_cache",
+        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods"
       },
       "args": [
         "--flavor",
@@ -33,7 +37,9 @@
       "type": "dart",
       "program": "lib/main_dev.dart",
       "env": {
-        "TMPDIR": "${workspaceFolder}/.tmp"
+        "TMPDIR": "${workspaceFolder}/.tmp",
+        "PUB_CACHE": "${workspaceFolder}/.project_pub_cache",
+        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods"
       },
       "args": [
         "--flavor",
@@ -47,7 +53,9 @@
       "type": "dart",
       "program": "lib/main_prod.dart",
       "env": {
-        "TMPDIR": "${workspaceFolder}/.tmp"
+        "TMPDIR": "${workspaceFolder}/.tmp",
+        "PUB_CACHE": "${workspaceFolder}/.project_pub_cache",
+        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods"
       },
       "args": [
         "--flavor",
