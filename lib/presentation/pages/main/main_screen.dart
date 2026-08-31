@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
+import 'package:flutter_core_project/features/material_library/data/material_library_store.dart';
+import 'package:flutter_core_project/features/material_library/data/material_library_store_factory.dart';
+import 'package:flutter_core_project/features/material_library/pages/material_library_page.dart';
 import 'package:flutter_core_project/presentation/pages/home/home_page.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  const MainScreen({
+    super.key,
+    this.materialLibraryStore,
+  });
+
+  final MaterialLibraryStore? materialLibraryStore;
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -13,23 +21,30 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  late final List<Widget> _pages;
 
-  static const _pages = [
-    HomePage(),
-    _LocalToolPage(
-      titleKey: 'materials_title',
-      descriptionKey: 'materials_description',
-      icon: Icons.inventory_2_outlined,
-    ),
-    _LocalToolPage(
-      titleKey: 'quantity_title',
-      descriptionKey: 'quantity_description',
-      icon: Icons.calculate_outlined,
-    ),
-    ProfilePage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      const HomePage(),
+      MaterialLibraryPage(
+        store:
+            widget.materialLibraryStore ?? MaterialLibraryStoreFactory.create(),
+      ),
+      const _LocalToolPage(
+        titleKey: 'quantity_title',
+        descriptionKey: 'quantity_description',
+        icon: Icons.calculate_outlined,
+      ),
+      const ProfilePage(),
+    ];
+  }
 
-  void _selectPage(int index) => setState(() => _currentIndex = index);
+  void _selectPage(int index) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    setState(() => _currentIndex = index);
+  }
 
   void _showComingSoon() {
     ScaffoldMessenger.of(context)
