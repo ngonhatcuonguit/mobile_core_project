@@ -4,11 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/common/widgets/media/image_source_bottom_sheet.dart';
+import 'package:flutter_core_project/common/widgets/sheets/app_bottom_sheet_header.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/core/data/vietnam_provinces.dart';
 import 'package:flutter_core_project/features/projects/data/project_cover_image_service.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_cubit.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_state.dart';
+import 'package:flutter_core_project/features/projects/presentation/widgets/project_step_input_border.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -71,7 +73,7 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
       builder: (_) => DecoratedBox(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
           top: false,
@@ -190,14 +192,14 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
                 errorText: state.showValidation && state.name.trim().isEmpty
                     ? context.tr('project_name_required')
                     : null,
-                border: const OutlineInputBorder(),
+                border: projectStepInputBorder,
               ),
             ),
             const SizedBox(height: 16),
             InkWell(
               key: const Key('projectLocationField'),
               onTap: () => _chooseProvince(state.location),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(10),
               child: InputDecorator(
                 isEmpty: state.location.isEmpty,
                 decoration: InputDecoration(
@@ -209,7 +211,7 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
                       state.showValidation && state.location.trim().isEmpty
                           ? context.tr('project_location_required')
                           : null,
-                  border: const OutlineInputBorder(),
+                  border: projectStepInputBorder,
                 ),
                 child: Text(
                   state.location.isEmpty
@@ -294,33 +296,8 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
       height: height.clamp(480.0, 720.0),
       child: Column(
         children: [
-          SizedBox(
-            height: 56,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned(
-                  left: 8,
-                  child: IconButton(
-                    tooltip: context.tr('cancel'),
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 58),
-                  child: Text(
-                    context.tr('project_select_province'),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                ),
-              ],
-            ),
+          AppBottomSheetHeader(
+            title: context.tr('project_select_province'),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),

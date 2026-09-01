@@ -4,6 +4,7 @@ import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/features/projects/domain/entities/construction_project.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_cubit.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_state.dart';
+import 'package:flutter_core_project/features/projects/presentation/widgets/project_step_input_border.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
 class ProjectFoundationStep extends StatelessWidget {
@@ -173,7 +174,7 @@ class _FoundationOptions extends StatelessWidget {
           initialValue: state.alignment,
           decoration: InputDecoration(
             labelText: context.tr('project_foundation_alignment'),
-            border: const OutlineInputBorder(),
+            border: projectStepInputBorder,
           ),
           items: [
             DropdownMenuItem(
@@ -288,7 +289,7 @@ class _SteelDiameterField extends StatelessWidget {
       initialValue: value,
       decoration: InputDecoration(
         labelText: context.tr('project_main_steel'),
-        border: const OutlineInputBorder(),
+        border: projectStepInputBorder,
       ),
       items: const [14, 16, 18, 20, 22]
           .map(
@@ -378,7 +379,7 @@ class _ColumnEditor extends StatelessWidget {
                   initialValue: column.mainBarDiameter,
                   decoration: InputDecoration(
                     labelText: context.tr('project_main_steel'),
-                    border: const OutlineInputBorder(),
+                    border: projectStepInputBorder,
                   ),
                   items: const [14, 16, 18, 20, 22]
                       .map(
@@ -643,7 +644,7 @@ class _NumberField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: label,
           suffixText: suffix.isEmpty ? null : suffix,
-          border: const OutlineInputBorder(),
+          border: projectStepInputBorder,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
         ),

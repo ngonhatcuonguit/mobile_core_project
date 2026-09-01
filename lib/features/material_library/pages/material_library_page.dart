@@ -192,13 +192,13 @@ class _MaterialLibraryPageState extends State<MaterialLibraryPage> {
                   12,
                   MediaQuery.paddingOf(context).bottom - 12,
                 ),
-                child: FloatingActionButton.extended(
+                child: FloatingActionButton.small(
                   key: const Key('addLibraryItemButton'),
                   heroTag: 'add-library-item',
                   onPressed: _openEditor,
                   elevation: 5,
-                  icon: const Icon(Icons.add_rounded),
-                  label: Text(context.tr('library_add_short')),
+                  tooltip: context.tr('library_add_short'),
+                  child: const Icon(Icons.add_rounded),
                 ),
               ),
             ],

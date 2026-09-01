@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_core_project/common/widgets/sheets/app_bottom_sheet_header.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -20,40 +21,15 @@ class _ImageSourceBottomSheet extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              height: 58,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Positioned(
-                    left: 8,
-                    child: IconButton(
-                      tooltip: context.tr('cancel'),
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 58),
-                    child: Text(
-                      context.tr('project_image_source_title'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            AppBottomSheetHeader(
+              title: context.tr('project_image_source_title'),
             ),
             Divider(
               height: 1,

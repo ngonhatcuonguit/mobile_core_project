@@ -4,6 +4,7 @@ import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/features/projects/domain/entities/construction_project.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_cubit.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_state.dart';
+import 'package:flutter_core_project/features/projects/presentation/widgets/project_step_input_border.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
 class ProjectDetailsStep extends StatelessWidget {
@@ -422,7 +423,7 @@ class _WallEditor extends StatelessWidget {
                   initialValue: value.type,
                   decoration: InputDecoration(
                     labelText: context.tr('project_wall_type'),
-                    border: const OutlineInputBorder(),
+                    border: projectStepInputBorder,
                   ),
                   items: [
                     DropdownMenuItem(
@@ -445,7 +446,7 @@ class _WallEditor extends StatelessWidget {
                   initialValue: value.plasterSides,
                   decoration: InputDecoration(
                     labelText: context.tr('project_plaster_sides'),
-                    border: const OutlineInputBorder(),
+                    border: projectStepInputBorder,
                   ),
                   items: const [0, 1, 2]
                       .map(
@@ -543,7 +544,7 @@ class _OpeningEditor extends StatelessWidget {
             initialValue: value.type,
             decoration: InputDecoration(
               labelText: context.tr('project_opening_type'),
-              border: const OutlineInputBorder(),
+              border: projectStepInputBorder,
             ),
             items: [
               DropdownMenuItem(
@@ -750,7 +751,7 @@ class _NumberField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix.isEmpty ? null : suffix,
-        border: const OutlineInputBorder(),
+        border: projectStepInputBorder,
       ),
     );
   }
