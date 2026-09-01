@@ -1,3 +1,4 @@
+import 'package:flutter_core_project/features/material_library/data/default_material_catalog.dart';
 import 'package:flutter_core_project/features/material_library/domain/entities/material_library_item.dart';
 
 abstract class MaterialLibraryStore {
@@ -13,6 +14,14 @@ abstract class MaterialLibraryStore {
 /// Lightweight fallback for widget tests and platforms without mobile SQLite.
 /// Android and iOS always use [MaterialLibraryDatabase].
 class InMemoryMaterialLibraryStore implements MaterialLibraryStore {
+  InMemoryMaterialLibraryStore({bool seedDefaults = true}) {
+    if (!seedDefaults) return;
+    for (final item in defaultMaterialCatalog) {
+      final saved = item.copyWith(id: _nextId++);
+      _items[saved.id!] = saved;
+    }
+  }
+
   final Map<int, MaterialLibraryItem> _items = {};
   int _nextId = 1;
 
@@ -46,6 +55,6 @@ class InMemoryMaterialLibraryStore implements MaterialLibraryStore {
 
   @override
   Future<void> delete(int id) async {
-    _items.remove(id);
+    if (_items[id]?.isDefault == false) _items.remove(id);
   }
 }

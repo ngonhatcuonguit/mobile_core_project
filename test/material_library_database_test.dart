@@ -33,9 +33,16 @@ void main() {
 
   test('SQLite store creates, reads, updates and deletes library items',
       () async {
+    var items = await database.getAll();
+    expect(items, hasLength(19));
+    expect(items.where((item) => item.type == LibraryItemType.material),
+        hasLength(17));
+    expect(items.where((item) => item.type == LibraryItemType.labor),
+        hasLength(2));
+
     final material = await database.create(
       const MaterialLibraryItem(
-        name: 'Gạch xây',
+        name: 'Gạch tùy chỉnh',
         price: 1250,
         unit: 'piece',
         type: LibraryItemType.material,
@@ -55,14 +62,13 @@ void main() {
 
     expect(material.id, isNotNull);
     expect(labor.id, isNotNull);
-    var items = await database.getAll();
-    expect(items, hasLength(2));
-    expect(items.first.type, LibraryItemType.labor);
-    expect(items.last.type, LibraryItemType.material);
-    expect(items.last.hasPieceDimensions, isTrue);
-    expect(items.last.length, 0.2);
-    expect(items.last.width, 0.2);
-    expect(items.last.height, 0.1);
+    items = await database.getAll();
+    expect(items, hasLength(21));
+    final createdMaterial = items.firstWhere((item) => item.id == material.id);
+    expect(createdMaterial.hasPieceDimensions, isTrue);
+    expect(createdMaterial.length, 0.2);
+    expect(createdMaterial.width, 0.2);
+    expect(createdMaterial.height, 0.1);
 
     await database.update(
       material.copyWith(name: 'Gạch xây mới', price: 1500, unit: 'box'),
@@ -75,8 +81,15 @@ void main() {
 
     await database.delete(labor.id!);
     items = await database.getAll();
-    expect(items, hasLength(1));
-    expect(items.single.id, material.id);
+    expect(items, hasLength(20));
+    expect(items.any((item) => item.id == labor.id), isFalse);
+
+    final defaultBrick =
+        items.firstWhere((item) => item.catalogCode == 'brick');
+    await database.delete(defaultBrick.id!);
+    items = await database.getAll();
+    expect(items, hasLength(20));
+    expect(items.any((item) => item.catalogCode == 'brick'), isTrue);
   });
 
   test('SQLite migrates existing version 1 items without data loss', () async {
@@ -95,7 +108,7 @@ void main() {
             )
           ''');
           await db.insert('material_library_items', {
-            'name': 'Gạch cũ',
+            'name': 'Gạch xây',
             'price': 1000,
             'unit': 'piece',
             'type': 'material',
@@ -106,10 +119,13 @@ void main() {
     await legacyDatabase.close();
 
     final items = await database.getAll();
-    expect(items, hasLength(1));
-    expect(items.single.name, 'Gạch cũ');
-    expect(items.single.length, isNull);
-    expect(items.single.width, isNull);
-    expect(items.single.height, isNull);
+    expect(items, hasLength(19));
+    final migratedBrick =
+        items.firstWhere((item) => item.catalogCode == 'brick');
+    expect(migratedBrick.name, 'Gạch xây');
+    expect(migratedBrick.price, 1000);
+    expect(migratedBrick.length, isNull);
+    expect(migratedBrick.width, isNull);
+    expect(migratedBrick.height, isNull);
   });
 }

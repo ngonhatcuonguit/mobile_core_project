@@ -32,7 +32,12 @@ class _MaterialLibraryPageState extends State<MaterialLibraryPage> {
         initialItem: item,
         onSubmit: (draft) async {
           await context.read<MaterialLibraryCubit>().save(
-                isEditing ? draft.copyWith(id: item.id) : draft,
+                isEditing
+                    ? draft.copyWith(
+                        id: item.id,
+                        catalogCode: item.catalogCode,
+                      )
+                    : draft,
                 isEditing: isEditing,
               );
         },
@@ -407,14 +412,15 @@ class _LibraryItemCard extends StatelessWidget {
                         label: context.tr('edit'),
                       ),
                     ),
-                    PopupMenuItem(
-                      value: _ItemAction.delete,
-                      child: _MenuRow(
-                        icon: Icons.delete_outline_rounded,
-                        label: context.tr('delete'),
-                        color: Theme.of(context).colorScheme.error,
+                    if (!item.isDefault)
+                      PopupMenuItem(
+                        value: _ItemAction.delete,
+                        child: _MenuRow(
+                          icon: Icons.delete_outline_rounded,
+                          label: context.tr('delete'),
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ],
@@ -736,6 +742,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
     setState(() => _isSaving = true);
     final item = MaterialLibraryItem(
       id: widget.initialItem?.id,
+      catalogCode: widget.initialItem?.catalogCode,
       name: _nameController.text.trim(),
       price: double.parse(_priceController.text),
       unit: _selectedUnit == 'custom'

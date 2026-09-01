@@ -18,7 +18,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     HydratedBloc.storage = InMemoryStorage();
-    final materialStore = InMemoryMaterialLibraryStore();
+    final materialStore = InMemoryMaterialLibraryStore(seedDefaults: false);
 
     await tester.pumpWidget(
       ConstructionPlanApp(materialLibraryStore: materialStore),
@@ -40,7 +40,7 @@ void main() {
       tester.getSize(
         find.byKey(const Key('serviceCardSurface_service_architecture')),
       ),
-      const Size(104, 104),
+      const Size(176, 80),
     );
     expect(find.byKey(const Key('notchedNavigationPanel')), findsOneWidget);
     expect(AppColors.primary, const Color(0xFF18C0C1));

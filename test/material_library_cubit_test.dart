@@ -15,7 +15,7 @@ void main() {
   late MaterialLibraryCubit cubit;
 
   setUp(() {
-    store = InMemoryMaterialLibraryStore();
+    store = InMemoryMaterialLibraryStore(seedDefaults: false);
     final repository = MaterialLibraryRepositoryImpl(store);
     cubit = MaterialLibraryCubit(
       getItems: GetMaterialLibraryItems(repository),

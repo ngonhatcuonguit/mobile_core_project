@@ -110,9 +110,11 @@ void main() {
     await tester.tap(find.byKey(const Key('projectWizardNextButton')));
     await tester.pumpAndSettle();
 
-    await tester.tap(
+    await tester.ensureVisible(
       find.byKey(const Key('projectMaterial_catalog:brick')),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('projectMaterial_catalog:brick')));
     await tester.pump();
     await tester.tap(find.byKey(const Key('projectWizardNextButton')));
     await tester.pumpAndSettle();

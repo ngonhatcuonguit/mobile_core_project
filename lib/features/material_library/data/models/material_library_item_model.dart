@@ -3,6 +3,7 @@ import 'package:flutter_core_project/features/material_library/domain/entities/m
 class MaterialLibraryItemModel extends MaterialLibraryItem {
   const MaterialLibraryItemModel({
     super.id,
+    super.catalogCode,
     required super.name,
     required super.price,
     required super.unit,
@@ -15,6 +16,7 @@ class MaterialLibraryItemModel extends MaterialLibraryItem {
   factory MaterialLibraryItemModel.fromEntity(MaterialLibraryItem entity) {
     return MaterialLibraryItemModel(
       id: entity.id,
+      catalogCode: entity.catalogCode,
       name: entity.name,
       price: entity.price,
       unit: entity.unit,
@@ -30,6 +32,7 @@ class MaterialLibraryItemModel extends MaterialLibraryItem {
   ) {
     return MaterialLibraryItemModel(
       id: map['id'] as int?,
+      catalogCode: map['catalog_code'] as String?,
       name: map['name'] as String,
       price: (map['price'] as num).toDouble(),
       unit: map['unit'] as String,
@@ -43,6 +46,7 @@ class MaterialLibraryItemModel extends MaterialLibraryItem {
   Map<String, Object?> toDatabaseMap({bool includeId = false}) {
     return {
       if (includeId && id != null) 'id': id,
+      'catalog_code': catalogCode,
       'name': name.trim(),
       'price': price,
       'unit': unit.trim(),

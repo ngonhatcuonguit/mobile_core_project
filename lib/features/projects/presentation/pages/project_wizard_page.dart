@@ -117,13 +117,22 @@ class _ProjectWizardViewState extends State<_ProjectWizardView> {
         builder: (context, state) {
           return Scaffold(
             appBar: AppBar(
+              centerTitle: true,
               leading: IconButton(
                 key: const Key('closeProjectWizardButton'),
-                tooltip: context.tr('project_exit'),
+                tooltip: context.tr('project_back'),
                 onPressed: _requestClose,
-                icon: const Icon(Icons.close_rounded),
+                icon: const Icon(Icons.arrow_back_rounded),
               ),
-              title: Text(context.tr('project_add_title')),
+              title: Text(
+                context.tr('project_add_title'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
             ),
             body: Column(
               children: [
@@ -135,7 +144,8 @@ class _ProjectWizardViewState extends State<_ProjectWizardView> {
                       context.read<ProjectWizardCubit>().goToCompletedStep,
                 ),
                 Expanded(
-                  child: Center(
+                  child: Align(
+                    alignment: Alignment.topCenter,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 760),
                       child: AnimatedSwitcher(
@@ -156,7 +166,9 @@ class _ProjectWizardViewState extends State<_ProjectWizardView> {
             bottomNavigationBar: _WizardActions(
               currentStep: state.currentStep,
               saving: _saving,
-              onBack: context.read<ProjectWizardCubit>().back,
+              onBack: state.currentStep == 0
+                  ? _requestClose
+                  : context.read<ProjectWizardCubit>().back,
               onNext: () {
                 if (context.read<ProjectWizardCubit>().next()) _scrollToTop();
               },
@@ -213,25 +225,36 @@ class _WizardActions extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 20),
           child: Row(
             children: [
-              if (currentStep > 0) ...[
-                Expanded(
-                  child: OutlinedButton.icon(
-                    key: const Key('projectWizardBackButton'),
-                    onPressed: saving ? null : onBack,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    label: Text(context.tr('project_back')),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(52),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+              Expanded(
+                child: OutlinedButton.icon(
+                  key: const Key('projectWizardBackButton'),
+                  onPressed: saving ? null : onBack,
+                  icon: Icon(
+                    currentStep == 0
+                        ? Icons.close_rounded
+                        : Icons.arrow_back_rounded,
+                  ),
+                  label: Text(
+                    context.tr(currentStep == 0 ? 'cancel' : 'project_back'),
+                    maxLines: 1,
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.055),
+                    side: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.4,
+                    ),
+                    minimumSize: const Size.fromHeight(52),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-              ],
+              ),
+              const SizedBox(width: 12),
               Expanded(
-                flex: 2,
                 child: FilledButton.icon(
                   key: Key(
                     currentStep == 4
@@ -263,11 +286,13 @@ class _WizardActions extends StatelessWidget {
                           ? 'project_complete'
                           : 'project_continue',
                     ),
+                    maxLines: 1,
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(52),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

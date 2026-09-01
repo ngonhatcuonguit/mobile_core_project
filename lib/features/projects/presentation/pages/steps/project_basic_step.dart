@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_core_project/common/widgets/media/image_source_bottom_sheet.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/core/data/vietnam_provinces.dart';
 import 'package:flutter_core_project/features/projects/data/project_cover_image_service.dart';
@@ -25,46 +26,7 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
   bool _processingImage = false;
 
   Future<void> _chooseImage() async {
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      useSafeArea: true,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                child: Text(
-                  context.tr('project_image_source_title'),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-              ),
-              ListTile(
-                key: const Key('projectImageGalleryOption'),
-                leading: const Icon(Icons.photo_library_outlined),
-                title: Text(context.tr('project_image_gallery')),
-                subtitle: Text(context.tr('project_image_gallery_description')),
-                onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
-              ),
-              ListTile(
-                key: const Key('projectImageCameraOption'),
-                leading: const Icon(Icons.photo_camera_outlined),
-                title: Text(context.tr('project_image_camera')),
-                subtitle: Text(context.tr('project_image_camera_description')),
-                onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    final source = await showImageSourceBottomSheet(context);
     if (source == null || !mounted) return;
 
     setState(() => _processingImage = true);
@@ -105,11 +67,17 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      showDragHandle: true,
-      builder: (_) => SafeArea(
-        top: false,
-        child: _ProvincePickerSheet(
-          selectedProvince: selectedProvince,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: _ProvincePickerSheet(
+            selectedProvince: selectedProvince,
+          ),
         ),
       ),
     );
@@ -325,39 +293,88 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
     return SizedBox(
       height: height.clamp(480.0, 720.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            child: Text(
-              context.tr('project_select_province'),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
+          SizedBox(
+            height: 56,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Positioned(
+                  left: 8,
+                  child: IconButton(
+                    tooltip: context.tr('cancel'),
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
                   ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 58),
+                  child: Text(
+                    context.tr('project_select_province'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+              ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-            child: TextField(
-              key: const Key('provinceSearchField'),
-              controller: _searchController,
-              autofocus: false,
-              textInputAction: TextInputAction.search,
-              onChanged: _search,
-              decoration: InputDecoration(
-                hintText: context.tr('project_search_province'),
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: _searchController.text.isEmpty
-                    ? null
-                    : IconButton(
-                        tooltip: context.tr('clear'),
-                        onPressed: () {
-                          _searchController.clear();
-                          _search('');
-                        },
-                        icon: const Icon(Icons.close_rounded),
-                      ),
-                border: const OutlineInputBorder(),
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),
+            child: SizedBox(
+              height: 44,
+              child: TextField(
+                key: const Key('provinceSearchField'),
+                controller: _searchController,
+                autofocus: false,
+                textInputAction: TextInputAction.search,
+                onChanged: _search,
+                textAlignVertical: TextAlignVertical.center,
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest
+                      .withValues(alpha: 0.55),
+                  hintText: context.tr('project_search_province'),
+                  prefixIcon: const Icon(Icons.search_rounded, size: 21),
+                  prefixIconConstraints: const BoxConstraints(minWidth: 42),
+                  suffixIcon: _searchController.text.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: context.tr('clear'),
+                          onPressed: () {
+                            _searchController.clear();
+                            _search('');
+                          },
+                          icon: const Icon(Icons.close_rounded, size: 19),
+                        ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 0.65),
+                      width: 0.7,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.2,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -368,10 +385,14 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
                     controller: _scrollController,
                     padding: const EdgeInsets.only(bottom: 20),
                     itemCount: _filteredProvinces.length,
-                    separatorBuilder: (_, __) => const Divider(
-                      height: 1,
+                    separatorBuilder: (context, index) => Divider(
+                      height: 0.5,
+                      thickness: 0.5,
                       indent: 20,
                       endIndent: 20,
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 0.72),
                     ),
                     itemBuilder: (context, index) {
                       final province = _filteredProvinces[index];
@@ -379,11 +400,26 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
                       return ListTile(
                         key: Key('province_${province.id}'),
                         selected: selected,
-                        title: Text(province.name),
+                        selectedTileColor:
+                            AppColors.primary.withValues(alpha: 0.055),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 20),
+                        visualDensity: const VisualDensity(vertical: -1),
+                        title: Text(
+                          province.name,
+                          style:
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    fontWeight: selected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                  ),
+                        ),
                         leading: Icon(
-                          province.isMunicipality
-                              ? Icons.location_city_outlined
-                              : Icons.landscape_outlined,
+                          Icons.location_on_rounded,
+                          size: 21,
+                          color: selected
+                              ? AppColors.primary
+                              : Theme.of(context).colorScheme.outlineVariant,
                         ),
                         trailing: selected
                             ? const Icon(

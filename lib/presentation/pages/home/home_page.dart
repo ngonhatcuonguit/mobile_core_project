@@ -49,33 +49,33 @@ class _HomePageState extends State<HomePage> {
   static const _services = [
     _ServiceData(
       'service_architecture',
-      Icons.architecture_rounded,
-      Color(0xFF8B6BFF),
-      Color(0xFFF1ECFF),
+      Icons.design_services_rounded,
+      Color(0xFF2F80ED),
+      Color(0xFFEAF3FF),
     ),
     _ServiceData(
       'service_construction',
-      Icons.engineering_rounded,
-      Color(0xFFF4A62A),
-      Color(0xFFFFF1D5),
+      Icons.construction_rounded,
+      Color(0xFFE58A19),
+      Color(0xFFFFF4E3),
     ),
     _ServiceData(
       'service_estimate',
-      Icons.calculate_outlined,
-      Color(0xFF8C67D9),
-      Color(0xFFF0E8FF),
+      Icons.request_quote_rounded,
+      Color(0xFF249A68),
+      Color(0xFFE8F7F0),
     ),
     _ServiceData(
       'service_library',
-      Icons.home_work_outlined,
-      Color(0xFFF06C45),
-      Color(0xFFFFE9E1),
+      Icons.holiday_village_rounded,
+      Color(0xFFE55C4A),
+      Color(0xFFFDEDEA),
     ),
     _ServiceData(
       'service_feng_shui',
-      Icons.blur_circular_rounded,
-      Color(0xFF4C596A),
-      Color(0xFFECEFF3),
+      Icons.explore_rounded,
+      Color(0xFF7A62C9),
+      Color(0xFFF1EDFB),
     ),
   ];
 
@@ -324,7 +324,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildServices(BuildContext context) {
     return SizedBox(
-      height: 112,
+      height: 84,
       child: ListView.separated(
         key: const Key('serviceList'),
         clipBehavior: Clip.none,
@@ -332,7 +332,7 @@ class _HomePageState extends State<HomePage> {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: _services.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 9),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, index) => _ServiceCard(
           service: _services[index],
           onPressed: _showComingSoon,
@@ -480,60 +480,61 @@ class _ServiceCard extends StatelessWidget {
     return Center(
       child: SizedBox(
         key: Key('serviceCardSurface_${service.titleKey}'),
-        width: 104,
-        height: 104,
+        width: 176,
+        height: 80,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(18),
+            color: isDark
+                ? service.color.withValues(alpha: 0.13)
+                : service.background,
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isDark ? const Color(0xFF353141) : const Color(0xFFF0EDF4),
+              color: service.color.withValues(alpha: isDark ? 0.34 : 0.18),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.075),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                color: service.color.withValues(alpha: isDark ? 0.08 : 0.10),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Material(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(8),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onPressed,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(7, 7, 7, 6),
-                child: Column(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
                   children: [
                     Container(
-                      width: 43,
-                      height: 43,
+                      width: 46,
+                      height: 46,
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? service.color.withValues(alpha: 0.16)
-                            : service.background,
-                        borderRadius: BorderRadius.circular(13),
+                        color: service.color,
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(service.icon, color: service.color, size: 25),
+                      child: Icon(service.icon, color: Colors.white, size: 25),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(width: 10),
                     Expanded(
-                      child: Center(
-                        child: Text(
-                          context.tr(service.titleKey),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.18,
-                                  ),
-                        ),
+                      child: Text(
+                        context.tr(service.titleKey),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              height: 1.25,
+                            ),
                       ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: service.color,
+                      size: 20,
                     ),
                   ],
                 ),

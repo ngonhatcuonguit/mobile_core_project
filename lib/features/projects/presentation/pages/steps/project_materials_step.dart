@@ -119,9 +119,12 @@ class ProjectMaterialsStep extends StatelessWidget {
   }
 
   ProjectMaterial _fromLibraryItem(MaterialLibraryItem item) {
+    final catalogCode = item.catalogCode;
     return ProjectMaterial(
-      selectionKey: 'library:${item.id}',
+      selectionKey:
+          catalogCode == null ? 'library:${item.id}' : 'catalog:$catalogCode',
       sourceLibraryId: item.id,
+      catalogCode: catalogCode,
       name: item.name,
       unit: item.unit,
       unitPrice: item.price,

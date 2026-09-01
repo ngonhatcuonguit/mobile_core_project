@@ -17,6 +17,7 @@ enum LibraryItemType {
 class MaterialLibraryItem extends Equatable {
   const MaterialLibraryItem({
     this.id,
+    this.catalogCode,
     required this.name,
     required this.price,
     required this.unit,
@@ -27,6 +28,7 @@ class MaterialLibraryItem extends Equatable {
   });
 
   final int? id;
+  final String? catalogCode;
   final String name;
   final double price;
   final String unit;
@@ -35,11 +37,14 @@ class MaterialLibraryItem extends Equatable {
   final double? width;
   final double? height;
 
+  bool get isDefault => catalogCode != null;
+
   bool get hasPieceDimensions =>
       unit == 'piece' && length != null && width != null && height != null;
 
   MaterialLibraryItem copyWith({
     int? id,
+    String? catalogCode,
     String? name,
     double? price,
     String? unit,
@@ -50,6 +55,7 @@ class MaterialLibraryItem extends Equatable {
   }) {
     return MaterialLibraryItem(
       id: id ?? this.id,
+      catalogCode: catalogCode ?? this.catalogCode,
       name: name ?? this.name,
       price: price ?? this.price,
       unit: unit ?? this.unit,
@@ -63,6 +69,7 @@ class MaterialLibraryItem extends Equatable {
   @override
   List<Object?> get props => [
         id,
+        catalogCode,
         name,
         price,
         unit,
