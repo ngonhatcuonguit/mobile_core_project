@@ -1,8 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/core/configs/app_config.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
+import 'package:flutter_core_project/features/projects/domain/entities/construction_project.dart';
+import 'package:flutter_core_project/features/projects/presentation/bloc/project_cubit.dart';
+import 'package:flutter_core_project/features/projects/presentation/bloc/project_state.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -24,8 +30,9 @@ class _HomePageState extends State<HomePage> {
   Timer? _autoScrollTimer;
   int _rawPage = _initialPage;
   int _currentProject = 0;
+  int _projectCount = 3;
 
-  static const _projects = [
+  static const _featuredProjects = [
     _ProjectData('project_an_phu', 'project_an_phu_location', Alignment.center),
     _ProjectData(
       'project_green_villa',
@@ -100,7 +107,7 @@ class _HomePageState extends State<HomePage> {
   void _onProjectChanged(int page) {
     setState(() {
       _rawPage = page;
-      _currentProject = page % _projects.length;
+      _currentProject = page % _projectCount;
     });
     _scheduleAutoScroll();
   }
@@ -113,21 +120,47 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(child: _buildHeader(context)),
-            SliverToBoxAdapter(child: _buildProjectCarousel(context)),
-            SliverToBoxAdapter(child: _buildPageIndicator()),
-            SliverToBoxAdapter(child: _buildServicesHeader(context)),
-            SliverToBoxAdapter(child: _buildServices(context)),
-            const SliverToBoxAdapter(child: SizedBox(height: 148)),
-          ],
-        ),
-      ),
+    return BlocConsumer<ProjectCubit, ProjectState>(
+      listenWhen: (previous, current) =>
+          previous.projects.length != current.projects.length,
+      listener: (context, state) {
+        final count = state.projects.length + _featuredProjects.length;
+        setState(() {
+          _projectCount = count;
+          _rawPage = _initialPage;
+          _currentProject = 0;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_pageController.hasClients) {
+            _pageController.jumpToPage(_initialPage);
+          }
+        });
+      },
+      builder: (context, state) {
+        final projects = [
+          ...state.projects.map(_ProjectData.fromEntity),
+          ..._featuredProjects,
+        ];
+        _projectCount = projects.length;
+        return Scaffold(
+          body: SafeArea(
+            bottom: false,
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(child: _buildHeader(context)),
+                SliverToBoxAdapter(
+                  child: _buildProjectCarousel(context, projects),
+                ),
+                SliverToBoxAdapter(child: _buildPageIndicator(projects.length)),
+                SliverToBoxAdapter(child: _buildServicesHeader(context)),
+                SliverToBoxAdapter(child: _buildServices(context)),
+                const SliverToBoxAdapter(child: SizedBox(height: 148)),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -188,7 +221,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildProjectCarousel(BuildContext context) {
+  Widget _buildProjectCarousel(
+    BuildContext context,
+    List<_ProjectData> projects,
+  ) {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
@@ -223,7 +259,7 @@ class _HomePageState extends State<HomePage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
                   child: _ProjectCard(
-                    project: _projects[index % _projects.length],
+                    project: projects[index % projects.length],
                   ),
                 ),
               );
@@ -234,12 +270,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildPageIndicator() {
+  Widget _buildPageIndicator(int projectCount) {
     return Padding(
       padding: const EdgeInsets.only(top: 12, bottom: 24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(_projects.length, (index) {
+        children: List.generate(projectCount, (index) {
           final selected = index == _currentProject;
           return AnimatedContainer(
             duration: const Duration(milliseconds: 220),
@@ -334,11 +370,22 @@ class _ProjectCard extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Image.asset(
-                  'assets/images/projects/modern_townhouse.jpg',
-                  fit: BoxFit.cover,
-                  alignment: project.alignment,
-                ),
+                if (project.imagePath == null || kIsWeb)
+                  Image.asset(
+                    project.assetPath,
+                    fit: BoxFit.cover,
+                    alignment: project.alignment,
+                  ),
+                if (project.imagePath != null && !kIsWeb)
+                  Image.file(
+                    File(project.imagePath!),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Image.asset(
+                      project.assetPath,
+                      fit: BoxFit.cover,
+                      alignment: project.alignment,
+                    ),
+                  ),
                 const DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -359,7 +406,11 @@ class _ProjectCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      context.tr('project_status'),
+                      context.tr(
+                        project.isSavedProject
+                            ? 'project_saved_status'
+                            : 'project_status',
+                      ),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w700,
@@ -376,7 +427,9 @@ class _ProjectCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.tr(project.titleKey),
+                  project.titleKey == null
+                      ? project.title
+                      : context.tr(project.titleKey!),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -391,7 +444,9 @@ class _ProjectCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        context.tr(project.locationKey),
+                        project.locationKey == null
+                            ? project.location
+                            : context.tr(project.locationKey!),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -492,11 +547,36 @@ class _ServiceCard extends StatelessWidget {
 }
 
 class _ProjectData {
-  const _ProjectData(this.titleKey, this.locationKey, this.alignment);
+  const _ProjectData(
+    this.titleKey,
+    this.locationKey,
+    this.alignment, {
+    this.title = '',
+    this.location = '',
+    this.imagePath,
+    this.isSavedProject = false,
+  });
 
-  final String titleKey;
-  final String locationKey;
+  factory _ProjectData.fromEntity(ConstructionProject project) {
+    return _ProjectData(
+      null,
+      null,
+      Alignment.center,
+      title: project.name,
+      location: project.location,
+      imagePath: project.imagePath,
+      isSavedProject: true,
+    );
+  }
+
+  final String? titleKey;
+  final String? locationKey;
   final Alignment alignment;
+  final String title;
+  final String location;
+  final String? imagePath;
+  String get assetPath => 'assets/images/projects/modern_townhouse.jpg';
+  final bool isSavedProject;
 }
 
 class _ServiceData {

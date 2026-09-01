@@ -15,6 +15,13 @@ import 'package:flutter_core_project/features/material_library/domain/usecases/d
 import 'package:flutter_core_project/features/material_library/domain/usecases/get_material_library_items.dart';
 import 'package:flutter_core_project/features/material_library/domain/usecases/save_material_library_item.dart';
 import 'package:flutter_core_project/features/material_library/presentation/bloc/material_library_cubit.dart';
+import 'package:flutter_core_project/features/projects/data/project_repository_impl.dart';
+import 'package:flutter_core_project/features/projects/data/project_store.dart';
+import 'package:flutter_core_project/features/projects/data/project_store_factory.dart';
+import 'package:flutter_core_project/features/projects/domain/repositories/project_repository.dart';
+import 'package:flutter_core_project/features/projects/domain/usecases/get_projects.dart';
+import 'package:flutter_core_project/features/projects/domain/usecases/save_project.dart';
+import 'package:flutter_core_project/features/projects/presentation/bloc/project_cubit.dart';
 import 'package:flutter_core_project/services/firebase_messaging_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -62,5 +69,15 @@ Future<void> initializeDependencies() async {
       saveItem: sl(),
       deleteItem: sl(),
     ),
+  );
+
+  sl.registerLazySingleton<ProjectStore>(ProjectStoreFactory.create);
+  sl.registerLazySingleton<ProjectRepository>(
+    () => ProjectRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton(() => GetProjects(sl()));
+  sl.registerLazySingleton(() => SaveProject(sl()));
+  sl.registerFactory(
+    () => ProjectCubit(getProjects: sl(), saveProject: sl()),
   );
 }

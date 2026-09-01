@@ -6,6 +6,7 @@
 set -e
 
 PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$PROJECT_DIR/tool/flutter_env.sh"
 
 # Colors for output
 RED='\033[0;31m'
@@ -55,13 +56,6 @@ fi
 
 # Change to project directory
 cd "$PROJECT_DIR"
-
-# Keep Flutter/Gradle temp files on the project volume. The macOS system temp
-# volume can be much smaller and may fail release builds with "No space left".
-mkdir -p "$PROJECT_DIR/.tmp"
-mkdir -p "$PROJECT_DIR/.project_pub_cache"
-export TMPDIR="$PROJECT_DIR/.tmp"
-export PUB_CACHE="$PROJECT_DIR/.project_pub_cache"
 
 # Android debug/release intermediates can temporarily consume several GB.
 # Fail early with a clear message instead of Gradle's misleading package/copy errors.

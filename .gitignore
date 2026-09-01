@@ -35,6 +35,9 @@ migrate_working_dir/
 .tmp/
 .project_pub_cache/
 .project_cocoapods/
+.project_android_home/
+.project_gradle/
+.project_user_home/
 /build/
 
 # Symbolication related

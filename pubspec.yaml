@@ -26,6 +26,8 @@ dependencies:
   firebase_messaging: ^16.6.0
   flutter_local_notifications: ^22.3.0
   flutter_dotenv: ^6.0.1
+  image_picker: ^1.2.0
+  flutter_image_compress: ^2.5.1
 
 dev_dependencies:
   flutter_test:
@@ -35,6 +37,9 @@ dev_dependencies:
   bloc_test: ^9.1.7
 
 flutter:
+
+  # Keep IDE-generated Run configurations on the development environment.
+  default-flavor: dev
 
   uses-material-design: true
 

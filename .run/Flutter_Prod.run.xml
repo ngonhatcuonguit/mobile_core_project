@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Flutter Prod" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="additionalArgs" value="--flavor prod" />
+    <option name="filePath" value="$PROJECT_DIR$/lib/main_prod.dart" />
+    <envs>
+      <env name="CP_HOME_DIR" value="$PROJECT_DIR$/.project_cocoapods" />
+      <env name="GRADLE_USER_HOME" value="$PROJECT_DIR$/.project_gradle" />
+      <env name="JAVA_TOOL_OPTIONS" value="-Xshare:off -Duser.home=$PROJECT_DIR$/.project_user_home -Djava.io.tmpdir=$PROJECT_DIR$/.tmp/gradle -Dkotlin.compiler.execution.strategy=in-process" />
+      <env name="PUB_CACHE" value="$PROJECT_DIR$/.project_pub_cache" />
+      <env name="TMPDIR" value="$PROJECT_DIR$/.tmp" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>

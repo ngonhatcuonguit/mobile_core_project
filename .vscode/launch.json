@@ -6,10 +6,13 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main_dev.dart",
+      "preLaunchTask": "Prepare Flutter local environment",
       "env": {
         "TMPDIR": "${workspaceFolder}/.tmp",
         "PUB_CACHE": "${workspaceFolder}/.project_pub_cache",
-        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods"
+        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods",
+        "GRADLE_USER_HOME": "${workspaceFolder}/.project_gradle",
+        "JAVA_TOOL_OPTIONS": "-Xshare:off -Duser.home=${workspaceFolder}/.project_user_home -Djava.io.tmpdir=${workspaceFolder}/.tmp/gradle -Dkotlin.compiler.execution.strategy=in-process"
       },
       "args": [
         "--flavor",
@@ -21,10 +24,13 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main_prod.dart",
+      "preLaunchTask": "Prepare Flutter local environment",
       "env": {
         "TMPDIR": "${workspaceFolder}/.tmp",
         "PUB_CACHE": "${workspaceFolder}/.project_pub_cache",
-        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods"
+        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods",
+        "GRADLE_USER_HOME": "${workspaceFolder}/.project_gradle",
+        "JAVA_TOOL_OPTIONS": "-Xshare:off -Duser.home=${workspaceFolder}/.project_user_home -Djava.io.tmpdir=${workspaceFolder}/.tmp/gradle -Dkotlin.compiler.execution.strategy=in-process"
       },
       "args": [
         "--flavor",
@@ -36,15 +42,18 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main_dev.dart",
+      "flutterMode": "profile",
+      "preLaunchTask": "Prepare Flutter local environment",
       "env": {
         "TMPDIR": "${workspaceFolder}/.tmp",
         "PUB_CACHE": "${workspaceFolder}/.project_pub_cache",
-        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods"
+        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods",
+        "GRADLE_USER_HOME": "${workspaceFolder}/.project_gradle",
+        "JAVA_TOOL_OPTIONS": "-Xshare:off -Duser.home=${workspaceFolder}/.project_user_home -Djava.io.tmpdir=${workspaceFolder}/.tmp/gradle -Dkotlin.compiler.execution.strategy=in-process"
       },
       "args": [
         "--flavor",
-        "dev",
-        "--profile"
+        "dev"
       ]
     },
     {
@@ -52,15 +61,18 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main_prod.dart",
+      "flutterMode": "release",
+      "preLaunchTask": "Prepare Flutter local environment",
       "env": {
         "TMPDIR": "${workspaceFolder}/.tmp",
         "PUB_CACHE": "${workspaceFolder}/.project_pub_cache",
-        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods"
+        "CP_HOME_DIR": "${workspaceFolder}/.project_cocoapods",
+        "GRADLE_USER_HOME": "${workspaceFolder}/.project_gradle",
+        "JAVA_TOOL_OPTIONS": "-Xshare:off -Duser.home=${workspaceFolder}/.project_user_home -Djava.io.tmpdir=${workspaceFolder}/.tmp/gradle -Dkotlin.compiler.execution.strategy=in-process"
       },
       "args": [
         "--flavor",
-        "prod",
-        "--release"
+        "prod"
       ]
     }
   ]

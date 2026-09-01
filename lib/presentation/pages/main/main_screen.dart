@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/features/material_library/pages/material_library_page.dart';
+import 'package:flutter_core_project/features/projects/presentation/pages/project_wizard_page.dart';
 import 'package:flutter_core_project/presentation/pages/home/home_page.dart';
 import 'package:flutter_core_project/presentation/pages/main/bloc/main_navigation_cubit.dart';
 import 'package:flutter_core_project/presentation/pages/profile/profile_page.dart';
@@ -26,10 +27,17 @@ class MainScreen extends StatelessWidget {
     context.read<MainNavigationCubit>().select(index);
   }
 
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(context.tr('coming_soon'))));
+  Future<void> _openProjectWizard(BuildContext context) async {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const ProjectWizardPage()),
+    );
+    if (created == true && context.mounted) {
+      context.read<MainNavigationCubit>().select(0);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('project_created'))),
+      );
+    }
   }
 
   @override
@@ -55,7 +63,7 @@ class MainScreen extends StatelessWidget {
                   Positioned(
                     top: 0,
                     child: _AddProjectButton(
-                      onPressed: () => _showComingSoon(context),
+                      onPressed: () => _openProjectWizard(context),
                     ),
                   ),
                 ],

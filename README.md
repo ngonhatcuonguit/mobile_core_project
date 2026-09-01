@@ -15,12 +15,17 @@
 
 ## Chạy dự án
 
+Trong VS Code, chọn `Flutter (Dev)` ở Run and Debug. Trong Android Studio,
+chọn shared run configuration `Flutter Dev`. Entry point `lib/main.dart` và
+flavor mặc định đều trỏ tới môi trường Dev, nên nút Run tự sinh của IDE cũng
+có thể chạy trực tiếp.
+
+Với thiết bị Xiaomi/HyperOS, mở khóa điện thoại và chấp nhận hộp thoại
+`Cài đặt qua USB` khi cài APK lần đầu.
+
 ```bash
-flutter pub get
-mkdir -p .tmp .project_pub_cache .project_cocoapods
-TMPDIR="$PWD/.tmp" PUB_CACHE="$PWD/.project_pub_cache" \
-  CP_HOME_DIR="$PWD/.project_cocoapods" \
-  flutter run --flavor dev -t lib/main_dev.dart
+tool/flutter_local.sh pub get
+tool/flutter_local.sh run
 ```
 
 Build APK production:
@@ -32,8 +37,8 @@ Build APK production:
 Kiểm tra source:
 
 ```bash
-flutter analyze
-flutter test
+tool/flutter_local.sh analyze
+tool/flutter_local.sh test
 ```
 
 Chi tiết mở rộng API: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
@@ -42,7 +47,7 @@ Cấu hình credential FCM: [docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md)
 
 ## Entry points
 
-- `lib/main.dart`: mặc định
+- `lib/main.dart`: mặc định, môi trường dev
 - `lib/main_dev.dart`: flavor dev, hiển thị debug banner
 - `lib/main_prod.dart`: flavor prod
 

@@ -2,5 +2,12 @@
     "java.configuration.updateBuildConfiguration": "disabled",
     "java.import.gradle.enabled": false,
     "java.gradle.buildServer.enabled": "off",
-    "gradle.autoDetect": "off"
+    "gradle.autoDetect": "off",
+    "dart.env": {
+        "TMPDIR": "/Volumes/MyData/project/mobile_core_project/.tmp",
+        "PUB_CACHE": "/Volumes/MyData/project/mobile_core_project/.project_pub_cache",
+        "CP_HOME_DIR": "/Volumes/MyData/project/mobile_core_project/.project_cocoapods",
+        "GRADLE_USER_HOME": "/Volumes/MyData/project/mobile_core_project/.project_gradle",
+        "JAVA_TOOL_OPTIONS": "-Xshare:off -Duser.home=/Volumes/MyData/project/mobile_core_project/.project_user_home -Djava.io.tmpdir=/Volumes/MyData/project/mobile_core_project/.tmp/gradle -Dkotlin.compiler.execution.strategy=in-process"
+    }
 }

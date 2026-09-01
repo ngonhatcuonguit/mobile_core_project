@@ -3,6 +3,7 @@
 set -euo pipefail
 
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${project_root}/tool/flutter_env.sh"
 cd "${project_root}"
 
 # CocoaPods crashes with Encoding::CompatibilityError under an ASCII locale.

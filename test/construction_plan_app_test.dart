@@ -56,11 +56,16 @@ void main() {
     expect(find.text('Biệt thự vườn xanh'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('addProjectButton')));
-    await tester.pump();
-    expect(
-      find.text('Tính năng đang được hoàn thiện cho phiên bản tiếp theo.'),
-      findsOneWidget,
-    );
+    await tester.pumpAndSettle();
+    expect(find.text('Thêm dự án mới'), findsOneWidget);
+    expect(find.byKey(const Key('projectWizardStep0')), findsOneWidget);
+    expect(find.byKey(const Key('projectNameField')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('closeProjectWizardButton')));
+    await tester.pumpAndSettle();
+    expect(find.text('Thoát trình tạo dự án?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Thoát'));
+    await tester.pumpAndSettle();
+    expect(find.text('Construction Plan'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('materialsNavigationButton')));
     await tester.pumpAndSettle();

@@ -7,6 +7,10 @@
 
 set -e
 
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$PROJECT_DIR/tool/flutter_env.sh"
+cd "$PROJECT_DIR"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -31,17 +35,17 @@ print_header() {
 
 print_success() {
     echo -e "${GREEN}✅ $1${NC}"
-    ((PASS++))
+    PASS=$((PASS + 1))
 }
 
 print_fail() {
     echo -e "${RED}❌ $1${NC}"
-    ((FAIL++))
+    FAIL=$((FAIL + 1))
 }
 
 print_warn() {
     echo -e "${YELLOW}⚠️  $1${NC}"
-    ((WARN++))
+    WARN=$((WARN + 1))
 }
 
 print_info() {
@@ -59,10 +63,10 @@ check_flutter() {
         FLUTTER_VERSION=$(flutter --version | head -n 1)
         echo "$FLUTTER_VERSION"
 
-        if echo "$FLUTTER_VERSION" | grep -q "3.19.0"; then
-            print_success "Flutter 3.19.0 installed"
+        if echo "$FLUTTER_VERSION" | grep -q "3.41.6"; then
+            print_success "Flutter 3.41.6 installed"
         else
-            print_warn "Flutter version is $(echo $FLUTTER_VERSION | awk '{print $2}'), expected 3.19.0"
+            print_warn "Flutter version is $(echo $FLUTTER_VERSION | awk '{print $2}'), expected 3.41.6"
         fi
     else
         print_fail "Flutter not found. Add to PATH: export PATH=\"\$HOME/development/flutter/bin:\$PATH\""
@@ -73,11 +77,11 @@ check_dart() {
     print_header "Checking Dart"
 
     if command -v dart &> /dev/null; then
-        DART_VERSION=$(dart --version 2>&1 | awk '{print $2}')
+        DART_VERSION=$(dart --version 2>&1 | sed -E 's/.*version: ([^ ]+).*/\1/')
         echo "Dart version: $DART_VERSION"
 
-        if echo "$DART_VERSION" | grep -q "3.3.0"; then
-            print_success "Dart 3.3.0 installed (bundled with Flutter)"
+        if echo "$DART_VERSION" | grep -q "3.11.4"; then
+            print_success "Dart 3.11.4 installed (bundled with Flutter)"
         else
             print_info "Dart version: $DART_VERSION (bundled with Flutter)"
         fi
@@ -107,7 +111,7 @@ check_java() {
     print_header "Checking Java/JDK"
 
     if command -v java &> /dev/null; then
-        JAVA_VERSION=$(java -version 2>&1 | head -n 1)
+        JAVA_VERSION=$(java -version 2>&1 | grep -m 1 -E '^(openjdk|java) version' || true)
         echo "$JAVA_VERSION"
 
         if echo "$JAVA_VERSION" | grep -qE "17|18|19|20|21|25"; then
@@ -165,7 +169,7 @@ check_gradle() {
     print_header "Checking Gradle (via wrapper)"
 
     if [ -f "android/gradlew" ]; then
-        GRADLE_VERSION=$(./android/gradlew --version 2>/dev/null | head -n 1 || echo "Unknown")
+        GRADLE_VERSION=$(./android/gradlew --version 2>/dev/null | grep -m 1 '^Gradle ' || echo "Unknown")
         echo "$GRADLE_VERSION"
         print_success "Gradle wrapper available"
     else
@@ -200,7 +204,7 @@ check_project_files() {
     if [ -f "assets/images/projects/modern_townhouse.jpg" ]; then
         print_success "Local project artwork found"
     else
-        print_error "Local project artwork is missing"
+        print_fail "Local project artwork is missing"
     fi
 }
 
@@ -224,7 +228,9 @@ check_dependencies() {
 #=============================================================================
 
 main() {
-    clear
+    if [[ -t 1 ]] && command -v clear &> /dev/null; then
+        clear
+    fi
 
     echo -e "${BLUE}"
     echo "╔═══════════════════════════════════════════════════════════════╗"
@@ -265,7 +271,7 @@ main() {
         echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
         echo ""
         echo "You can now run:"
-        echo -e "  ${BLUE}flutter run -t lib/main_dev.dart${NC}"
+        echo -e "  ${BLUE}tool/flutter_local.sh run --flavor dev -t lib/main_dev.dart${NC}"
         echo ""
     else
         echo -e "${RED}═══════════════════════════════════════════════════════${NC}"
