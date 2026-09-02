@@ -3,7 +3,14 @@
 # Shared Flutter/Gradle environment for this machine. Keeping generated data on
 # the project volume prevents macOS system-temp failures when the root disk is
 # nearly full.
-FLUTTER_PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [ -n "${ZSH_VERSION:-}" ]; then
+  _ENV_SCRIPT_PATH="${(%):-%x}"
+elif [ -n "${BASH_SOURCE[0]:-}" ]; then
+  _ENV_SCRIPT_PATH="${BASH_SOURCE[0]}"
+else
+  _ENV_SCRIPT_PATH="$0"
+fi
+FLUTTER_PROJECT_ROOT="$(cd "$(dirname "$_ENV_SCRIPT_PATH")/.." && pwd)"
 
 mkdir -p \
   "$FLUTTER_PROJECT_ROOT/.tmp/gradle" \

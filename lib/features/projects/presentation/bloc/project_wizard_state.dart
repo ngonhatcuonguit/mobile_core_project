@@ -6,6 +6,10 @@ class ProjectWizardState extends Equatable {
     this.currentStep = 0,
     this.name = '',
     this.location = '',
+    this.provinceId,
+    this.provinceName,
+    this.districtId,
+    this.districtName,
     this.imagePath,
     this.floors = const [
       BuildingFloor(number: 1, length: 0, width: 0, height: 0),
@@ -30,11 +34,41 @@ class ProjectWizardState extends Equatable {
     this.showValidation = false,
   });
 
+  factory ProjectWizardState.fromProject(ConstructionProject project) {
+    final foundation = project.foundationStructure;
+    return ProjectWizardState(
+      name: project.name,
+      location: project.location,
+      provinceId: project.provinceId,
+      provinceName: project.provinceName,
+      districtId: project.districtId,
+      districtName: project.districtName,
+      imagePath: project.imagePath,
+      floors: project.floors,
+      roof: project.roof,
+      foundationType: foundation.foundationType,
+      structureType: foundation.structureType,
+      alignment: foundation.alignment,
+      mainBarDiameter: foundation.mainBarDiameter,
+      isolatedLength: foundation.isolatedLength,
+      isolatedWidth: foundation.isolatedWidth,
+      isolatedHeight: foundation.isolatedHeight,
+      columns: foundation.columns,
+      pileCaps: foundation.pileCaps,
+      materials: project.materials,
+      details: project.details,
+    );
+  }
+
   static const stepCount = 5;
 
   final int currentStep;
   final String name;
   final String location;
+  final String? provinceId;
+  final String? provinceName;
+  final String? districtId;
+  final String? districtName;
   final String? imagePath;
   final List<BuildingFloor> floors;
   final RoofSpec roof;
@@ -56,7 +90,9 @@ class ProjectWizardState extends Equatable {
   bool isStepValid(int step) {
     switch (step) {
       case 0:
-        return name.trim().isNotEmpty && location.trim().isNotEmpty;
+        return name.trim().isNotEmpty &&
+            location.trim().isNotEmpty &&
+            (provinceId == null || districtId != null);
       case 1:
         return floors.isNotEmpty &&
             floors.every(
@@ -120,6 +156,11 @@ class ProjectWizardState extends Equatable {
     int? currentStep,
     String? name,
     String? location,
+    String? provinceId,
+    String? provinceName,
+    String? districtId,
+    String? districtName,
+    bool clearDistrict = false,
     String? imagePath,
     bool clearImage = false,
     List<BuildingFloor>? floors,
@@ -143,6 +184,10 @@ class ProjectWizardState extends Equatable {
       currentStep: currentStep ?? this.currentStep,
       name: name ?? this.name,
       location: location ?? this.location,
+      provinceId: provinceId ?? this.provinceId,
+      provinceName: provinceName ?? this.provinceName,
+      districtId: clearDistrict ? null : districtId ?? this.districtId,
+      districtName: clearDistrict ? null : districtName ?? this.districtName,
       imagePath: clearImage ? null : imagePath ?? this.imagePath,
       floors: floors ?? this.floors,
       roof: roof ?? this.roof,
@@ -171,6 +216,10 @@ class ProjectWizardState extends Equatable {
         currentStep,
         name,
         location,
+        provinceId,
+        provinceName,
+        districtId,
+        districtName,
         imagePath,
         floors,
         roof,

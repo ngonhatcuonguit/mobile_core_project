@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
+import 'package:flutter_core_project/features/projects/data/project_cover_image_service.dart';
+import 'package:flutter_core_project/features/projects/domain/entities/construction_project.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_cubit.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_cubit.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_state.dart';
@@ -13,19 +15,23 @@ import 'package:flutter_core_project/features/projects/presentation/widgets/proj
 import 'package:flutter_core_project/services/localization_service.dart';
 
 class ProjectWizardPage extends StatelessWidget {
-  const ProjectWizardPage({super.key});
+  const ProjectWizardPage({super.key, this.initialProject});
+
+  final ConstructionProject? initialProject;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ProjectWizardCubit(),
-      child: const _ProjectWizardView(),
+      create: (_) => ProjectWizardCubit(initialProject: initialProject),
+      child: _ProjectWizardView(initialProject: initialProject),
     );
   }
 }
 
 class _ProjectWizardView extends StatefulWidget {
-  const _ProjectWizardView();
+  const _ProjectWizardView({this.initialProject});
+
+  final ConstructionProject? initialProject;
 
   @override
   State<_ProjectWizardView> createState() => _ProjectWizardViewState();
@@ -92,7 +98,17 @@ class _ProjectWizardViewState extends State<_ProjectWizardView> {
     if (!wizard.next()) return;
     setState(() => _saving = true);
     try {
-      await context.read<ProjectCubit>().create(wizard.buildProject());
+      final updatedProject = wizard.buildProject();
+      final projectCubit = context.read<ProjectCubit>();
+      if (widget.initialProject == null) {
+        await projectCubit.create(updatedProject);
+      } else {
+        await projectCubit.update(updatedProject);
+        final previousImage = widget.initialProject!.imagePath;
+        if (previousImage != updatedProject.imagePath) {
+          await const ProjectCoverImageService().delete(previousImage);
+        }
+      }
       if (mounted) _closeWithResult(true);
     } catch (_) {
       if (!mounted) return;
@@ -125,7 +141,11 @@ class _ProjectWizardViewState extends State<_ProjectWizardView> {
                 icon: const Icon(Icons.arrow_back_rounded),
               ),
               title: Text(
-                context.tr('project_add_title'),
+                context.tr(
+                  widget.initialProject == null
+                      ? 'project_add_title'
+                      : 'project_edit_title',
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(

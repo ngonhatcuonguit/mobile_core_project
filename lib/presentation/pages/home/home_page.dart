@@ -9,6 +9,7 @@ import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/features/projects/domain/entities/construction_project.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_cubit.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_state.dart';
+import 'package:flutter_core_project/features/projects/presentation/pages/project_detail_page.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -116,6 +117,23 @@ class _HomePageState extends State<HomePage> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(context.tr('coming_soon'))));
+  }
+
+  Future<void> _openProjectDetail(
+    ConstructionProject project, {
+    bool allowEditing = true,
+  }) async {
+    _autoScrollTimer?.cancel();
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ProjectDetailPage(
+          projectId: project.id,
+          initialProject: project,
+          allowEditing: allowEditing,
+        ),
+      ),
+    );
+    if (mounted) _scheduleAutoScroll();
   }
 
   @override
@@ -258,9 +276,19 @@ class _HomePageState extends State<HomePage> {
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
-                  child: _ProjectCard(
-                    project: projects[index % projects.length],
-                  ),
+                  child: Builder(builder: (context) {
+                    final project = projects[index % projects.length];
+                    return _ProjectCard(
+                      project: project,
+                      onTap: () {
+                        final entity = project.entity;
+                        _openProjectDetail(
+                          entity ?? project.toPreviewEntity(context),
+                          allowEditing: true,
+                        );
+                      },
+                    );
+                  }),
                 ),
               );
             },
@@ -343,14 +371,16 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _ProjectCard extends StatelessWidget {
-  const _ProjectCard({required this.project});
+  const _ProjectCard({required this.project, required this.onTap});
 
   final _ProjectData project;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
+      key: Key('projectCard_${project.entity?.id ?? project.titleKey}'),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -363,103 +393,118 @@ class _ProjectCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (project.imagePath == null || kIsWeb)
-                  Image.asset(
-                    project.assetPath,
-                    fit: BoxFit.cover,
-                    alignment: project.alignment,
-                  ),
-                if (project.imagePath != null && !kIsWeb)
-                  Image.file(
-                    File(project.imagePath!),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Image.asset(
-                      project.assetPath,
-                      fit: BoxFit.cover,
-                      alignment: project.alignment,
-                    ),
-                  ),
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Color(0x2A000000)],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      context.tr(
-                        project.isSavedProject
-                            ? 'project_saved_status'
-                            : 'project_status',
-                      ),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(22, 16, 22, 19),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  project.titleKey == null
-                      ? project.title
-                      : context.tr(project.titleKey!),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: 7),
-                Row(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    const Icon(Icons.location_on_rounded,
-                        color: AppColors.muted, size: 21),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        project.locationKey == null
-                            ? project.location
-                            : context.tr(project.locationKey!),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.muted,
-                            ),
+                    if (project.imagePath == null || kIsWeb)
+                      Image.asset(
+                        project.assetPath,
+                        fit: BoxFit.cover,
+                        alignment: project.alignment,
+                      ),
+                    if (project.imagePath != null && !kIsWeb)
+                      Image.file(
+                        File(project.imagePath!),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          project.assetPath,
+                          fit: BoxFit.cover,
+                          alignment: project.alignment,
+                        ),
+                      ),
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Color(0x2A000000)],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          context.tr(
+                            project.isSavedProject
+                                ? 'project_saved_status'
+                                : 'project_status',
+                          ),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 16, 22, 19),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      project.titleKey == null
+                          ? project.title
+                          : context.tr(project.titleKey!),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 7),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on_rounded,
+                          color: AppColors.muted,
+                          size: 21,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            project.locationKey == null
+                                ? project.location
+                                : context.tr(project.locationKey!),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: AppColors.muted,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -556,6 +601,7 @@ class _ProjectData {
     this.location = '',
     this.imagePath,
     this.isSavedProject = false,
+    this.entity,
   });
 
   factory _ProjectData.fromEntity(ConstructionProject project) {
@@ -567,6 +613,7 @@ class _ProjectData {
       location: project.location,
       imagePath: project.imagePath,
       isSavedProject: true,
+      entity: project,
     );
   }
 
@@ -578,6 +625,158 @@ class _ProjectData {
   final String? imagePath;
   String get assetPath => 'assets/images/projects/modern_townhouse.jpg';
   final bool isSavedProject;
+  final ConstructionProject? entity;
+
+  ConstructionProject toPreviewEntity(BuildContext context) {
+    final profile = _previewProfile;
+    final createdAt = DateTime(2026, 1, 1);
+    return ConstructionProject(
+      id: 'featured:$titleKey',
+      name: context.tr(titleKey!),
+      location: context.tr(locationKey!),
+      createdAt: createdAt,
+      updatedAt: createdAt,
+      floors: List.generate(
+        profile.floorCount,
+        (index) => BuildingFloor(
+          number: index + 1,
+          length: profile.length,
+          width: profile.width,
+          height: 3.3,
+        ),
+      ),
+      roof: RoofSpec(
+        type: profile.roofType,
+        length: profile.length,
+        width: profile.width,
+        height: profile.roofType == RoofType.flat ? 0.3 : 2,
+      ),
+      foundationStructure: FoundationStructureSpec(
+        foundationType: profile.foundationType,
+        structureType: StructureType.reinforcedConcrete,
+        alignment: profile.foundationType == FoundationType.strip
+            ? FoundationAlignment.balanced
+            : null,
+        columns: const [
+          ColumnSpec(
+            width: 0.2,
+            thickness: 0.2,
+            quantity: 8,
+            mainBarsCount: 4,
+            mainBarDiameter: 16,
+          ),
+        ],
+      ),
+      materials: [
+        ProjectMaterial(
+          selectionKey: 'catalog:brick',
+          catalogCode: 'brick',
+          name: context.tr('project_material_brick'),
+          unit: 'piece',
+          unitPrice: 1500,
+          type: ProjectMaterialType.material,
+        ),
+        ProjectMaterial(
+          selectionKey: 'catalog:cement',
+          catalogCode: 'cement',
+          name: context.tr('project_material_cement'),
+          unit: 'ton',
+          unitPrice: 1800000,
+          type: ProjectMaterialType.material,
+        ),
+        ProjectMaterial(
+          selectionKey: 'catalog:steel',
+          catalogCode: 'steel',
+          name: context.tr('project_material_steel'),
+          unit: 'ton',
+          unitPrice: 18000000,
+          type: ProjectMaterialType.material,
+        ),
+        ProjectMaterial(
+          selectionKey: 'catalog:labor',
+          catalogCode: 'labor',
+          name: context.tr('project_material_labor'),
+          unit: 'm2',
+          unitPrice: 1350000,
+          type: ProjectMaterialType.labor,
+        ),
+      ],
+      details: ProjectDetails(
+        foundationSegments: [
+          FoundationSegment(2 * (profile.length + profile.width)),
+        ],
+        walls: [
+          WallSpec(
+            type: WallType.wall200,
+            plasterSides: 2,
+            length: 2 * (profile.length + profile.width),
+            height: 3.3 * profile.floorCount,
+          ),
+        ],
+        openings: const [
+          OpeningSpec(
+            type: OpeningType.door,
+            width: 1.2,
+            height: 2.2,
+            quantity: 2,
+          ),
+          OpeningSpec(
+            type: OpeningType.window,
+            width: 1.4,
+            height: 1.4,
+            quantity: 6,
+          ),
+        ],
+        bathrooms: const [BathroomSpec(5)],
+        stairs: [StairSpec(21 * (profile.floorCount - 1))],
+      ),
+    );
+  }
+
+  _FeaturedProjectProfile get _previewProfile {
+    switch (titleKey) {
+      case 'project_green_villa':
+        return const _FeaturedProjectProfile(
+          floorCount: 2,
+          length: 12,
+          width: 9,
+          roofType: RoofType.tile,
+          foundationType: FoundationType.raft,
+        );
+      case 'project_city_house':
+        return const _FeaturedProjectProfile(
+          floorCount: 3,
+          length: 8,
+          width: 5,
+          roofType: RoofType.flat,
+          foundationType: FoundationType.strip,
+        );
+      default:
+        return const _FeaturedProjectProfile(
+          floorCount: 2,
+          length: 10,
+          width: 6,
+          roofType: RoofType.tile,
+          foundationType: FoundationType.strip,
+        );
+    }
+  }
+}
+
+class _FeaturedProjectProfile {
+  const _FeaturedProjectProfile({
+    required this.floorCount,
+    required this.length,
+    required this.width,
+    required this.roofType,
+    required this.foundationType,
+  });
+
+  final int floorCount;
+  final double length;
+  final double width;
+  final RoofType roofType;
+  final FoundationType foundationType;
 }
 
 class _ServiceData {

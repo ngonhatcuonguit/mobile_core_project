@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/common/widgets/media/image_source_bottom_sheet.dart';
 import 'package:flutter_core_project/common/widgets/sheets/app_bottom_sheet_header.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
+import 'package:flutter_core_project/core/data/vietnam_districts.dart';
 import 'package:flutter_core_project/core/data/vietnam_provinces.dart';
 import 'package:flutter_core_project/features/projects/data/project_cover_image_service.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_cubit.dart';
@@ -47,7 +48,9 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
       final cubit = context.read<ProjectWizardCubit>();
       final previousPath = cubit.state.imagePath;
       cubit.setImage(savedPath);
-      await _imageService.delete(previousPath);
+      if (!cubit.isEditing || previousPath != cubit.originalImagePath) {
+        await _imageService.delete(previousPath);
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -60,11 +63,14 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
   }
 
   Future<void> _removeImage(String imagePath) async {
-    context.read<ProjectWizardCubit>().setImage(null);
-    await _imageService.delete(imagePath);
+    final cubit = context.read<ProjectWizardCubit>();
+    cubit.setImage(null);
+    if (!cubit.isEditing || imagePath != cubit.originalImagePath) {
+      await _imageService.delete(imagePath);
+    }
   }
 
-  Future<void> _chooseProvince(String selectedProvince) async {
+  Future<void> _chooseProvince(ProjectWizardState state) async {
     final province = await showModalBottomSheet<VietnamProvince>(
       context: context,
       isScrollControlled: true,
@@ -78,15 +84,69 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
         child: SafeArea(
           top: false,
           child: _ProvincePickerSheet(
-            selectedProvince: selectedProvince,
+            selectedProvince: state.provinceName ?? '',
           ),
         ),
       ),
     );
-    if (province != null && mounted) {
-      context.read<ProjectWizardCubit>().updateBasicInfo(
-            location: province.name,
-          );
+    if (province == null || !mounted) return;
+
+    final previousDistrictId =
+        state.provinceId == province.id ? state.districtId : null;
+    context.read<ProjectWizardCubit>().selectProvince(province);
+    await _chooseDistrict(province, previousDistrictId);
+  }
+
+  Future<void> _chooseCurrentProvinceDistrict(ProjectWizardState state) async {
+    VietnamProvince? province;
+    for (final item in vietnamProvinces) {
+      if (item.id == state.provinceId) {
+        province = item;
+        break;
+      }
+    }
+    if (province == null) {
+      await _chooseProvince(state);
+      return;
+    }
+    await _chooseDistrict(province, state.districtId);
+  }
+
+  Future<void> _chooseDistrict(
+    VietnamProvince province,
+    String? selectedDistrictId,
+  ) async {
+    final districts = await VietnamDistrictCatalog.forProvince(province.id);
+    if (!mounted) return;
+    if (districts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('project_district_load_error'))),
+      );
+      return;
+    }
+
+    final district = await showModalBottomSheet<VietnamDistrict>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: _DistrictPickerSheet(
+            province: province,
+            districts: districts,
+            selectedDistrictId: selectedDistrictId,
+          ),
+        ),
+      ),
+    );
+    if (district != null && mounted) {
+      context.read<ProjectWizardCubit>().selectDistrict(district);
     }
   }
 
@@ -198,26 +258,57 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
             const SizedBox(height: 16),
             InkWell(
               key: const Key('projectLocationField'),
-              onTap: () => _chooseProvince(state.location),
-              borderRadius: BorderRadius.circular(10),
+              onTap: () => _chooseProvince(state),
+              borderRadius: BorderRadius.circular(12),
               child: InputDecorator(
-                isEmpty: state.location.isEmpty,
+                isEmpty: state.provinceName == null,
                 decoration: InputDecoration(
-                  labelText: context.tr('project_location'),
+                  labelText: context.tr('project_province_field'),
                   floatingLabelBehavior: FloatingLabelBehavior.always,
                   prefixIcon: const Icon(Icons.location_on_outlined),
                   suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
-                  errorText:
-                      state.showValidation && state.location.trim().isEmpty
-                          ? context.tr('project_location_required')
-                          : null,
+                  errorText: state.showValidation &&
+                          (state.provinceName == null ||
+                              state.provinceName!.trim().isEmpty)
+                      ? context.tr('project_location_required')
+                      : null,
                   border: projectStepInputBorder,
                 ),
                 child: Text(
-                  state.location.isEmpty
-                      ? context.tr('project_location_hint')
-                      : state.location,
-                  style: state.location.isEmpty
+                  state.provinceName ??
+                      (state.provinceId == null && state.location.isNotEmpty
+                          ? state.location
+                          : context.tr('project_province_hint')),
+                  style: state.provinceName == null && state.location.isEmpty
+                      ? Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Theme.of(context).hintColor,
+                          )
+                      : Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            InkWell(
+              key: const Key('projectDistrictField'),
+              onTap: () => _chooseCurrentProvinceDistrict(state),
+              borderRadius: BorderRadius.circular(12),
+              child: InputDecorator(
+                isEmpty: state.districtName == null,
+                decoration: InputDecoration(
+                  labelText: context.tr('project_district_field'),
+                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                  prefixIcon: const Icon(Icons.map_outlined),
+                  suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
+                  errorText: state.showValidation &&
+                          state.provinceId != null &&
+                          state.districtId == null
+                      ? context.tr('project_district_required')
+                      : null,
+                  border: projectStepInputBorder,
+                ),
+                child: Text(
+                  state.districtName ?? context.tr('project_district_hint'),
+                  style: state.districtName == null
                       ? Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Theme.of(context).hintColor,
                           )
@@ -332,11 +423,11 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
                         ),
                   contentPadding: const EdgeInsets.symmetric(vertical: 10),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
                       color: Theme.of(context)
                           .dividerColor
@@ -345,7 +436,7 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(
                       color: AppColors.primary,
                       width: 1.2,
@@ -405,6 +496,206 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
                               )
                             : null,
                         onTap: () => Navigator.pop(context, province),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DistrictPickerSheet extends StatefulWidget {
+  const _DistrictPickerSheet({
+    required this.province,
+    required this.districts,
+    required this.selectedDistrictId,
+  });
+
+  final VietnamProvince province;
+  final List<VietnamDistrict> districts;
+  final String? selectedDistrictId;
+
+  @override
+  State<_DistrictPickerSheet> createState() => _DistrictPickerSheetState();
+}
+
+class _DistrictPickerSheetState extends State<_DistrictPickerSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  late List<VietnamDistrict> _filteredDistricts;
+
+  bool get _showsLegacyProvince =>
+      widget.districts.map((item) => item.legacyProvinceName).toSet().length >
+      1;
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredDistricts = widget.districts;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showSelectedItem());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _showSelectedItem() {
+    if (!_scrollController.hasClients || widget.selectedDistrictId == null) {
+      return;
+    }
+    final index = widget.districts.indexWhere(
+      (district) => district.id == widget.selectedDistrictId,
+    );
+    if (index < 0) return;
+    final itemExtent = _showsLegacyProvince ? 68.0 : 56.0;
+    final target = (index * itemExtent - 112).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+    _scrollController.jumpTo(target);
+  }
+
+  void _search(String query) {
+    final normalizedQuery = _normalizeVietnamese(query.trim());
+    setState(() {
+      _filteredDistricts = normalizedQuery.isEmpty
+          ? widget.districts
+          : widget.districts
+              .where(
+                (district) => _normalizeVietnamese(
+                  '${district.name} ${district.legacyProvinceName}',
+                ).contains(normalizedQuery),
+              )
+              .toList(growable: false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height * 0.82;
+    return SizedBox(
+      height: height.clamp(480.0, 720.0),
+      child: Column(
+        children: [
+          AppBottomSheetHeader(
+            title: context.tr('project_select_district'),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),
+            child: SizedBox(
+              height: 44,
+              child: TextField(
+                key: const Key('districtSearchField'),
+                controller: _searchController,
+                textInputAction: TextInputAction.search,
+                onChanged: _search,
+                textAlignVertical: TextAlignVertical.center,
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest
+                      .withValues(alpha: 0.55),
+                  hintText: context.tr('project_search_district'),
+                  prefixIcon: const Icon(Icons.search_rounded, size: 21),
+                  prefixIconConstraints: const BoxConstraints(minWidth: 42),
+                  suffixIcon: _searchController.text.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: context.tr('clear'),
+                          onPressed: () {
+                            _searchController.clear();
+                            _search('');
+                          },
+                          icon: const Icon(Icons.close_rounded, size: 19),
+                        ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 0.65),
+                      width: 0.7,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.2,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: _filteredDistricts.isEmpty
+                ? Center(child: Text(context.tr('project_district_not_found')))
+                : ListView.separated(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.only(bottom: 20),
+                    itemCount: _filteredDistricts.length,
+                    separatorBuilder: (context, index) => Divider(
+                      height: 0.5,
+                      thickness: 0.5,
+                      indent: 20,
+                      endIndent: 20,
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 0.72),
+                    ),
+                    itemBuilder: (context, index) {
+                      final district = _filteredDistricts[index];
+                      final selected = district.id == widget.selectedDistrictId;
+                      return ListTile(
+                        key: Key('district_${district.id}'),
+                        selected: selected,
+                        selectedTileColor:
+                            AppColors.primary.withValues(alpha: 0.055),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 20),
+                        visualDensity: const VisualDensity(vertical: -1),
+                        title: Text(
+                          district.name,
+                          style:
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    fontWeight: selected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                  ),
+                        ),
+                        subtitle: _showsLegacyProvince
+                            ? Text(
+                                district.legacyProvinceName,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              )
+                            : null,
+                        leading: Icon(
+                          Icons.location_on_rounded,
+                          size: 21,
+                          color: selected
+                              ? AppColors.primary
+                              : Theme.of(context).colorScheme.outlineVariant,
+                        ),
+                        trailing: selected
+                            ? const Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.primary,
+                              )
+                            : null,
+                        onTap: () => Navigator.pop(context, district),
                       );
                     },
                   ),

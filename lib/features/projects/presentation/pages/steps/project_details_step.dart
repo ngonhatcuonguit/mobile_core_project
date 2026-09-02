@@ -421,6 +421,7 @@ class _WallEditor extends StatelessWidget {
               Expanded(
                 child: DropdownButtonFormField<WallType>(
                   initialValue: value.type,
+                  isExpanded: true,
                   decoration: InputDecoration(
                     labelText: context.tr('project_wall_type'),
                     border: projectStepInputBorder,
@@ -444,6 +445,7 @@ class _WallEditor extends StatelessWidget {
               Expanded(
                 child: DropdownButtonFormField<int>(
                   initialValue: value.plasterSides,
+                  isExpanded: true,
                   decoration: InputDecoration(
                     labelText: context.tr('project_plaster_sides'),
                     border: projectStepInputBorder,
@@ -542,6 +544,7 @@ class _OpeningEditor extends StatelessWidget {
         children: [
           DropdownButtonFormField<OpeningType>(
             initialValue: value.type,
+            isExpanded: true,
             decoration: InputDecoration(
               labelText: context.tr('project_opening_type'),
               border: projectStepInputBorder,

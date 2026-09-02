@@ -1,9 +1,12 @@
+import 'package:flutter_core_project/core/data/vietnam_districts.dart';
 import 'package:flutter_core_project/features/projects/domain/entities/construction_project.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_cubit.dart';
 import 'package:flutter_core_project/core/data/vietnam_provinces.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late ProjectWizardCubit cubit;
 
   setUp(() => cubit = ProjectWizardCubit());
@@ -18,6 +21,26 @@ void main() {
     expect(
       vietnamProvinces.where((province) => province.isMunicipality),
       hasLength(6),
+    );
+  });
+
+  test('district catalog maps legacy districts to current provinces', () async {
+    final districts = await VietnamDistrictCatalog.forProvince(
+      'ho_chi_minh_city',
+    );
+
+    expect(districts, isNotEmpty);
+    expect(
+      districts.any((district) => district.name == 'Thành phố Thủ Đức'),
+      isTrue,
+    );
+    expect(
+      districts.map((district) => district.legacyProvinceName).toSet(),
+      containsAll([
+        'Thành phố Hồ Chí Minh',
+        'Tỉnh Bình Dương',
+        'Tỉnh Bà Rịa - Vũng Tàu',
+      ]),
     );
   });
 
@@ -64,5 +87,73 @@ void main() {
     expect(project.floors.single.area, 50);
     expect(project.materials.single.catalogCode, 'brick');
     expect(project.foundationStructure.columns, isNotEmpty);
+  });
+
+  test('edit wizard loads all project data and preserves project identity', () {
+    final createdAt = DateTime(2026, 8, 1);
+    final source = ConstructionProject(
+      id: 'existing-project',
+      name: 'Nhà phố hiện tại',
+      location: 'Quận Ba Đình, Thành phố Hà Nội',
+      provinceId: 'ha_noi',
+      provinceName: 'Thành phố Hà Nội',
+      districtId: '1',
+      districtName: 'Quận Ba Đình',
+      imagePath: '/tmp/project.jpg',
+      createdAt: createdAt,
+      updatedAt: createdAt,
+      floors: const [
+        BuildingFloor(number: 1, length: 12, width: 6, height: 3.4),
+      ],
+      roof: const RoofSpec(
+        type: RoofType.tile,
+        length: 12,
+        width: 6,
+        height: 2,
+      ),
+      foundationStructure: const FoundationStructureSpec(
+        foundationType: FoundationType.strip,
+        structureType: StructureType.reinforcedConcrete,
+        alignment: FoundationAlignment.balanced,
+        columns: [
+          ColumnSpec(
+            width: 0.2,
+            thickness: 0.2,
+            quantity: 8,
+            mainBarsCount: 4,
+            mainBarDiameter: 16,
+          ),
+        ],
+      ),
+      materials: const [
+        ProjectMaterial(
+          selectionKey: 'catalog:brick',
+          name: 'Gạch xây',
+          unit: 'piece',
+          unitPrice: 1500,
+          type: ProjectMaterialType.material,
+        ),
+      ],
+      details: const ProjectDetails(
+        foundationSegments: [FoundationSegment(24)],
+      ),
+    );
+    final editingCubit = ProjectWizardCubit(initialProject: source);
+    addTearDown(editingCubit.close);
+
+    expect(editingCubit.isEditing, isTrue);
+    expect(editingCubit.state.floors, source.floors);
+    expect(editingCubit.state.materials, source.materials);
+    expect(editingCubit.state.provinceId, source.provinceId);
+    expect(editingCubit.state.districtId, source.districtId);
+    expect(editingCubit.state.canComplete, isTrue);
+
+    editingCubit.updateBasicInfo(name: 'Nhà phố đã sửa');
+    final updated = editingCubit.buildProject();
+
+    expect(updated.id, source.id);
+    expect(updated.createdAt, source.createdAt);
+    expect(updated.name, 'Nhà phố đã sửa');
+    expect(updated.updatedAt.isAfter(source.updatedAt), isTrue);
   });
 }

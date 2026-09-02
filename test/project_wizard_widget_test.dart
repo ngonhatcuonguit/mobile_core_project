@@ -55,7 +55,20 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('province_ho_chi_minh_city')));
     await tester.pumpAndSettle();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('districtSearchField')), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const Key('districtSearchField')),
+      'thu duc',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('district_769')));
+    await tester.pumpAndSettle();
     expect(find.text('Thành phố Hồ Chí Minh'), findsOneWidget);
+    expect(find.text('Thành phố Thủ Đức'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('projectLocationField')));
     await tester.pumpAndSettle();
@@ -70,6 +83,20 @@ void main() {
       tester.element(
         find.byKey(const Key('province_ho_chi_minh_city')),
       ),
+    ).pop();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('projectDistrictField')));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('district_769')),
+        matching: find.byIcon(Icons.check_circle_rounded),
+      ),
+      findsOneWidget,
+    );
+    Navigator.of(
+      tester.element(find.byKey(const Key('district_769'))),
     ).pop();
     await tester.pumpAndSettle();
 
@@ -125,7 +152,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Nhà phố kiểm thử'), findsOneWidget);
-    expect(find.text('Thành phố Hồ Chí Minh'), findsWidgets);
+    expect(find.text('Thành phố Thủ Đức, Thành phố Hồ Chí Minh'), findsWidgets);
     expect(find.text('Đã tạo dự án mới.'), findsOneWidget);
   });
 }

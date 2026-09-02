@@ -39,6 +39,14 @@ class ProjectCubit extends Cubit<ProjectState> {
   }
 
   Future<void> create(ConstructionProject project) async {
+    await _persist(project);
+  }
+
+  Future<void> update(ConstructionProject project) async {
+    await _persist(project);
+  }
+
+  Future<void> _persist(ConstructionProject project) async {
     emit(state.copyWith(status: ProjectStatus.saving, clearError: true));
     try {
       await _saveProject(project);

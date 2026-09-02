@@ -11,7 +11,7 @@ class ProjectDatabase implements ProjectStore {
   static final ProjectDatabase instance = ProjectDatabase();
 
   static const _databaseName = 'construction_projects.db';
-  static const _databaseVersion = 1;
+  static const _databaseVersion = 2;
 
   final DatabaseFactory _databaseFactory;
   final String? _databasePath;
@@ -32,6 +32,7 @@ class ProjectDatabase implements ProjectStore {
         version: _databaseVersion,
         onConfigure: (database) => database.execute('PRAGMA foreign_keys = ON'),
         onCreate: _createSchema,
+        onUpgrade: _upgradeSchema,
       ),
     );
     _database = opened;
@@ -44,6 +45,10 @@ class ProjectDatabase implements ProjectStore {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         location TEXT NOT NULL,
+        province_id TEXT,
+        province_name TEXT,
+        district_id TEXT,
+        district_name TEXT,
         image_path TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
@@ -168,6 +173,19 @@ class ProjectDatabase implements ProjectStore {
     );
   }
 
+  Future<void> _upgradeSchema(
+    Database database,
+    int oldVersion,
+    int newVersion,
+  ) async {
+    if (oldVersion < 2) {
+      await database.execute('ALTER TABLE projects ADD province_id TEXT');
+      await database.execute('ALTER TABLE projects ADD province_name TEXT');
+      await database.execute('ALTER TABLE projects ADD district_id TEXT');
+      await database.execute('ALTER TABLE projects ADD district_name TEXT');
+    }
+  }
+
   @override
   Future<List<ConstructionProject>> getAll() async {
     final database = await _db;
@@ -261,6 +279,10 @@ class ProjectDatabase implements ProjectStore {
       id: id,
       name: row['name']! as String,
       location: row['location']! as String,
+      provinceId: row['province_id'] as String?,
+      provinceName: row['province_name'] as String?,
+      districtId: row['district_id'] as String?,
+      districtName: row['district_name'] as String?,
       imagePath: row['image_path'] as String?,
       createdAt: DateTime.parse(row['created_at']! as String),
       updatedAt: DateTime.parse(row['updated_at']! as String),
@@ -392,6 +414,10 @@ class ProjectDatabase implements ProjectStore {
           'id': project.id,
           'name': project.name,
           'location': project.location,
+          'province_id': project.provinceId,
+          'province_name': project.provinceName,
+          'district_id': project.districtId,
+          'district_name': project.districtName,
           'image_path': project.imagePath,
           'created_at': project.createdAt.toIso8601String(),
           'updated_at': project.updatedAt.toIso8601String(),

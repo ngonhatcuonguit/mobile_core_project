@@ -36,7 +36,11 @@ void main() {
     final project = ConstructionProject(
       id: 'project-1',
       name: 'Nhà phố Bình An',
-      location: 'Thủ Đức, TP.HCM',
+      location: 'Thành phố Thủ Đức, Thành phố Hồ Chí Minh',
+      provinceId: 'ho_chi_minh_city',
+      provinceName: 'Thành phố Hồ Chí Minh',
+      districtId: '769',
+      districtName: 'Thành phố Thủ Đức',
       imagePath: '/tmp/project.jpg',
       createdAt: createdAt,
       updatedAt: createdAt,
@@ -104,9 +108,24 @@ void main() {
     final loaded = (await database.getAll()).single;
 
     expect(loaded, project);
+    expect(loaded.provinceId, 'ho_chi_minh_city');
+    expect(loaded.districtId, '769');
     expect(loaded.totalFloorArea, 95);
     expect(loaded.details.walls.single.area, closeTo(59.4, 0.001));
     expect(loaded.details.openings.single.area, closeTo(6.72, 0.001));
+
+    final updated = project.copyWith(
+      name: 'Nhà phố Bình An cập nhật',
+      location: 'Thành phố Hồ Chí Minh',
+      updatedAt: createdAt.add(const Duration(days: 1)),
+    );
+    await database.save(updated);
+    final reloaded = (await database.getAll()).single;
+
+    expect(reloaded, updated);
+    expect(reloaded.floors, hasLength(2));
+    expect(reloaded.foundationStructure.columns, hasLength(1));
+    expect(reloaded.details.walls, hasLength(1));
 
     await database.delete(project.id);
     expect(await database.getAll(), isEmpty);

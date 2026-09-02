@@ -115,6 +115,30 @@ class FoundationStructureSpec extends Equatable {
   final List<ColumnSpec> columns;
   final List<PileCapSpec> pileCaps;
 
+  FoundationStructureSpec copyWith({
+    FoundationType? foundationType,
+    StructureType? structureType,
+    FoundationAlignment? alignment,
+    int? mainBarDiameter,
+    double? isolatedLength,
+    double? isolatedWidth,
+    double? isolatedHeight,
+    List<ColumnSpec>? columns,
+    List<PileCapSpec>? pileCaps,
+  }) {
+    return FoundationStructureSpec(
+      foundationType: foundationType ?? this.foundationType,
+      structureType: structureType ?? this.structureType,
+      alignment: alignment ?? this.alignment,
+      mainBarDiameter: mainBarDiameter ?? this.mainBarDiameter,
+      isolatedLength: isolatedLength ?? this.isolatedLength,
+      isolatedWidth: isolatedWidth ?? this.isolatedWidth,
+      isolatedHeight: isolatedHeight ?? this.isolatedHeight,
+      columns: columns ?? this.columns,
+      pileCaps: pileCaps ?? this.pileCaps,
+    );
+  }
+
   @override
   List<Object?> get props => [
         foundationType,
@@ -270,12 +294,20 @@ class ConstructionProject extends Equatable {
     required this.materials,
     required this.details,
     this.imagePath,
+    this.provinceId,
+    this.provinceName,
+    this.districtId,
+    this.districtName,
   });
 
   final String id;
   final String name;
   final String location;
   final String? imagePath;
+  final String? provinceId;
+  final String? provinceName;
+  final String? districtId;
+  final String? districtName;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<BuildingFloor> floors;
@@ -286,12 +318,50 @@ class ConstructionProject extends Equatable {
 
   double get totalFloorArea => floors.fold(0, (sum, floor) => sum + floor.area);
 
+  ConstructionProject copyWith({
+    String? name,
+    String? location,
+    String? imagePath,
+    String? provinceId,
+    String? provinceName,
+    String? districtId,
+    String? districtName,
+    DateTime? updatedAt,
+    List<BuildingFloor>? floors,
+    RoofSpec? roof,
+    FoundationStructureSpec? foundationStructure,
+    List<ProjectMaterial>? materials,
+    ProjectDetails? details,
+  }) {
+    return ConstructionProject(
+      id: id,
+      name: name ?? this.name,
+      location: location ?? this.location,
+      imagePath: imagePath ?? this.imagePath,
+      provinceId: provinceId ?? this.provinceId,
+      provinceName: provinceName ?? this.provinceName,
+      districtId: districtId ?? this.districtId,
+      districtName: districtName ?? this.districtName,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      floors: floors ?? this.floors,
+      roof: roof ?? this.roof,
+      foundationStructure: foundationStructure ?? this.foundationStructure,
+      materials: materials ?? this.materials,
+      details: details ?? this.details,
+    );
+  }
+
   @override
   List<Object?> get props => [
         id,
         name,
         location,
         imagePath,
+        provinceId,
+        provinceName,
+        districtId,
+        districtName,
         createdAt,
         updatedAt,
         floors,

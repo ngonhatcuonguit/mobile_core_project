@@ -1,15 +1,59 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_core_project/core/data/vietnam_districts.dart';
+import 'package:flutter_core_project/core/data/vietnam_provinces.dart';
 import 'package:flutter_core_project/features/projects/domain/entities/construction_project.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_wizard_state.dart';
 
 class ProjectWizardCubit extends Cubit<ProjectWizardState> {
-  ProjectWizardCubit() : super(const ProjectWizardState());
+  ProjectWizardCubit({ConstructionProject? initialProject})
+      : _initialProject = initialProject,
+        super(
+          initialProject == null
+              ? const ProjectWizardState()
+              : ProjectWizardState.fromProject(initialProject),
+        );
+
+  final ConstructionProject? _initialProject;
+
+  bool get isEditing => _initialProject != null;
+
+  String? get originalImagePath => _initialProject?.imagePath;
 
   void updateBasicInfo({String? name, String? location}) {
     emit(
       state.copyWith(
         name: name,
         location: location,
+        showValidation: false,
+      ),
+    );
+  }
+
+  void selectProvince(VietnamProvince province) {
+    final changedProvince = state.provinceId != province.id;
+    emit(
+      state.copyWith(
+        location: changedProvince
+            ? province.name
+            : state.districtName == null
+                ? province.name
+                : '${state.districtName}, ${province.name}',
+        provinceId: province.id,
+        provinceName: province.name,
+        clearDistrict: changedProvince,
+        showValidation: false,
+      ),
+    );
+  }
+
+  void selectDistrict(VietnamDistrict district) {
+    final provinceName = state.provinceName;
+    if (provinceName == null) return;
+    emit(
+      state.copyWith(
+        location: '${district.name}, $provinceName',
+        districtId: district.id,
+        districtName: district.name,
         showValidation: false,
       ),
     );
@@ -229,11 +273,15 @@ class ProjectWizardCubit extends Cubit<ProjectWizardState> {
     }
     final now = DateTime.now();
     return ConstructionProject(
-      id: '${now.microsecondsSinceEpoch}',
+      id: _initialProject?.id ?? '${now.microsecondsSinceEpoch}',
       name: state.name.trim(),
       location: state.location.trim(),
+      provinceId: state.provinceId,
+      provinceName: state.provinceName,
+      districtId: state.districtId,
+      districtName: state.districtName,
       imagePath: state.imagePath,
-      createdAt: now,
+      createdAt: _initialProject?.createdAt ?? now,
       updatedAt: now,
       floors: state.floors,
       roof: state.roof,
