@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +10,7 @@ import 'package:flutter_core_project/features/projects/domain/services/project_c
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_cubit.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_state.dart';
 import 'package:flutter_core_project/features/projects/presentation/pages/project_wizard_page.dart';
+import 'package:flutter_core_project/features/projects/presentation/widgets/project_cover_image.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
 enum _ProjectAction { calculate, exportPdf, share }
@@ -172,7 +172,10 @@ class _ProjectDetailView extends StatelessWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            _ProjectCover(project: project),
+            ProjectCoverImage(
+              key: const Key('projectDetailCover'),
+              imagePath: project.imagePath,
+            ),
             const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -321,26 +324,6 @@ class _CollapsedProjectTitle extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
       ),
-    );
-  }
-}
-
-class _ProjectCover extends StatelessWidget {
-  const _ProjectCover({required this.project});
-
-  final ConstructionProject project;
-
-  @override
-  Widget build(BuildContext context) {
-    const fallback = 'assets/images/projects/modern_townhouse.jpg';
-    final path = project.imagePath;
-    if (path == null || kIsWeb) {
-      return Image.asset(fallback, fit: BoxFit.cover);
-    }
-    return Image.file(
-      File(path),
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Image.asset(fallback, fit: BoxFit.cover),
     );
   }
 }

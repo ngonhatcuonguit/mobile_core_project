@@ -95,6 +95,10 @@ void main() {
       find.byKey(const Key('libraryPriceField')),
       '1250',
     );
+    final formattedPriceField = tester.widget<TextFormField>(
+      find.byKey(const Key('libraryPriceField')),
+    );
+    expect(formattedPriceField.controller!.text, '1.250');
     await tester.tap(find.byKey(const Key('libraryType_labor')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('libraryLengthField')), findsNothing);
@@ -126,6 +130,10 @@ void main() {
 
     await tester.tap(find.byKey(const Key('editFromDetailButton')));
     await tester.pumpAndSettle();
+    final editingPriceField = tester.widget<TextFormField>(
+      find.byKey(const Key('libraryPriceField')),
+    );
+    expect(editingPriceField.controller!.text, '1.250');
     await tester.enterText(
       find.byKey(const Key('libraryNameField')),
       'Gạch xây mới',

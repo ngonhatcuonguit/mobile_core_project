@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
+import 'package:flutter_core_project/core/formatters/vietnamese_currency_input_formatter.dart';
 import 'package:flutter_core_project/features/material_library/domain/entities/material_library_item.dart';
 import 'package:flutter_core_project/features/material_library/presentation/bloc/material_library_cubit.dart';
 import 'package:flutter_core_project/features/material_library/presentation/bloc/material_library_state.dart';
@@ -683,7 +684,11 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
     final item = widget.initialItem;
     _nameController = TextEditingController(text: item?.name ?? '');
     _priceController = TextEditingController(
-      text: item == null ? '' : item.price.round().toString(),
+      text: item == null
+          ? ''
+          : VietnameseCurrencyInputFormatter.formatDigits(
+              item.price.round().toString(),
+            ),
     );
     _type = item?.type ?? LibraryItemType.material;
     final unit = item?.unit ?? 'piece';
@@ -744,7 +749,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
       id: widget.initialItem?.id,
       catalogCode: widget.initialItem?.catalogCode,
       name: _nameController.text.trim(),
-      price: double.parse(_priceController.text),
+      price: VietnameseCurrencyInputFormatter.parse(_priceController.text)!,
       unit: _selectedUnit == 'custom'
           ? _customUnitController.text.trim()
           : _selectedUnit,
@@ -868,12 +873,14 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
                   controller: _priceController,
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.next,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: const [
+                    VietnameseCurrencyInputFormatter(),
+                  ],
                   decoration: InputDecoration(
                     labelText: context.tr('library_price'),
                     hintText: context.tr('library_price_hint'),
                     prefixIcon: const Icon(Icons.payments_outlined),
-                    suffixText: '₫',
+                    suffixText: 'đ',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -882,7 +889,9 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
                     if (value == null || value.isEmpty) {
                       return context.tr('library_price_required');
                     }
-                    final price = double.tryParse(value);
+                    final price = VietnameseCurrencyInputFormatter.parse(
+                      value,
+                    );
                     return price == null || price < 0
                         ? context.tr('library_price_invalid')
                         : null;

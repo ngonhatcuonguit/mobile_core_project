@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/app/construction_plan_app.dart';
+import 'package:flutter_core_project/core/configs/assets/app_images.dart';
 import 'package:flutter_core_project/features/material_library/data/material_library_store.dart';
 import 'package:flutter_core_project/features/projects/data/project_store.dart';
 import 'package:flutter_core_project/features/projects/domain/entities/construction_project.dart';
+import 'package:flutter_core_project/features/projects/presentation/widgets/project_cover_image.dart';
 import 'package:flutter_core_project/presentation/choose_mode/bloc/locale_cubit.dart';
 import 'package:flutter_core_project/presentation/choose_mode/bloc/theme_cubit.dart';
 import 'package:flutter_core_project/utils/in_memory_storage.dart';
@@ -33,6 +35,24 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('projectDetailPage')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('projectDetailPage')),
+        matching: find.byType(ProjectCoverImage),
+      ),
+      findsOneWidget,
+    );
+    final defaultCover = tester.widget<Image>(
+      find.descendant(
+        of: find.byKey(const Key('projectDetailCover')),
+        matching: find.byType(Image),
+      ),
+    );
+    expect(defaultCover.image, isA<AssetImage>());
+    expect(
+      (defaultCover.image as AssetImage).assetName,
+      AppImages.modernTownhouse,
+    );
     expect(find.text('Tổng quan công trình'), findsOneWidget);
     expect(find.text('169.320.000 ₫'), findsWidgets);
     expect(tester.takeException(), isNull);

@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_core_project/core/configs/app_config.dart';
@@ -10,6 +8,7 @@ import 'package:flutter_core_project/features/projects/domain/entities/construct
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_cubit.dart';
 import 'package:flutter_core_project/features/projects/presentation/bloc/project_state.dart';
 import 'package:flutter_core_project/features/projects/presentation/pages/project_detail_page.dart';
+import 'package:flutter_core_project/features/projects/presentation/widgets/project_cover_image.dart';
 import 'package:flutter_core_project/services/localization_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -404,22 +403,10 @@ class _ProjectCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (project.imagePath == null || kIsWeb)
-                      Image.asset(
-                        project.assetPath,
-                        fit: BoxFit.cover,
-                        alignment: project.alignment,
-                      ),
-                    if (project.imagePath != null && !kIsWeb)
-                      Image.file(
-                        File(project.imagePath!),
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          project.assetPath,
-                          fit: BoxFit.cover,
-                          alignment: project.alignment,
-                        ),
-                      ),
+                    ProjectCoverImage(
+                      imagePath: project.imagePath,
+                      alignment: project.alignment,
+                    ),
                     const DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -623,7 +610,6 @@ class _ProjectData {
   final String title;
   final String location;
   final String? imagePath;
-  String get assetPath => 'assets/images/projects/modern_townhouse.jpg';
   final bool isSavedProject;
   final ConstructionProject? entity;
 
