@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_core_project/common/widgets/button/gradient_app_button.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/features/projects/data/project_cover_image_service.dart';
 import 'package:flutter_core_project/features/projects/domain/entities/construction_project.dart';
@@ -149,7 +150,7 @@ class _ProjectWizardViewState extends State<_ProjectWizardView> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.primary,
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w700,
                     ),
               ),
@@ -235,6 +236,7 @@ class _WizardActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Material(
       color: Theme.of(context).colorScheme.surface,
       elevation: 12,
@@ -259,10 +261,10 @@ class _WizardActions extends StatelessWidget {
                     maxLines: 1,
                   ),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.055),
-                    side: const BorderSide(
-                      color: AppColors.primary,
+                    foregroundColor: accent,
+                    backgroundColor: accent.withValues(alpha: 0.055),
+                    side: BorderSide(
+                      color: accent,
                       width: 1.4,
                     ),
                     minimumSize: const Size.fromHeight(52),
@@ -275,7 +277,7 @@ class _WizardActions extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: FilledButton.icon(
+                child: GradientAppButton(
                   key: Key(
                     currentStep == 4
                         ? 'saveProjectButton'
@@ -287,6 +289,16 @@ class _WizardActions extends StatelessWidget {
                           ? onSave
                           : onNext,
                   icon: saving
+                      ? null
+                      : Icon(
+                          currentStep == 4
+                              ? Icons.check_rounded
+                              : Icons.arrow_forward_rounded,
+                        ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  borderRadius: 8,
+                  height: 52,
+                  child: saving
                       ? const SizedBox(
                           width: 20,
                           height: 20,
@@ -295,28 +307,15 @@ class _WizardActions extends StatelessWidget {
                             color: Colors.white,
                           ),
                         )
-                      : Icon(
-                          currentStep == 4
-                              ? Icons.check_rounded
-                              : Icons.arrow_forward_rounded,
+                      : Text(
+                          context.tr(
+                            currentStep == 4
+                                ? 'project_complete'
+                                : 'project_continue',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                  label: Text(
-                    context.tr(
-                      currentStep == 4
-                          ? 'project_complete'
-                          : 'project_continue',
-                    ),
-                    maxLines: 1,
-                  ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(52),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
                 ),
               ),
             ],

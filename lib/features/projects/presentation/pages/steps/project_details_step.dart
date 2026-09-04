@@ -241,6 +241,7 @@ class _SummaryStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     final floorArea = state.floors.fold<double>(
       0,
       (total, floor) => total + floor.area,
@@ -248,7 +249,7 @@ class _SummaryStrip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
+        color: accent.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -289,6 +290,7 @@ class _SummaryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Column(
@@ -298,7 +300,7 @@ class _SummaryItem extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColors.primary,
+                  color: accent,
                   fontWeight: FontWeight.w700,
                 ),
           ),
@@ -336,6 +338,7 @@ class _DetailSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -348,7 +351,7 @@ class _DetailSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primary),
+              Icon(icon, color: accent),
               const SizedBox(width: 9),
               Expanded(
                 child: Column(
@@ -411,6 +414,7 @@ class _WallEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return _Editor(
       title: '${context.tr('project_wall')} ${index + 1}',
       onRemove: onRemove,
@@ -497,7 +501,7 @@ class _WallEditor extends StatelessWidget {
             child: Text(
               '${context.tr('project_area')}: ${value.area.toStringAsFixed(2)} m²',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: AppColors.primary,
+                    color: accent,
                   ),
             ),
           ),
@@ -537,6 +541,7 @@ class _OpeningEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return _Editor(
       title: '${context.tr('project_opening')} ${index + 1}',
       onRemove: onRemove,
@@ -617,7 +622,7 @@ class _OpeningEditor extends StatelessWidget {
             child: Text(
               '${context.tr('project_area')}: ${value.area.toStringAsFixed(2)} m²',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: AppColors.primary,
+                    color: accent,
                   ),
             ),
           ),

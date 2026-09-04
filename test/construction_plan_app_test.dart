@@ -35,7 +35,7 @@ void main() {
     final carousel = tester.widget<PageView>(
       find.byKey(const Key('projectCarousel')),
     );
-    expect(carousel.controller!.viewportFraction, 0.76);
+    expect(carousel.controller!.viewportFraction, 0.72);
     expect(
       tester.getSize(
         find.byKey(const Key('serviceCardSurface_service_architecture')),
@@ -43,7 +43,11 @@ void main() {
       const Size(176, 80),
     );
     expect(find.byKey(const Key('notchedNavigationPanel')), findsOneWidget);
-    expect(AppColors.primary, const Color(0xFF18C0C1));
+    expect(AppColors.primary, const Color(0xFFFE5196));
+    expect(
+      AppColors.linearShapeForBrightness(Brightness.dark),
+      const Color(0xFFD09693),
+    );
 
     final appContext = tester.element(find.byType(IndexedStack));
     final navigationCubit = appContext.read<MainNavigationCubit>();

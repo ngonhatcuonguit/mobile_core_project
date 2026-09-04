@@ -122,6 +122,7 @@ class _FloorEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -145,7 +146,7 @@ class _FloorEditor extends StatelessWidget {
                 Text(
                   '${floor.area.toStringAsFixed(1)} m²',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: AppColors.primary,
+                        color: accent,
                       ),
                 ),
                 if (canRemove) ...[
@@ -281,9 +282,10 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Row(
       children: [
-        Icon(icon, color: AppColors.primary),
+        Icon(icon, color: accent),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

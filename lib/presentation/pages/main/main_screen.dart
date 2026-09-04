@@ -88,14 +88,15 @@ class _NavigationPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surface = isDark ? AppColors.darkSurface : Colors.white;
-    final border = isDark ? const Color(0xFF353141) : const Color(0xFFF0EDF5);
+    final gradient = AppColors.navigationGradientFor(context);
+    final border =
+        isDark ? AppColors.darkNavigationEnd : AppColors.lightNavigationEnd;
     return SizedBox(
       height: 84,
       child: CustomPaint(
         key: const Key('notchedNavigationPanel'),
         painter: _NavigationPanelPainter(
-          color: surface,
+          gradient: gradient,
           borderColor: border,
           shadowColor: Colors.black.withValues(alpha: isDark ? 0.25 : 0.075),
         ),
@@ -197,12 +198,12 @@ class _NavigationPanelClipper extends CustomClipper<Path> {
 
 class _NavigationPanelPainter extends CustomPainter {
   const _NavigationPanelPainter({
-    required this.color,
+    required this.gradient,
     required this.borderColor,
     required this.shadowColor,
   });
 
-  final Color color;
+  final Gradient gradient;
   final Color borderColor;
   final Color shadowColor;
 
@@ -210,7 +211,10 @@ class _NavigationPanelPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final path = _navigationPanelPath(size);
     canvas.drawShadow(path, shadowColor, 13, false);
-    canvas.drawPath(path, Paint()..color = color);
+    canvas.drawPath(
+      path,
+      Paint()..shader = gradient.createShader(Offset.zero & size),
+    );
     canvas.drawPath(
       path,
       Paint()
@@ -222,7 +226,7 @@ class _NavigationPanelPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _NavigationPanelPainter oldDelegate) {
-    return color != oldDelegate.color ||
+    return gradient != oldDelegate.gradient ||
         borderColor != oldDelegate.borderColor ||
         shadowColor != oldDelegate.shadowColor;
   }
@@ -246,9 +250,9 @@ class _NavigationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected
-        ? AppColors.primary
-        : Theme.of(context).textTheme.bodySmall?.color;
+    final accent = AppColors.linearShapeFor(context);
+    final color =
+        selected ? accent : Theme.of(context).textTheme.bodySmall?.color;
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(18),
@@ -285,6 +289,7 @@ class _AddProjectButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Semantics(
       button: true,
       label: context.tr('nav_add_project'),
@@ -292,19 +297,15 @@ class _AddProjectButton extends StatelessWidget {
         children: [
           Material(
             elevation: 10,
-            shadowColor: AppColors.primary.withValues(alpha: 0.42),
+            shadowColor: accent.withValues(alpha: 0.42),
             shape: const CircleBorder(),
             clipBehavior: Clip.antiAlias,
             child: Ink(
               width: 64,
               height: 64,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF45D4CF), AppColors.primary],
-                ),
+                gradient: AppColors.buttonGradientFor(context),
               ),
               child: InkWell(
                 key: const Key('addProjectButton'),
@@ -319,7 +320,7 @@ class _AddProjectButton extends StatelessWidget {
           Text(
             context.tr('nav_add_project'),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.primary,
+                  color: accent,
                   fontSize: 9.5,
                   fontWeight: FontWeight.w700,
                 ),
@@ -343,6 +344,7 @@ class _LocalToolPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -372,10 +374,10 @@ class _LocalToolPage extends StatelessWidget {
                       width: 76,
                       height: 76,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.11),
+                        color: accent.withValues(alpha: 0.11),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(icon, color: AppColors.primary, size: 36),
+                      child: Icon(icon, color: accent, size: 36),
                     ),
                     const SizedBox(height: 20),
                     Text(

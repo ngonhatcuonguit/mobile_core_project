@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_core_project/common/widgets/button/gradient_app_button.dart';
 import 'package:flutter_core_project/core/configs/theme/app_colors.dart';
 import 'package:flutter_core_project/core/formatters/vietnamese_currency_input_formatter.dart';
 import 'package:flutter_core_project/features/material_library/domain/entities/material_library_item.dart';
@@ -469,6 +470,7 @@ class _LibraryMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 24, 28, 190),
       child: Center(
@@ -479,10 +481,10 @@ class _LibraryMessage extends StatelessWidget {
               width: 82,
               height: 82,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.11),
+                color: accent.withValues(alpha: 0.11),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: AppColors.primary, size: 37),
+              child: Icon(icon, color: accent, size: 37),
             ),
             const SizedBox(height: 18),
             Text(
@@ -502,10 +504,10 @@ class _LibraryMessage extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: 20),
-            FilledButton.icon(
+            GradientAppButton(
               onPressed: onAction,
               icon: const Icon(Icons.add_rounded),
-              label: Text(actionLabel),
+              child: Text(actionLabel),
             ),
           ],
         ),
@@ -596,11 +598,11 @@ class _ItemDetailsSheet extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: FilledButton.icon(
+              child: GradientAppButton(
                 key: const Key('editFromDetailButton'),
                 onPressed: () => Navigator.pop(context, true),
                 icon: const Icon(Icons.edit_outlined),
-                label: Text(context.tr('library_edit')),
+                child: Text(context.tr('library_edit')),
               ),
             ),
           ],
@@ -780,6 +782,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     final editing = widget.initialItem != null;
     return _SheetSurface(
       child: AnimatedPadding(
@@ -829,7 +832,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
                                 ? Icons.inventory_2_outlined
                                 : Icons.engineering_outlined,
                             size: 19,
-                            color: selected ? Colors.white : AppColors.primary,
+                            color: selected ? Colors.white : accent,
                           ),
                           label: SizedBox(
                             width: double.infinity,
@@ -840,7 +843,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          selectedColor: AppColors.primary,
+                          selectedColor: accent,
                           labelStyle: TextStyle(
                             color: selected ? Colors.white : null,
                             fontWeight: FontWeight.w700,
@@ -930,10 +933,10 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.07),
+                      color: accent.withValues(alpha: 0.07),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.18),
+                        color: accent.withValues(alpha: 0.18),
                       ),
                     ),
                     child: Column(
@@ -1015,7 +1018,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
                 SizedBox(
                   width: double.infinity,
                   height: 52,
-                  child: FilledButton(
+                  child: GradientAppButton(
                     key: const Key('saveLibraryItemButton'),
                     onPressed: _isSaving ? null : _submit,
                     child: _isSaving
@@ -1096,6 +1099,7 @@ class _UnitPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return _SheetSurface(
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.72,
@@ -1125,13 +1129,13 @@ class _UnitPickerSheet extends StatelessWidget {
                   final selected = unit == selectedUnit;
                   return Material(
                     color: selected
-                        ? AppColors.primary.withValues(alpha: 0.12)
+                        ? accent.withValues(alpha: 0.12)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(15),
                     child: ListTile(
                       key: Key('unitOption_$unit'),
                       selected: selected,
-                      selectedColor: AppColors.primary,
+                      selectedColor: accent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -1147,10 +1151,10 @@ class _UnitPickerSheet extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       trailing: selected
-                          ? const Icon(
+                          ? Icon(
                               Icons.check_circle_rounded,
-                              key: Key('selectedUnitIndicator'),
-                              color: AppColors.primary,
+                              key: const Key('selectedUnitIndicator'),
+                              color: accent,
                             )
                           : null,
                       onTap: () => Navigator.pop(context, unit),

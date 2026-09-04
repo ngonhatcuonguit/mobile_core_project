@@ -155,6 +155,7 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
     return BlocBuilder<ProjectWizardCubit, ProjectWizardState>(
       builder: (context, state) {
         final cubit = context.read<ProjectWizardCubit>();
+        final accent = AppColors.linearShapeFor(context);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -171,10 +172,10 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
                 height: 154,
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.07),
+                  color: accent.withValues(alpha: 0.07),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.38),
+                    color: accent.withValues(alpha: 0.38),
                   ),
                 ),
                 child: state.imagePath == null
@@ -184,9 +185,9 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
                             : Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.add_photo_alternate_outlined,
-                                    color: AppColors.primary,
+                                    color: accent,
                                     size: 34,
                                   ),
                                   const SizedBox(height: 8),
@@ -195,7 +196,7 @@ class _ProjectBasicStepState extends State<ProjectBasicStep> {
                                     style: Theme.of(context)
                                         .textTheme
                                         .labelLarge
-                                        ?.copyWith(color: AppColors.primary),
+                                        ?.copyWith(color: accent),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
@@ -382,6 +383,7 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     final height = MediaQuery.sizeOf(context).height * 0.82;
     return SizedBox(
       height: height.clamp(480.0, 720.0),
@@ -437,8 +439,8 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
+                    borderSide: BorderSide(
+                      color: accent,
                       width: 1.2,
                     ),
                   ),
@@ -468,8 +470,7 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
                       return ListTile(
                         key: Key('province_${province.id}'),
                         selected: selected,
-                        selectedTileColor:
-                            AppColors.primary.withValues(alpha: 0.055),
+                        selectedTileColor: accent.withValues(alpha: 0.055),
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 20),
                         visualDensity: const VisualDensity(vertical: -1),
@@ -486,13 +487,13 @@ class _ProvincePickerSheetState extends State<_ProvincePickerSheet> {
                           Icons.location_on_rounded,
                           size: 21,
                           color: selected
-                              ? AppColors.primary
+                              ? accent
                               : Theme.of(context).colorScheme.outlineVariant,
                         ),
                         trailing: selected
-                            ? const Icon(
+                            ? Icon(
                                 Icons.check_circle_rounded,
-                                color: AppColors.primary,
+                                color: accent,
                               )
                             : null,
                         onTap: () => Navigator.pop(context, province),
@@ -577,6 +578,7 @@ class _DistrictPickerSheetState extends State<_DistrictPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     final height = MediaQuery.sizeOf(context).height * 0.82;
     return SizedBox(
       height: height.clamp(480.0, 720.0),
@@ -631,8 +633,8 @@ class _DistrictPickerSheetState extends State<_DistrictPickerSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
+                    borderSide: BorderSide(
+                      color: accent,
                       width: 1.2,
                     ),
                   ),
@@ -662,8 +664,7 @@ class _DistrictPickerSheetState extends State<_DistrictPickerSheet> {
                       return ListTile(
                         key: Key('district_${district.id}'),
                         selected: selected,
-                        selectedTileColor:
-                            AppColors.primary.withValues(alpha: 0.055),
+                        selectedTileColor: accent.withValues(alpha: 0.055),
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 20),
                         visualDensity: const VisualDensity(vertical: -1),
@@ -686,13 +687,13 @@ class _DistrictPickerSheetState extends State<_DistrictPickerSheet> {
                           Icons.location_on_rounded,
                           size: 21,
                           color: selected
-                              ? AppColors.primary
+                              ? accent
                               : Theme.of(context).colorScheme.outlineVariant,
                         ),
                         trailing: selected
-                            ? const Icon(
+                            ? Icon(
                                 Icons.check_circle_rounded,
-                                color: AppColors.primary,
+                                color: accent,
                               )
                             : null,
                         onTap: () => Navigator.pop(context, district),

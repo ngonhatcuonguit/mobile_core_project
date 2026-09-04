@@ -13,6 +13,8 @@ class AppTheme {
     final background =
         isLight ? AppColors.lightBackground : AppColors.darkBackground;
     final surface = isLight ? AppColors.lightSurface : AppColors.darkSurface;
+    final primary = AppColors.linearShapeForBrightness(brightness);
+    final secondary = AppColors.buttonStartForBrightness(brightness);
 
     return ThemeData(
       useMaterial3: true,
@@ -20,10 +22,10 @@ class AppTheme {
       fontFamily: AppTextStyles.fontFamily,
       scaffoldBackgroundColor: background,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
+        seedColor: primary,
         brightness: brightness,
-        primary: AppColors.primary,
-        secondary: AppColors.secondary,
+        primary: primary,
+        secondary: secondary,
         surface: surface,
       ),
       textTheme: _buildTextTheme(brightness),
@@ -53,13 +55,38 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: primary,
           foregroundColor: Colors.white,
           elevation: 0,
           textStyle: AppTextStyles.button,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: Colors.white,
+          textStyle: AppTextStyles.button,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primary,
+        foregroundColor: Colors.white,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: primary),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return primary;
+          return null;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return primary.withValues(alpha: isLight ? 0.28 : 0.34);
+          }
+          return null;
+        }),
       ),
     );
   }

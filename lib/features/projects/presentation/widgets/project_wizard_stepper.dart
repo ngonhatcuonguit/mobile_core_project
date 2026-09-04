@@ -18,6 +18,7 @@ class ProjectWizardStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final accent = AppColors.linearShapeFor(context);
     return Material(
       color: colorScheme.surface,
       child: Padding(
@@ -30,7 +31,7 @@ class ProjectWizardStepper extends StatelessWidget {
                 Text(
                   '${currentStep + 1}/5',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: AppColors.primary,
+                        color: accent,
                         fontWeight: FontWeight.w700,
                       ),
                 ),
@@ -67,7 +68,7 @@ class ProjectWizardStepper extends StatelessWidget {
                         duration: const Duration(milliseconds: 220),
                         height: 3,
                         color: index < currentStep
-                            ? AppColors.primary
+                            ? accent
                             : Theme.of(context).dividerColor,
                       ),
                     ),
@@ -97,6 +98,7 @@ class _StepNode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = selected || completed;
+    final accent = AppColors.linearShapeFor(context);
     return Semantics(
       button: true,
       selected: selected,
@@ -110,10 +112,9 @@ class _StepNode extends StatelessWidget {
           height: 32,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: active ? AppColors.primary : Colors.transparent,
+            color: active ? accent : Colors.transparent,
             border: Border.all(
-              color:
-                  active ? AppColors.primary : Theme.of(context).dividerColor,
+              color: active ? accent : Theme.of(context).dividerColor,
               width: selected ? 3 : 2,
             ),
           ),

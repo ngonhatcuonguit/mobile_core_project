@@ -76,6 +76,7 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = AppColors.linearShapeFor(context);
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -99,7 +100,7 @@ class _ProfileHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.13),
+                  color: accent.withValues(alpha: 0.13),
                   blurRadius: 18,
                   offset: const Offset(0, 7),
                 ),
@@ -140,6 +141,7 @@ class _PreferencesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
@@ -147,45 +149,66 @@ class _PreferencesCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          BlocBuilder<ThemeCubit, ThemeMode>(
-            builder: (context, mode) {
-              final isDark = mode == ThemeMode.dark;
-              return SwitchListTile.adaptive(
-                key: const Key('themeSwitch'),
-                value: isDark,
-                onChanged: (_) => context.read<ThemeCubit>().toggleTheme(),
-                activeThumbColor: AppColors.primary,
-                secondary: _SettingIcon(
-                  icon: isDark
-                      ? Icons.dark_mode_rounded
-                      : Icons.light_mode_rounded,
-                ),
-                title: Text(context.tr('theme')),
-                subtitle: Text(
-                  context.tr(isDark ? 'dark_mode' : 'light_mode'),
-                ),
-              );
-            },
+          _SettingRowSurface(
+            child: BlocBuilder<ThemeCubit, ThemeMode>(
+              builder: (context, mode) {
+                final isDark = mode == ThemeMode.dark;
+                return SwitchListTile.adaptive(
+                  key: const Key('themeSwitch'),
+                  value: isDark,
+                  onChanged: (_) => context.read<ThemeCubit>().toggleTheme(),
+                  activeThumbColor: AppColors.linearShapeFor(context),
+                  secondary: _SettingIcon(
+                    icon: isDark
+                        ? Icons.dark_mode_rounded
+                        : Icons.light_mode_rounded,
+                  ),
+                  title: Text(context.tr('theme')),
+                  subtitle: Text(
+                    context.tr(isDark ? 'dark_mode' : 'light_mode'),
+                  ),
+                );
+              },
+            ),
           ),
           Divider(height: 1, indent: 72, color: Theme.of(context).dividerColor),
-          BlocBuilder<LocaleCubit, Locale>(
-            builder: (context, locale) {
-              final isVietnamese = locale.languageCode == 'vi';
-              return SwitchListTile.adaptive(
-                key: const Key('languageSwitch'),
-                value: isVietnamese,
-                onChanged: (_) => context.read<LocaleCubit>().toggleLanguage(),
-                activeThumbColor: AppColors.primary,
-                secondary: const _SettingIcon(icon: Icons.language_rounded),
-                title: Text(context.tr('language')),
-                subtitle: Text(
-                  context.tr(isVietnamese ? 'vietnamese' : 'english'),
-                ),
-              );
-            },
+          _SettingRowSurface(
+            child: BlocBuilder<LocaleCubit, Locale>(
+              builder: (context, locale) {
+                final isVietnamese = locale.languageCode == 'vi';
+                return SwitchListTile.adaptive(
+                  key: const Key('languageSwitch'),
+                  value: isVietnamese,
+                  onChanged: (_) =>
+                      context.read<LocaleCubit>().toggleLanguage(),
+                  activeThumbColor: AppColors.linearShapeFor(context),
+                  secondary: const _SettingIcon(icon: Icons.language_rounded),
+                  title: Text(context.tr('language')),
+                  subtitle: Text(
+                    context.tr(isVietnamese ? 'vietnamese' : 'english'),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SettingRowSurface extends StatelessWidget {
+  const _SettingRowSurface({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: AppColors.settingRowGradientFor(context),
+      ),
+      child: child,
     );
   }
 }
@@ -197,14 +220,15 @@ class _SettingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Container(
       width: 42,
       height: 42,
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.11),
+        color: accent.withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(13),
       ),
-      child: Icon(icon, color: AppColors.primary, size: 22),
+      child: Icon(icon, color: accent, size: 22),
     );
   }
 }

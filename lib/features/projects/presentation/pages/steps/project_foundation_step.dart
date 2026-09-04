@@ -513,18 +513,18 @@ class _SelectionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return SizedBox(
       width: width,
       height: 58,
       child: Material(
         color: selected
-            ? AppColors.primary.withValues(alpha: 0.10)
+            ? accent.withValues(alpha: 0.10)
             : Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
-            color:
-                selected ? AppColors.primary : Theme.of(context).dividerColor,
+            color: selected ? accent : Theme.of(context).dividerColor,
             width: selected ? 2 : 1,
           ),
         ),
@@ -535,7 +535,7 @@ class _SelectionTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: [
-                Icon(icon, color: selected ? AppColors.primary : null),
+                Icon(icon, color: selected ? accent : null),
                 const SizedBox(width: 9),
                 Expanded(
                   child: Text(
@@ -543,15 +543,15 @@ class _SelectionTile extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: selected ? AppColors.primary : null,
+                          color: selected ? accent : null,
                           fontWeight: selected ? FontWeight.w700 : null,
                         ),
                   ),
                 ),
                 if (selected)
-                  const Icon(
+                  Icon(
                     Icons.check_circle_rounded,
-                    color: AppColors.primary,
+                    color: accent,
                     size: 19,
                   ),
               ],
@@ -689,9 +689,10 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Row(
       children: [
-        Icon(icon, color: AppColors.primary),
+        Icon(icon, color: accent),
         const SizedBox(width: 8),
         Text(
           title,
@@ -711,11 +712,12 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.06),
+        color: accent.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(text, style: Theme.of(context).textTheme.bodySmall),

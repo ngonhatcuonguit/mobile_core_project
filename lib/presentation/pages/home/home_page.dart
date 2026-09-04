@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   static const Duration _autoScrollDuration = Duration(milliseconds: 650);
 
   final PageController _pageController = PageController(
-    viewportFraction: 0.76,
+    viewportFraction: 0.72,
     initialPage: _initialPage,
   );
   Timer? _autoScrollTimer;
@@ -169,7 +169,9 @@ class _HomePageState extends State<HomePage> {
                 SliverToBoxAdapter(
                   child: _buildProjectCarousel(context, projects),
                 ),
-                SliverToBoxAdapter(child: _buildPageIndicator(projects.length)),
+                SliverToBoxAdapter(
+                  child: _buildPageIndicator(context, projects.length),
+                ),
                 SliverToBoxAdapter(child: _buildServicesHeader(context)),
                 SliverToBoxAdapter(child: _buildServices(context)),
                 const SliverToBoxAdapter(child: SizedBox(height: 148)),
@@ -246,7 +248,7 @@ class _HomePageState extends State<HomePage> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
         child: SizedBox(
-          height: 360,
+          height: 336,
           child: PageView.builder(
             key: const Key('projectCarousel'),
             controller: _pageController,
@@ -274,7 +276,7 @@ class _HomePageState extends State<HomePage> {
                 },
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                   child: Builder(builder: (context) {
                     final project = projects[index % projects.length];
                     return _ProjectCard(
@@ -297,9 +299,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildPageIndicator(int projectCount) {
+  Widget _buildPageIndicator(BuildContext context, int projectCount) {
+    final accent = AppColors.linearShapeFor(context);
     return Padding(
-      padding: const EdgeInsets.only(top: 12, bottom: 24),
+      padding: const EdgeInsets.only(top: 10, bottom: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(projectCount, (index) {
@@ -311,7 +314,7 @@ class _HomePageState extends State<HomePage> {
             margin: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
               color: selected
-                  ? AppColors.primary
+                  ? accent
                   : AppColors.lightGrey.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -378,6 +381,7 @@ class _ProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = AppColors.linearShapeFor(context);
     return Container(
       key: Key('projectCard_${project.entity?.id ?? project.titleKey}'),
       clipBehavior: Clip.antiAlias,
@@ -386,7 +390,7 @@ class _ProjectCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: isDark ? 0.13 : 0.10),
+            color: accent.withValues(alpha: isDark ? 0.13 : 0.10),
             blurRadius: 24,
             offset: const Offset(0, 13),
           ),
@@ -436,7 +440,7 @@ class _ProjectCard extends StatelessWidget {
                           ),
                           style:
                               Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: AppColors.primary,
+                                    color: accent,
                                     fontWeight: FontWeight.w700,
                                   ),
                         ),

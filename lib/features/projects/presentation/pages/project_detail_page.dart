@@ -132,11 +132,12 @@ class _ProjectDetailView extends StatelessWidget {
   }
 
   SliverAppBar _buildAppBar(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return SliverAppBar(
       pinned: true,
       stretch: true,
       expandedHeight: 290,
-      backgroundColor: AppColors.primary,
+      backgroundColor: accent,
       foregroundColor: Colors.white,
       systemOverlayStyle: SystemUiOverlayStyle.light,
       leadingWidth: 64,
@@ -201,7 +202,7 @@ class _ProjectDetailView extends StatelessWidget {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary,
+                        color: accent,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -456,12 +457,13 @@ class _ProjectMetrics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     final metrics = [
       _MetricData(
         icon: Icons.layers_outlined,
         label: context.tr('project_total_floor_area'),
         value: '${_formatDecimal(project.totalFloorArea)} m²',
-        color: AppColors.primary,
+        color: accent,
       ),
       _MetricData(
         icon: Icons.apartment_rounded,
@@ -770,6 +772,7 @@ class _DetailSectionState extends State<_DetailSection> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -783,7 +786,7 @@ class _DetailSectionState extends State<_DetailSection> {
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
-                  Icon(widget.icon, color: AppColors.primary, size: 22),
+                  Icon(widget.icon, color: accent, size: 22),
                   const SizedBox(width: 9),
                   Expanded(
                     child: Text(
@@ -867,6 +870,7 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       child: Row(
@@ -876,10 +880,10 @@ class _InfoRow extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.09),
+              color: accent.withValues(alpha: 0.09),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Icon(data.icon, size: 17, color: AppColors.primary),
+            child: Icon(data.icon, size: 17, color: accent),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -932,19 +936,19 @@ class _EmptyPanel extends StatelessWidget {
 class _CostDistribution extends StatelessWidget {
   const _CostDistribution({required this.estimate});
 
-  static const colors = [
-    AppColors.primary,
-    Color(0xFF2F80ED),
-    Color(0xFFE58A19),
-    Color(0xFFE55C4A),
-    Color(0xFF7A62C9),
-    Color(0xFF249A68),
-  ];
-
   final ProjectCostEstimate estimate;
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
+    final colors = [
+      accent,
+      const Color(0xFF2F80ED),
+      const Color(0xFFE58A19),
+      const Color(0xFFE55C4A),
+      const Color(0xFF7A62C9),
+      const Color(0xFF249A68),
+    ];
     final priced =
         estimate.linesByCost.where((line) => line.amount > 0).toList();
     return _DetailSection(
@@ -997,7 +1001,7 @@ class _CostDistribution extends StatelessWidget {
                                       .textTheme
                                       .titleLarge
                                       ?.copyWith(
-                                        color: AppColors.primary,
+                                        color: accent,
                                         fontWeight: FontWeight.w800,
                                       ),
                                 ),
@@ -1056,6 +1060,7 @@ class _CostDonut extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -1073,10 +1078,10 @@ class _CostDonut extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
+                Icon(
                   Icons.account_balance_wallet_outlined,
                   size: 19,
-                  color: AppColors.primary,
+                  color: accent,
                 ),
                 const SizedBox(height: 4),
                 FittedBox(
@@ -1224,6 +1229,7 @@ class _MaterialList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.linearShapeFor(context);
     return _DetailSection(
       title: context.tr('project_material_labor_list'),
       icon: Icons.inventory_2_outlined,
@@ -1253,7 +1259,7 @@ class _MaterialList extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(15),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.08),
+                      color: accent.withValues(alpha: 0.08),
                       borderRadius: const BorderRadius.vertical(
                         bottom: Radius.circular(7),
                       ),
@@ -1281,7 +1287,7 @@ class _MaterialList extends StatelessWidget {
                                 .textTheme
                                 .titleSmall
                                 ?.copyWith(
-                                  color: AppColors.primary,
+                                  color: accent,
                                   fontWeight: FontWeight.w700,
                                 ),
                           ),
@@ -1305,6 +1311,10 @@ class _MaterialRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final unit = _localizedUnit(context, line.material.unit);
     final hasPrice = line.material.unitPrice > 0;
+    final accent = AppColors.linearShapeFor(context);
+    final materialColor = line.material.type == ProjectMaterialType.material
+        ? accent
+        : const Color(0xFFE58A19);
     return Padding(
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -1314,10 +1324,7 @@ class _MaterialRow extends StatelessWidget {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: (line.material.type == ProjectMaterialType.material
-                      ? AppColors.primary
-                      : const Color(0xFFE58A19))
-                  .withValues(alpha: 0.1),
+              color: materialColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(7),
             ),
             child: Icon(
@@ -1325,9 +1332,7 @@ class _MaterialRow extends StatelessWidget {
                   ? Icons.inventory_2_outlined
                   : Icons.engineering_outlined,
               size: 19,
-              color: line.material.type == ProjectMaterialType.material
-                  ? AppColors.primary
-                  : const Color(0xFFE58A19),
+              color: materialColor,
             ),
           ),
           const SizedBox(width: 10),

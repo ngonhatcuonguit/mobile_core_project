@@ -18,6 +18,7 @@ class ProjectMaterialsStep extends StatelessWidget {
       builder: (context, wizardState) {
         return BlocBuilder<MaterialLibraryCubit, MaterialLibraryState>(
           builder: (context, libraryState) {
+            final accent = AppColors.linearShapeFor(context);
             final libraryMaterials = libraryState.items
                 .map(_fromLibraryItem)
                 .toList(growable: false);
@@ -44,14 +45,14 @@ class ProjectMaterialsStep extends StatelessWidget {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
+                    color: accent.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.check_circle_outline_rounded,
-                        color: AppColors.primary,
+                        color: accent,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -59,7 +60,7 @@ class ProjectMaterialsStep extends StatelessWidget {
                           '${wizardState.materials.length} ${context.tr('project_materials_selected')}',
                           style:
                               Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    color: AppColors.primary,
+                                    color: accent,
                                     fontWeight: FontWeight.w700,
                                   ),
                         ),
@@ -205,14 +206,15 @@ class _MaterialOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasPrice = material.unitPrice > 0;
+    final accent = AppColors.linearShapeFor(context);
     return Material(
       color: selected
-          ? AppColors.primary.withValues(alpha: 0.08)
+          ? accent.withValues(alpha: 0.08)
           : Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color: selected ? AppColors.primary : Theme.of(context).dividerColor,
+          color: selected ? accent : Theme.of(context).dividerColor,
           width: selected ? 2 : 1,
         ),
       ),
@@ -242,7 +244,7 @@ class _MaterialOption extends StatelessWidget {
           material.type == ProjectMaterialType.material
               ? Icons.inventory_2_outlined
               : Icons.engineering_outlined,
-          color: selected ? AppColors.primary : null,
+          color: selected ? accent : null,
         ),
       ),
     );
